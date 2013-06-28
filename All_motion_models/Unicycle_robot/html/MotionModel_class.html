@@ -1,0 +1,443 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>MotionModel_class</title><meta name="generator" content="MATLAB 7.11"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-08-17"><meta name="DC.source" content="MotionModel_class.m"><style type="text/css">
+
+body {
+  background-color: white;
+  margin:10px;
+}
+
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows. */ 
+p,h1,h2,div.content div {
+  max-width: 600px;
+  /* Hack for IE6 */
+  width: auto !important; width: 600px;
+}
+
+pre.codeinput {
+  background: #EEEEEE;
+  padding: 10px;
+}
+@media print {
+  pre.codeinput {word-wrap:break-word; width:100%;}
+} 
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.codeoutput {
+  color: #666666;
+  padding: 10px;
+}
+
+pre.error {
+  color: red;
+}
+
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">Class Definition</a></li><li><a href="#3">Properties</a></li><li><a href="#4">Methods</a></li><li><a href="#5">Continuous dynamics</a></li><li><a href="#6">Discrete dynamics</a></li><li><a href="#7">Matrix A: State Jacobian in Discrete dynamics</a></li><li><a href="#8">Matrix A: State Jacobian in Continuous dynamics</a></li><li><a href="#9">Matrix B: State to Control Jacobian in Discrete dynamics</a></li><li><a href="#10">Matrix G: State to noise Jacobian in Discrete dynamics</a></li><li><a href="#11">Generating process noise</a></li><li><a href="#12">Computing process noise covarinace</a></li><li><a href="#13">Computing planned open-loop deterministic controls (or nominal controls) for unicycle model.</a></li><li><a href="#14">Computing planned open-loop deterministic state trajectory (or nominal trajectory) for unicycle model.</a></li><li><a href="#17">Generating Control-dependent and independent noises</a></li><li><a href="#18">Generating Control-dependent Noise Covariance</a></li><li><a href="#19">Generating deterministic open loop controls (nominal controls)</a></li></ul></div><h2>Class Definition<a name="1"></a></h2><pre class="codeinput"><span class="keyword">classdef</span> MotionModel_class &lt; handle
+</pre><pre class="codeinput">    <span class="comment">%==============================  UNICYCLE  MOTION MODEL =========================================</span>
+    <span class="comment">% Note that because the class is defined as a handle class, the</span>
+    <span class="comment">% properties must be defined such that they are do not change from an</span>
+    <span class="comment">% object to another one.</span>
+</pre><h2>Properties<a name="3"></a></h2><pre class="codeinput">    properties (Constant = true)
+        stDim = state.dim; <span class="comment">% state dimension</span>
+        ctDim = 2;  <span class="comment">% control vector dimension</span>
+        wDim = 5;   <span class="comment">% Process noise (W) dimension  % For the generality we also consider the additive noise on kinematics equation (3 dimension), but it most probably will set to zero. The main noise is a 2 dimensional noise which is added to the controls.</span>
+        dt = user_data_class.par.motion_model_parameters.dt;
+        base_length = user_data_class.par.motion_model_parameters.base_length;  <span class="comment">% distance between robot's rear wheels.</span>
+        sigma_b_u = user_data_class.par.motion_model_parameters.sigma_b_u_unicycle;
+        eta_u = user_data_class.par.motion_model_parameters.eta_u_unicycle;
+        P_Wg = user_data_class.par.motion_model_parameters.P_Wg;
+    <span class="keyword">end</span>
+</pre><h2>Methods<a name="4"></a></h2><pre class="codeinput">    methods (Static = true)
+</pre><h2>Continuous dynamics<a name="5"></a></h2><pre class="codeinput">        <span class="keyword">function</span> x_dot = f_contin(x,u,w) <span class="comment">%#ok&lt;STOUT,INUSD&gt;</span>
+            <span class="comment">% This is not needed yet in unicycle model.</span>
+        <span class="keyword">end</span>
+</pre><h2>Discrete dynamics<a name="6"></a></h2><p><img src="MotionModel_class_eq99819.png" alt="$$ x_k = x_{k-1}+ [V_k\cos\theta_k, V_k\sin\theta_k,&#xA;\omega_k]^T\delta t + [V^n_k\cos\theta_k, V^n_k\sin\theta_k,&#xA;\omega^n_k]^T\sqrt{\delta t} + W^g\sqrt{\delta t}$$"></p><pre class="codeinput">        <span class="keyword">function</span> x_next = f_discrete(x,u,w)
+            <span class="keyword">if</span> length(u) ~= 2, error(<span class="string">'SFMP: In this unicycle model, the dimension of control has to be 2'</span>), <span class="keyword">end</span>
+            Un = w(1:MotionModel_class.ctDim); <span class="comment">% The size of Un may be different from ctDim in some other model.</span>
+            Wg = w(MotionModel_class.ctDim+1 : MotionModel_class.wDim); <span class="comment">% The size of Wg may be different from stDim in some other model.</span>
+            c = cos(x(3));
+            s = sin(x(3));
+            d_t = MotionModel_class.dt;
+            x_next = x + [u(1)*c ; u(1)*s ; u(2)]*d_t  +  [Un(1)*c ; Un(1)*s ; Un(2)]*sqrt(d_t)  +  Wg*sqrt(d_t);
+        <span class="keyword">end</span>
+</pre><h2>Matrix A: State Jacobian in Discrete dynamics<a name="7"></a></h2><p><img src="MotionModel_class_eq71581.png" alt="$$ \mathbf{A} = \frac{\partial x_k}{\partial x_{k-1}} = I&#xA;   + \left(&#xA;  \begin{array}{ccc}&#xA;    0 &amp; 0 &amp; -V_k^p\sin\theta^p\\&#xA;    0 &amp; 0 &amp;  V_k^p\cos\theta^p\\&#xA;    0 &amp; 0 &amp; 0&#xA;  \end{array}\right) \delta t&#xA;   + \left(&#xA;  \begin{array}{ccc}&#xA;    0 &amp; 0 &amp; -V_k^n\sin\theta^p\\&#xA;    0 &amp; 0 &amp;  V_k^n\cos\theta^p\\&#xA;    0 &amp; 0 &amp; 0&#xA;  \end{array}\right)\sqrt{\delta t} $$"></p><p>Note that in most cases, we assume that we do not have access to the exact value of noises. Thus, we input <img src="MotionModel_class_eq40459.png" alt="$\mathbf{E}(V^n)$">, which is zero to compute the linearization matrices.</p><pre class="codeinput">        <span class="keyword">function</span> A = df_dx_func(x,u,w)
+             <span class="keyword">if</span> (length(u) ~= 2 || length(w) ~= 5), error(<span class="string">'SFMP: In this unicycle model, the dimension of control has to be 2 and noise has to be 5'</span>), <span class="keyword">end</span>
+            Un = w(1:MotionModel_class.ctDim); <span class="comment">% The size of Un may be different from ctDim in some other model.</span>
+            <span class="comment">%   Wg = w(MotionModel_class.ctDim+1 : MotionModel_class.wDim);</span>
+            <span class="comment">%   % The size of Wg may be different from stDim in some other</span>
+            <span class="comment">%   model.  In this Jacobian "Wg" does not appear.</span>
+            c = cos(x(3));
+            s = sin(x(3));
+            d_t = MotionModel_class.dt;
+            A = eye(MotionModel_class.stDim) + [0 0 -u(1)*s; 0 0 u(1)*c; 0 0 0] * d_t + [0 0 -Un(1)*s; 0 0 Un(1)*c; 0 0 0] * sqrt(d_t);
+        <span class="keyword">end</span>
+</pre><h2>Matrix A: State Jacobian in Continuous dynamics<a name="8"></a></h2><pre class="codeinput">        <span class="keyword">function</span> Acontin = df_contin_dx(x,u,w) <span class="comment">%#ok&lt;STOUT,INUSD&gt;</span>
+            <span class="comment">% Not yet implemented.</span>
+        <span class="keyword">end</span>
+</pre><h2>Matrix B: State to Control Jacobian in Discrete dynamics<a name="9"></a></h2><p><img src="MotionModel_class_eq83128.png" alt="$$ \mathbf{B} = \frac{\partial x_k}{\partial u_{k-1}} =&#xA;   \left(&#xA;  \begin{array}{cc}&#xA;    \cos\theta^p &amp; 0\\&#xA;    \sin\theta^p &amp; 0\\&#xA;    0 &amp; 1&#xA;  \end{array}\right) \delta t $$"></p><pre class="codeinput">        <span class="keyword">function</span> B = df_du_func(x,u,w) <span class="comment">%#ok&lt;INUSD&gt;</span>
+            th = x(3);
+            B = [cos(th) , 0  ;  sin(th) , 0  ;  0 , 1] * MotionModel_class.dt;
+        <span class="keyword">end</span>
+</pre><h2>Matrix G: State to noise Jacobian in Discrete dynamics<a name="10"></a></h2><p><img src="MotionModel_class_eq26730.png" alt="$$ \mathbf{G} = \frac{\partial x_k}{\partial w_{k-1}} =&#xA;   \left(&#xA;  \begin{array}{ccccc}&#xA;    \cos\theta^p &amp; 0 &amp; 1 &amp; 0 &amp; 0\\&#xA;    \sin\theta^p &amp; 0 &amp; 0 &amp; 1 &amp; 0\\&#xA;    0 &amp; 1 &amp; 0 &amp; 0 &amp; 1&#xA;  \end{array}\right) \sqrt{\delta t} $$"></p><pre class="codeinput">        <span class="keyword">function</span> G = df_dw_func(x,u,w) <span class="comment">%#ok&lt;INUSD&gt;</span>
+            th=x(3);
+            G = [cos(th) , 0 , 1 , 0 , 0 ;  sin(th) , 0 , 0 ,1,0 ;  0 , 1 , 0 ,0,1] * sqrt(MotionModel_class.dt);
+        <span class="keyword">end</span>
+</pre><h2>Generating process noise<a name="11"></a></h2><p>The whole process noise <img src="MotionModel_class_eq64535.png" alt="$w$"> consists of control-dependent noise <img src="MotionModel_class_eq38783.png" alt="$U_n$"> and control-independent noise <img src="MotionModel_class_eq05840.png" alt="$W^g$">.</p><pre class="codeinput">        <span class="keyword">function</span> w = generate_process_noise(x,u) <span class="comment">%#ok&lt;INUSD&gt;</span>
+            [Un,Wg] = generate_control_and_indep_process_noise(u);
+            w = [Un;Wg];
+        <span class="keyword">end</span>
+</pre><h2>Computing process noise covarinace<a name="12"></a></h2><pre class="codeinput">        <span class="keyword">function</span> Q_process_noise = process_noise_cov(x,u) <span class="comment">%#ok&lt;INUSD&gt;</span>
+            P_Un = control_noise_covariance(u);
+            Q_process_noise = blkdiag(P_Un,MotionModel_class.P_Wg);
+        <span class="keyword">end</span>
+</pre><h2>Computing planned open-loop deterministic controls (or nominal controls) for unicycle model.<a name="13"></a></h2><pre class="codeinput">        <span class="keyword">function</span> [up,kf] = compute_planned_control(x_initial,x_final)
+            <span class="comment">% "x_initial" and "x_final" are vectors that indicate the start</span>
+            <span class="comment">% and final position of the state trajectory, we are planning</span>
+            <span class="comment">% the control "up" for.</span>
+            [up,kf] = compute_planned_control_unicycle(x_initial,x_final);
+        <span class="keyword">end</span>
+</pre><h2>Computing planned open-loop deterministic state trajectory (or nominal trajectory) for unicycle model.<a name="14"></a></h2><p>In computing the planned trajectory, system is assumed to be deterministic, so the noise is zero.</p><p><img src="MotionModel_class_eq28998.png" alt="$$ x^p_{K+1} = f (x^p_{K}, u^p_k, 0 ) $$"></p><pre class="codeinput">        <span class="keyword">function</span> x_p = compute_planned_traj(x_initial,u_p,kf)
+            <span class="comment">% noiselss motion</span>
+            x_p = zeros(state.dim,kf+1);
+            x_p(:,1) = x_initial;
+            <span class="keyword">for</span> k = 1:kf
+                x_p(:,k+1) = MotionModel_class.f_discrete(x_p(:,k),u_p(:,k),zeros(MotionModel_class.wDim,1));
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+</pre><pre class="codeinput">    <span class="keyword">end</span>
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><pre class="codeoutput">Undefined variable "state" or class "state.dim".
+</pre><h2>Generating Control-dependent and independent noises<a name="17"></a></h2><p><img src="MotionModel_class_eq84585.png" alt="$$ U'_n \sim \mathcal{N}(0_{2\times 1} , I_{2\times 2}), ~~~ U_n =&#xA;(P^{U_n})^{1/2}U'_n\sim\mathcal{N}(0_{2\times 1} , P^{Un}),~~~W^g \sim \mathcal{N}(0_{3\times 1} , P^{W^g})$$"></p><p>The reason we do not use "mvnrnd" to generate <img src="MotionModel_class_eq38783.png" alt="$U_n$"> is the speed. The way we do here is much faster than using "mvnrnd".</p><pre class="codeinput"><span class="keyword">function</span> [Un,Wg] = generate_control_and_indep_process_noise(U)
+<span class="comment">% generate Un</span>
+indep_part_of_Un = randn(MotionModel_class.ctDim,1);
+P_Un = control_noise_covariance(U);
+Un = indep_part_of_Un.*diag(P_Un.^(1/2));
+<span class="comment">% generate Wg</span>
+Wg = mvnrnd(zeros(MotionModel_class.stDim,1),MotionModel_class.P_Wg)';
+<span class="keyword">end</span>
+</pre><h2>Generating Control-dependent Noise Covariance<a name="18"></a></h2><p><img src="MotionModel_class_eq27216.png" alt="$$ P^{U_n} = \left(   \begin{array}{cc}     (\eta_V V + \sigma_{b_V})^2 &amp; 0\\     0 &amp; (\eta_{\omega} \omega + \sigma_{b_{\omega}})^2\\   \end{array}\right) $$">,</p><p>where, <img src="MotionModel_class_eq41900.png" alt="$\eta_u=(\eta_V,\eta_{\omega})^T$"> and <img src="MotionModel_class_eq29239.png" alt="$\sigma_{b_u}=(\sigma_{b_V},\sigma_{b_{\omega}})^T$">.</p><pre class="codeinput"><span class="keyword">function</span> P_Un = control_noise_covariance(U)
+u_std=(MotionModel_class.eta_u).*U+(MotionModel_class.sigma_b_u);
+P_Un=diag(u_std.^2);
+<span class="keyword">end</span>
+</pre><h2>Generating deterministic open loop controls (nominal controls)<a name="19"></a></h2><p>I think this function should go out of this class maybe.</p><pre class="codeinput"><span class="keyword">function</span> [u_p,kf] = compute_planned_control_unicycle(X_initial,X_final)
+<span class="comment">% inputs</span>
+x_c=[X_initial(1),X_final(1)];
+y_c=[X_initial(2),X_final(2)];
+dt=user_data_class.par.motion_model_parameters.dt;
+omega_path=user_data_class.par.motion_model_parameters.omega_const_path; <span class="comment">% constant rotational velocity during turnings</span>
+V_path=user_data_class.par.motion_model_parameters.V_const_path; <span class="comment">% constant translational velocity during straight movements</span>
+<span class="comment">%stDim=MotionModel_class.stDim;</span>
+ctDim=MotionModel_class.ctDim;
+<span class="comment">% preallocation</span>
+th_p=zeros(1,length(x_c));
+delta_th_p=zeros(1,length(x_c));
+rotation_steps=zeros(length(x_c)-1,1);
+delta_disp=zeros(length(x_c)-1,1);
+translation_steps=zeros(length(x_c)-1,1);
+total_num_steps=0;
+
+<span class="comment">% Dividing the motion to pure translations and rotations</span>
+th_initial=X_initial(3);
+<span class="keyword">for</span> i=1:length(x_c)-1
+    <span class="comment">% rotations</span>
+    th_p(i)=atan2((y_c(i+1)-y_c(i)),(x_c(i+1)-x_c(i)));
+    <span class="keyword">if</span> i&gt;1, delta_th_p(i)=th_p(i)-th_p(i-1); <span class="keyword">else</span> delta_th_p(i)=th_p(i)-th_initial; <span class="keyword">end</span>;
+    rotation_steps(i)=abs(delta_th_p(i)/(omega_path*dt));
+    <span class="comment">%translations</span>
+    delta_disp(i)=sqrt(    (y_c(i+1)-y_c(i))^2+(x_c(i+1)-x_c(i))^2    );
+    translation_steps(i)=abs(delta_disp(i)/(V_path*dt));
+    total_num_steps=total_num_steps+ceil(rotation_steps(i))+ceil(translation_steps(i));
+<span class="keyword">end</span>
+kf=total_num_steps;
+<span class="comment">% Computing Velocities along the path</span>
+<span class="comment">% omega_path=zeros(1,kf);</span>
+<span class="comment">% v_path=zeros(1,kf);</span>
+u_p=nan(ctDim,kf+1);
+
+start_ind_w=1;
+<span class="comment">% end_ind_w=start_ind_w+ceil(rotation_steps(1))-1;</span>
+end_ind_w=start_ind_w+floor(rotation_steps(1));
+<span class="keyword">for</span> i=1:length(x_c)-1
+    <span class="comment">%Rotation</span>
+    <span class="keyword">if</span> end_ind_w~=0
+        u_const = [ 0 ; omega_path*sign(delta_th_p(i)) ];
+        u_p(:,start_ind_w:end_ind_w-1)=repmat(u_const,1,floor(rotation_steps(i)));
+        u_const_end=u_const * (rotation_steps(i)-floor(rotation_steps(i)));
+        u_p(:,end_ind_w)=u_const_end;
+    <span class="keyword">end</span>
+    <span class="comment">%Translations</span>
+    u_const = [ V_path ; 0 ];
+    u_p(:,end_ind_w+1:end_ind_w+ceil(translation_steps(i))-1)=repmat(u_const,1,floor(translation_steps(i)));
+    u_const_end=u_const*(translation_steps(i)-floor(translation_steps(i)));
+    u_p(:,end_ind_w+ceil(translation_steps(i)))=u_const_end;
+    <span class="comment">%Preparing for the next path segment</span>
+    <span class="keyword">if</span>  i~=length(x_c)-1    <span class="comment">%% This "if" is just for avoiding the error massege that appears due to non-existence of rotation_steps(length(x_c))</span>
+        start_ind_w=start_ind_w+ceil(rotation_steps(i))+ceil(translation_steps(i));
+        end_ind_w=start_ind_w+ceil(rotation_steps(i+1))-1;
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+<span class="comment">% u_p=[x_dot;theta_dot];</span>
+<span class="comment">% u_p=[u_p,[nan;nan]];</span>
+<span class="keyword">end</span>
+</pre><p class="footer"><br>
+      Published with MATLAB&reg; 7.11<br></p></div><!--
+##### SOURCE BEGIN #####
+%% Class Definition
+classdef MotionModel_class < handle
+    %==============================  UNICYCLE  MOTION MODEL =========================================
+    % Note that because the class is defined as a handle class, the
+    % properties must be defined such that they are do not change from an
+    % object to another one.
+    
+    %% Properties
+    properties (Constant = true)
+        stDim = state.dim; % state dimension
+        ctDim = 2;  % control vector dimension
+        wDim = 5;   % Process noise (W) dimension  % For the generality we also consider the additive noise on kinematics equation (3 dimension), but it most probably will set to zero. The main noise is a 2 dimensional noise which is added to the controls.
+        dt = user_data_class.par.motion_model_parameters.dt;
+        base_length = user_data_class.par.motion_model_parameters.base_length;  % distance between robot's rear wheels.
+        sigma_b_u = user_data_class.par.motion_model_parameters.sigma_b_u_unicycle;
+        eta_u = user_data_class.par.motion_model_parameters.eta_u_unicycle;
+        P_Wg = user_data_class.par.motion_model_parameters.P_Wg;
+    end
+    
+    %% Methods
+    methods (Static = true)
+        %% Continuous dynamics
+        function x_dot = f_contin(x,u,w) %#ok<STOUT,INUSD>
+            % This is not needed yet in unicycle model.
+        end
+        %% Discrete dynamics
+        % $$ x_k = x_{k-1}+ [V_k\cos\theta_k, V_k\sin\theta_k,
+        % \omega_k]^T\delta t + [V^n_k\cos\theta_k, V^n_k\sin\theta_k,
+        % \omega^n_k]^T\sqrt{\delta t} + W^g\sqrt{\delta t}$$
+        function x_next = f_discrete(x,u,w)
+            if length(u) ~= 2, error('SFMP: In this unicycle model, the dimension of control has to be 2'), end
+            Un = w(1:MotionModel_class.ctDim); % The size of Un may be different from ctDim in some other model.
+            Wg = w(MotionModel_class.ctDim+1 : MotionModel_class.wDim); % The size of Wg may be different from stDim in some other model.
+            c = cos(x(3));
+            s = sin(x(3));
+            d_t = MotionModel_class.dt;
+            x_next = x + [u(1)*c ; u(1)*s ; u(2)]*d_t  +  [Un(1)*c ; Un(1)*s ; Un(2)]*sqrt(d_t)  +  Wg*sqrt(d_t);
+        end
+        %% Matrix A: State Jacobian in Discrete dynamics
+        %
+        % $$ \mathbf{A} = \frac{\partial x_k}{\partial x_{k-1}} = I  
+        %    + \left(
+        %   \begin{array}{ccc}
+        %     0 & 0 & -V_k^p\sin\theta^p\\
+        %     0 & 0 &  V_k^p\cos\theta^p\\
+        %     0 & 0 & 0
+        %   \end{array}\right) \delta t
+        %    + \left(
+        %   \begin{array}{ccc}
+        %     0 & 0 & -V_k^n\sin\theta^p\\
+        %     0 & 0 &  V_k^n\cos\theta^p\\
+        %     0 & 0 & 0
+        %   \end{array}\right)\sqrt{\delta t} $$ 
+        %
+        % Note that in most cases, we assume that we do not have access to
+        % the exact value of noises. Thus, we input $\mathbf{E}(V^n)$, which is zero to
+        % compute the linearization matrices.
+        function A = df_dx_func(x,u,w)
+             if (length(u) ~= 2 || length(w) ~= 5), error('SFMP: In this unicycle model, the dimension of control has to be 2 and noise has to be 5'), end
+            Un = w(1:MotionModel_class.ctDim); % The size of Un may be different from ctDim in some other model.
+            %   Wg = w(MotionModel_class.ctDim+1 : MotionModel_class.wDim);
+            %   % The size of Wg may be different from stDim in some other
+            %   model.  In this Jacobian "Wg" does not appear.
+            c = cos(x(3));
+            s = sin(x(3));
+            d_t = MotionModel_class.dt;
+            A = eye(MotionModel_class.stDim) + [0 0 -u(1)*s; 0 0 u(1)*c; 0 0 0] * d_t + [0 0 -Un(1)*s; 0 0 Un(1)*c; 0 0 0] * sqrt(d_t);
+        end
+        %% Matrix A: State Jacobian in Continuous dynamics
+        function Acontin = df_contin_dx(x,u,w) %#ok<STOUT,INUSD>
+            % Not yet implemented.
+        end
+        %% Matrix B: State to Control Jacobian in Discrete dynamics
+        %
+        % $$ \mathbf{B} = \frac{\partial x_k}{\partial u_{k-1}} = 
+        %    \left(
+        %   \begin{array}{cc}
+        %     \cos\theta^p & 0\\
+        %     \sin\theta^p & 0\\
+        %     0 & 1
+        %   \end{array}\right) \delta t $$
+        %
+        function B = df_du_func(x,u,w) %#ok<INUSD>
+            th = x(3);
+            B = [cos(th) , 0  ;  sin(th) , 0  ;  0 , 1] * MotionModel_class.dt;
+        end
+        %% Matrix G: State to noise Jacobian in Discrete dynamics
+        %
+        % $$ \mathbf{G} = \frac{\partial x_k}{\partial w_{k-1}} = 
+        %    \left(
+        %   \begin{array}{ccccc}
+        %     \cos\theta^p & 0 & 1 & 0 & 0\\
+        %     \sin\theta^p & 0 & 0 & 1 & 0\\
+        %     0 & 1 & 0 & 0 & 1
+        %   \end{array}\right) \sqrt{\delta t} $$
+        %
+        function G = df_dw_func(x,u,w) %#ok<INUSD>
+            th=x(3);
+            G = [cos(th) , 0 , 1 , 0 , 0 ;  sin(th) , 0 , 0 ,1,0 ;  0 , 1 , 0 ,0,1] * sqrt(MotionModel_class.dt);
+        end
+        %% Generating process noise
+        % The whole process noise $w$ consists of control-dependent noise $U_n$ and
+        % control-independent noise $W^g$.
+        function w = generate_process_noise(x,u) %#ok<INUSD>
+            [Un,Wg] = generate_control_and_indep_process_noise(u);
+            w = [Un;Wg];
+        end
+        %% Computing process noise covarinace
+        function Q_process_noise = process_noise_cov(x,u) %#ok<INUSD>
+            P_Un = control_noise_covariance(u);
+            Q_process_noise = blkdiag(P_Un,MotionModel_class.P_Wg);
+        end
+        %% Computing planned open-loop deterministic controls (or nominal controls) for unicycle model.
+        function [up,kf] = compute_planned_control(x_initial,x_final)
+            % "x_initial" and "x_final" are vectors that indicate the start
+            % and final position of the state trajectory, we are planning
+            % the control "up" for.
+            [up,kf] = compute_planned_control_unicycle(x_initial,x_final);
+        end
+        %% Computing planned open-loop deterministic state trajectory (or nominal trajectory) for unicycle model. 
+        % In computing the planned trajectory, system is assumed to be deterministic, so the noise is zero.
+        %
+        % $$ x^p_{K+1} = f (x^p_{K}, u^p_k, 0 ) $$
+        %
+        function x_p = compute_planned_traj(x_initial,u_p,kf)
+            % noiselss motion
+            x_p = zeros(state.dim,kf+1);
+            x_p(:,1) = x_initial;
+            for k = 1:kf
+                x_p(:,k+1) = MotionModel_class.f_discrete(x_p(:,k),u_p(:,k),zeros(MotionModel_class.wDim,1));
+            end
+        end
+    end
+end
+
+%% Generating Control-dependent and independent noises
+%
+% $$ U'_n \sim \mathcal{N}(0_{2\times 1} , I_{2\times 2}), ~~~ U_n =
+% (P^{U_n})^{1/2}U'_n\sim\mathcal{N}(0_{2\times 1} , P^{Un}),~~~W^g \sim \mathcal{N}(0_{3\times 1} , P^{W^g})$$
+%
+% The reason we do not use "mvnrnd" to generate $U_n$ is the speed. The way
+% we do here is much faster than using "mvnrnd".
+function [Un,Wg] = generate_control_and_indep_process_noise(U)
+% generate Un
+indep_part_of_Un = randn(MotionModel_class.ctDim,1);
+P_Un = control_noise_covariance(U);
+Un = indep_part_of_Un.*diag(P_Un.^(1/2));
+% generate Wg
+Wg = mvnrnd(zeros(MotionModel_class.stDim,1),MotionModel_class.P_Wg)';
+end
+%% Generating Control-dependent Noise Covariance
+%
+% $$ P^{U_n} = \left(
+%   \begin{array}{cc}
+%     (\eta_V V + \sigma_{b_V})^2 & 0\\
+%     0 & (\eta_{\omega} \omega + \sigma_{b_{\omega}})^2\\
+%   \end{array}\right) $$,
+%
+% where, $\eta_u=(\eta_V,\eta_{\omega})^T$ and
+% $\sigma_{b_u}=(\sigma_{b_V},\sigma_{b_{\omega}})^T$.
+function P_Un = control_noise_covariance(U)
+u_std=(MotionModel_class.eta_u).*U+(MotionModel_class.sigma_b_u);
+P_Un=diag(u_std.^2);
+end
+
+%% Generating deterministic open loop controls (nominal controls)
+% I think this function should go out of this class maybe.
+function [u_p,kf] = compute_planned_control_unicycle(X_initial,X_final)
+% inputs
+x_c=[X_initial(1),X_final(1)];
+y_c=[X_initial(2),X_final(2)];
+dt=user_data_class.par.motion_model_parameters.dt;
+omega_path=user_data_class.par.motion_model_parameters.omega_const_path; % constant rotational velocity during turnings
+V_path=user_data_class.par.motion_model_parameters.V_const_path; % constant translational velocity during straight movements
+%stDim=MotionModel_class.stDim;
+ctDim=MotionModel_class.ctDim;
+% preallocation
+th_p=zeros(1,length(x_c));
+delta_th_p=zeros(1,length(x_c));
+rotation_steps=zeros(length(x_c)-1,1);
+delta_disp=zeros(length(x_c)-1,1);
+translation_steps=zeros(length(x_c)-1,1);
+total_num_steps=0;
+
+% Dividing the motion to pure translations and rotations
+th_initial=X_initial(3);
+for i=1:length(x_c)-1
+    % rotations
+    th_p(i)=atan2((y_c(i+1)-y_c(i)),(x_c(i+1)-x_c(i)));
+    if i>1, delta_th_p(i)=th_p(i)-th_p(i-1); else delta_th_p(i)=th_p(i)-th_initial; end;
+    rotation_steps(i)=abs(delta_th_p(i)/(omega_path*dt));
+    %translations
+    delta_disp(i)=sqrt(    (y_c(i+1)-y_c(i))^2+(x_c(i+1)-x_c(i))^2    );
+    translation_steps(i)=abs(delta_disp(i)/(V_path*dt));
+    total_num_steps=total_num_steps+ceil(rotation_steps(i))+ceil(translation_steps(i));
+end
+kf=total_num_steps;
+% Computing Velocities along the path
+% omega_path=zeros(1,kf);
+% v_path=zeros(1,kf);
+u_p=nan(ctDim,kf+1);
+
+start_ind_w=1;
+% end_ind_w=start_ind_w+ceil(rotation_steps(1))-1;
+end_ind_w=start_ind_w+floor(rotation_steps(1));
+for i=1:length(x_c)-1
+    %Rotation
+    if end_ind_w~=0
+        u_const = [ 0 ; omega_path*sign(delta_th_p(i)) ];
+        u_p(:,start_ind_w:end_ind_w-1)=repmat(u_const,1,floor(rotation_steps(i)));
+        u_const_end=u_const * (rotation_steps(i)-floor(rotation_steps(i)));
+        u_p(:,end_ind_w)=u_const_end;
+    end
+    %Translations
+    u_const = [ V_path ; 0 ];
+    u_p(:,end_ind_w+1:end_ind_w+ceil(translation_steps(i))-1)=repmat(u_const,1,floor(translation_steps(i)));
+    u_const_end=u_const*(translation_steps(i)-floor(translation_steps(i)));
+    u_p(:,end_ind_w+ceil(translation_steps(i)))=u_const_end;
+    %Preparing for the next path segment
+    if  i~=length(x_c)-1    %% This "if" is just for avoiding the error massege that appears due to non-existence of rotation_steps(length(x_c))
+        start_ind_w=start_ind_w+ceil(rotation_steps(i))+ceil(translation_steps(i));
+        end_ind_w=start_ind_w+ceil(rotation_steps(i+1))-1;
+    end
+end
+% u_p=[x_dot;theta_dot];
+% u_p=[u_p,[nan;nan]];
+end
+##### SOURCE END #####
+--></body></html>

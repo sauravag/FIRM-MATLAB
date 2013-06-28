@@ -1,0 +1,1246 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Unicycle_robot</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-05-30"><meta name="DC.source" content="Unicycle_robot.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">Class Definition</a></li><li><a href="#3">Properties</a></li><li><a href="#4">Methods</a></li><li><a href="#5">Continuous dynamics</a></li><li><a href="#6">Discrete dynamics</a></li><li><a href="#7">Matrix A: State Jacobian in Discrete dynamics</a></li><li><a href="#8">Matrix A: State Jacobian in Continuous dynamics</a></li><li><a href="#9">Matrix B: State to Control Jacobian in Discrete dynamics</a></li><li><a href="#10">Matrix G: State to noise Jacobian in Discrete dynamics</a></li><li><a href="#11">Generating process noise</a></li><li><a href="#12">Computing process noise covarinace</a></li><li><a href="#13">Computing planned open-loop deterministic controls (or nominal controls) for unicycle model.</a></li><li><a href="#14">Computing planned open-loop deterministic controls (or nominal controls) for unicycle model.</a></li><li><a href="#15">Computing planned open-loop deterministic state trajectory (or nominal trajectory) for unicycle model.</a></li><li><a href="#16">Sample a valid orbit (periodic trajectory)</a></li><li><a href="#17">Construct an orbit</a></li><li><a href="#18">Draw an orbit</a></li><li><a href="#19">Generate open-loop Orbit-to-Orbit trajectory</a></li><li><a href="#20">check if the trajectory is collision-free or not</a></li><li><a href="#21">Draw nominal trajectories</a></li><li><a href="#22">Draw orbit neighborhood</a></li><li><a href="#25">Generating Control-dependent and independent noises</a></li><li><a href="#26">Generating Control-dependent Noise Covariance</a></li><li><a href="#27">Generating deterministic open loop controls (nominal controls)</a></li><li><a href="#28">Generating deterministic open loop controls with bounded curvature (nominal controls)</a></li></ul></div><h2>Class Definition<a name="1"></a></h2><pre class="codeinput"><span class="keyword">classdef</span> Unicycle_robot &lt; handle
+</pre><pre class="codeinput">    <span class="comment">%==============================  UNICYCLE  MOTION MODEL =========================================</span>
+    <span class="comment">% Note that because the class is defined as a handle class, the</span>
+    <span class="comment">% properties must be defined such that they are do not change from an</span>
+    <span class="comment">% object to another one.</span>
+</pre><h2>Properties<a name="3"></a></h2><pre class="codeinput">    properties (Constant = true)
+        stDim = state.dim; <span class="comment">% state dimension</span>
+        ctDim = 2;  <span class="comment">% control vector dimension</span>
+        wDim = 5;   <span class="comment">% Process noise (W) dimension  % For the generality we also consider the additive noise on kinematics equation (3 dimension), but it most probably will set to zero. The main noise is a 2 dimensional noise which is added to the controls.</span>
+        dt = user_data_class.par.motion_model_parameters.dt;
+        base_length = user_data_class.par.motion_model_parameters.base_length;  <span class="comment">% distance between robot's rear wheels.</span>
+        sigma_b_u = user_data_class.par.motion_model_parameters.sigma_b_u_unicycle;
+        eta_u = user_data_class.par.motion_model_parameters.eta_u_unicycle;
+        P_Wg = user_data_class.par.motion_model_parameters.P_Wg;
+    <span class="keyword">end</span>
+
+    properties (Constant = true) <span class="comment">% orbit-related properties</span>
+        turn_radius_min = 1.5; <span class="comment">% indeed we need to define the minimum linear velocity in turnings (on orbits) and then find the minimum radius accordingly. But, we picked the more intuitive way.</span>
+        angular_velocity_max = 140*pi/180; <span class="comment">% degree per second (converted to radian per second)</span>
+        linear_velocity_min_on_orbit = Unicycle_robot.turn_radius_min*Unicycle_robot.angular_velocity_max; <span class="comment">% note that on the straight line the minimum velocity can go to zero. But, in turnings (on orbit) the linear velocity cannot fall below this value.</span>
+        linear_velocity_max = 15;
+    <span class="keyword">end</span>
+</pre><h2>Methods<a name="4"></a></h2><pre class="codeinput">    methods (Static = true)
+</pre><h2>Continuous dynamics<a name="5"></a></h2><pre class="codeinput">        <span class="keyword">function</span> x_dot = f_contin(x,u,w) <span class="comment">%#ok&lt;STOUT,INUSD&gt;</span>
+            <span class="comment">% This is not needed yet in unicycle model.</span>
+        <span class="keyword">end</span>
+</pre><h2>Discrete dynamics<a name="6"></a></h2><p><img src="Unicycle_robot_eq99819.png" alt="$$ x_k = x_{k-1}+ [V_k\cos\theta_k, V_k\sin\theta_k,&#xA;\omega_k]^T\delta t + [V^n_k\cos\theta_k, V^n_k\sin\theta_k,&#xA;\omega^n_k]^T\sqrt{\delta t} + W^g\sqrt{\delta t}$$"></p><pre class="codeinput">        <span class="keyword">function</span> x_next = f_discrete(x,u,w)
+            <span class="keyword">if</span> length(u) ~= 2, error(<span class="string">'SFMP: In this unicycle model, the dimension of control has to be 2'</span>), <span class="keyword">end</span>
+            Un = w(1:Unicycle_robot.ctDim); <span class="comment">% The size of Un may be different from ctDim in some other model.</span>
+            Wg = w(Unicycle_robot.ctDim+1 : Unicycle_robot.wDim); <span class="comment">% The size of Wg may be different from stDim in some other model.</span>
+            c = cos(x(3));
+            s = sin(x(3));
+            d_t = Unicycle_robot.dt;
+            x_next = x + [u(1)*c ; u(1)*s ; u(2)]*d_t  +  [Un(1)*c ; Un(1)*s ; Un(2)]*sqrt(d_t)  +  Wg*sqrt(d_t);
+        <span class="keyword">end</span>
+</pre><h2>Matrix A: State Jacobian in Discrete dynamics<a name="7"></a></h2><p><img src="Unicycle_robot_eq71581.png" alt="$$ \mathbf{A} = \frac{\partial x_k}{\partial x_{k-1}} = I&#xA;   + \left(&#xA;  \begin{array}{ccc}&#xA;    0 &amp; 0 &amp; -V_k^p\sin\theta^p\\&#xA;    0 &amp; 0 &amp;  V_k^p\cos\theta^p\\&#xA;    0 &amp; 0 &amp; 0&#xA;  \end{array}\right) \delta t&#xA;   + \left(&#xA;  \begin{array}{ccc}&#xA;    0 &amp; 0 &amp; -V_k^n\sin\theta^p\\&#xA;    0 &amp; 0 &amp;  V_k^n\cos\theta^p\\&#xA;    0 &amp; 0 &amp; 0&#xA;  \end{array}\right)\sqrt{\delta t} $$"></p><p>Note that in most cases, we assume that we do not have access to the exact value of noises. Thus, we input <img src="Unicycle_robot_eq40459.png" alt="$\mathbf{E}(V^n)$">, which is zero to compute the linearization matrices.</p><pre class="codeinput">        <span class="keyword">function</span> A = df_dx_func(x,u,w)
+             <span class="keyword">if</span> (length(u) ~= 2 || length(w) ~= 5), error(<span class="string">'SFMP: In this unicycle model, the dimension of control has to be 2 and noise has to be 5'</span>), <span class="keyword">end</span>
+            Un = w(1:Unicycle_robot.ctDim); <span class="comment">% The size of Un may be different from ctDim in some other model.</span>
+            <span class="comment">%   Wg = w(Unicycle_robot.ctDim+1 : Unicycle_robot.wDim);</span>
+            <span class="comment">%   % The size of Wg may be different from stDim in some other</span>
+            <span class="comment">%   model.  In this Jacobian "Wg" does not appear.</span>
+            c = cos(x(3));
+            s = sin(x(3));
+            d_t = Unicycle_robot.dt;
+            A = eye(Unicycle_robot.stDim) + [0 0 -u(1)*s; 0 0 u(1)*c; 0 0 0] * d_t + [0 0 -Un(1)*s; 0 0 Un(1)*c; 0 0 0] * sqrt(d_t);
+        <span class="keyword">end</span>
+</pre><h2>Matrix A: State Jacobian in Continuous dynamics<a name="8"></a></h2><pre class="codeinput">        <span class="keyword">function</span> Acontin = df_contin_dx(x,u,w) <span class="comment">%#ok&lt;STOUT,INUSD&gt;</span>
+            <span class="comment">% Not yet implemented.</span>
+        <span class="keyword">end</span>
+</pre><h2>Matrix B: State to Control Jacobian in Discrete dynamics<a name="9"></a></h2><p><img src="Unicycle_robot_eq83128.png" alt="$$ \mathbf{B} = \frac{\partial x_k}{\partial u_{k-1}} =&#xA;   \left(&#xA;  \begin{array}{cc}&#xA;    \cos\theta^p &amp; 0\\&#xA;    \sin\theta^p &amp; 0\\&#xA;    0 &amp; 1&#xA;  \end{array}\right) \delta t $$"></p><pre class="codeinput">        <span class="keyword">function</span> B = df_du_func(x,u,w) <span class="comment">%#ok&lt;INUSD&gt;</span>
+            th = x(3);
+            B = [cos(th) , 0  ;  sin(th) , 0  ;  0 , 1] * Unicycle_robot.dt;
+        <span class="keyword">end</span>
+</pre><h2>Matrix G: State to noise Jacobian in Discrete dynamics<a name="10"></a></h2><p><img src="Unicycle_robot_eq26730.png" alt="$$ \mathbf{G} = \frac{\partial x_k}{\partial w_{k-1}} =&#xA;   \left(&#xA;  \begin{array}{ccccc}&#xA;    \cos\theta^p &amp; 0 &amp; 1 &amp; 0 &amp; 0\\&#xA;    \sin\theta^p &amp; 0 &amp; 0 &amp; 1 &amp; 0\\&#xA;    0 &amp; 1 &amp; 0 &amp; 0 &amp; 1&#xA;  \end{array}\right) \sqrt{\delta t} $$"></p><pre class="codeinput">        <span class="keyword">function</span> G = df_dw_func(x,u,w) <span class="comment">%#ok&lt;INUSD&gt;</span>
+            th=x(3);
+            G = [cos(th) , 0 , 1 , 0 , 0 ;  sin(th) , 0 , 0 ,1,0 ;  0 , 1 , 0 ,0,1] * sqrt(Unicycle_robot.dt);
+        <span class="keyword">end</span>
+</pre><h2>Generating process noise<a name="11"></a></h2><p>The whole process noise <img src="Unicycle_robot_eq64535.png" alt="$w$"> consists of control-dependent noise <img src="Unicycle_robot_eq38783.png" alt="$U_n$"> and control-independent noise <img src="Unicycle_robot_eq05840.png" alt="$W^g$">.</p><pre class="codeinput">        <span class="keyword">function</span> w = generate_process_noise(x,u) <span class="comment">%#ok&lt;INUSD&gt;</span>
+            [Un,Wg] = generate_control_and_indep_process_noise(u);
+            w = [Un;Wg];
+        <span class="keyword">end</span>
+</pre><h2>Computing process noise covarinace<a name="12"></a></h2><pre class="codeinput">        <span class="keyword">function</span> Q_process_noise = process_noise_cov(x,u) <span class="comment">%#ok&lt;INUSD&gt;</span>
+            P_Un = control_noise_covariance(u);
+            Q_process_noise = blkdiag(P_Un,Unicycle_robot.P_Wg);
+        <span class="keyword">end</span>
+</pre><h2>Computing planned open-loop deterministic controls (or nominal controls) for unicycle model.<a name="13"></a></h2><pre class="codeinput">        <span class="keyword">function</span> nominal_traj = generate_open_loop_point2point_traj(x_initial,x_final)
+            <span class="comment">% "x_initial" and "x_final" are vectors that indicate the start</span>
+            <span class="comment">% and final position of the state trajectory, we are planning</span>
+            <span class="comment">% the control "up" for.</span>
+            <span class="keyword">if</span> isa(x_initial , <span class="string">'state'</span>), x_initial = x_initial.val; <span class="keyword">end</span>
+            <span class="keyword">if</span> isa(x_final , <span class="string">'state'</span>), x_final = x_final.val; <span class="keyword">end</span>
+            <span class="comment">% minimum turn radius resutls from dividing the minimum linear</span>
+            <span class="comment">% velocity to maximum angular velocity. However, here we assume</span>
+            <span class="comment">% that the linear velocity is constant.</span>
+            radius = Unicycle_robot.turn_radius_min;
+            initial_circle_center = [radius*cos(x_initial(3)-pi/2) ; radius*sin(x_initial(3)-pi/2)] + x_initial(1:2);
+            final_circle_center = [radius*cos(x_final(3)-pi/2) ; radius*sin(x_final(3)-pi/2)] + x_final(1:2);
+            <span class="comment">%             tth = 0:0.1:2*pi+.1;plot(initial_circle_center(1)+radius*cos(tth), initial_circle_center(2)+radius*sin(tth)); %TO DEBUG -  DONT DELETE</span>
+            <span class="comment">%             tth = 0:0.1:2*pi+.1;plot(final_circle_center(1)+radius*cos(tth), final_circle_center(2)+radius*sin(tth)); %TO DEBUG -  DONT DELETE</span>
+            gamma_tangent = atan2( final_circle_center(2) - initial_circle_center(2) , final_circle_center(1) - initial_circle_center(1) ); <span class="comment">% The angle of the tangent line</span>
+
+            gamma_start_of_tangent_line = gamma_tangent + pi/2; <span class="comment">% the angle on which the starting point of the tangent line lies on orbit i.</span>
+            gamma_end_of_tangent_line = gamma_tangent + pi/2; <span class="comment">% the angle on which the ending point of the tangent line lies on orbit i.</span>
+
+            initial_robot_gamma =   x_initial(3) + pi/2; <span class="comment">% Note that this is not robot's heading angle. This says that at which angle robot lies on the circle.</span>
+            final_robot_gamma   =   x_final(3)    + pi/2; <span class="comment">% Note that this is not robot's heading angle. This says that at which angle robot lies on the circle.</span>
+
+            <span class="comment">% Turn part on the first circle</span>
+            entire_th_on_initial_circle = delta_theta_turn(initial_robot_gamma, gamma_start_of_tangent_line, <span class="string">'cw'</span>); <span class="comment">% NOTE: this must be a negative number as we turn CLOCKWISE.</span>
+            delta_theta_on_turns = - Unicycle_robot.angular_velocity_max * Unicycle_robot.dt ; <span class="comment">%VERY IMPORTANT: since we want to traverse the circles clockwise, the angular velocity has to be NEGATIVE.</span>
+            kf_pre_rational = entire_th_on_initial_circle/delta_theta_on_turns;
+            kf_pre = ceil(kf_pre_rational);
+            V_pre = Unicycle_robot.linear_velocity_min_on_orbit * [ones(1,kf_pre-1) , kf_pre_rational-floor(kf_pre_rational)];
+            omega_pre = -Unicycle_robot.angular_velocity_max * [ones(1,kf_pre-1) , kf_pre_rational-floor(kf_pre_rational)];  <span class="comment">%VERY IMPORTANT: since we want to traverse the circles clockwise, the angular velocity has to be NEGATIVE.</span>
+            u_pre = [V_pre ; omega_pre];
+            w_zero = zeros(Unicycle_robot.wDim,1); <span class="comment">% no noise</span>
+            x_pre(:,1) = x_initial;
+            <span class="keyword">for</span> k=1:kf_pre
+                x_pre(:,k+1) = MotionModel_class.f_discrete(x_pre(:,k),u_pre(:,k),w_zero);
+                <span class="comment">%                 tmp = state(x_pre(:,k+1));tmp.draw(); % FOR DEBUGGING</span>
+            <span class="keyword">end</span>
+            <span class="comment">% Line part</span>
+            tanget_line_length = norm ( final_circle_center - initial_circle_center ) ;
+            step_length = Unicycle_robot.linear_velocity_max * Unicycle_robot.dt;
+            kf_line_rational = tanget_line_length/step_length;
+            kf_line = ceil(kf_line_rational);
+            V_line = Unicycle_robot.linear_velocity_max * [ones(1,kf_line-1) , kf_line_rational-floor(kf_line_rational)];
+            omega_line = zeros(1,kf_line);
+            u_line = [V_line;omega_line];
+            x_line(:,1) = x_pre(:,kf_pre+1);
+            <span class="keyword">for</span> k=1:kf_line
+                x_line(:,k+1) = MotionModel_class.f_discrete(x_line(:,k),u_line(:,k),w_zero);
+                <span class="comment">%                 tmp = state(x_line(:,k+1));tmp.draw(); % FOR DEBUGGING</span>
+            <span class="keyword">end</span>
+            <span class="comment">% Turn part on the final circle</span>
+            th_on_final_circle = delta_theta_turn(gamma_end_of_tangent_line, final_robot_gamma, <span class="string">'cw'</span>); <span class="comment">% NOTE: this must be a negative number as we turn CLOCKWISE.</span>
+            kf_post_rational = th_on_final_circle/delta_theta_on_turns;
+            kf_post = ceil(kf_post_rational);
+            V_post = Unicycle_robot.linear_velocity_min_on_orbit * [ones(1,kf_post-1) , kf_post_rational-floor(kf_post_rational)];
+            omega_post = -Unicycle_robot.angular_velocity_max * [ones(1,kf_post-1) , kf_post_rational-floor(kf_post_rational)];  <span class="comment">%VERY IMPORTANT: since we want to traverse the circles clockwise, the angular velocity has to be NEGATIVE.</span>
+            u_post = [V_post ; omega_post];
+            x_post(:,1) = x_line(:,kf_line+1);
+            <span class="keyword">for</span> k=1:kf_post
+                x_post(:,k+1) = MotionModel_class.f_discrete(x_post(:,k),u_post(:,k),w_zero);
+                <span class="comment">%                 tmp = state(x_post(:,k+1));tmp.draw(); % FOR DEBUGGING</span>
+            <span class="keyword">end</span>
+
+            nominal_traj.x = [x_pre(:,1:kf_pre) , x_line(:,1:kf_line) , x_post(:,1:kf_post+1)]; <span class="comment">% This line is written very carefully. So, dont worry about its correctness!</span>
+            nominal_traj.u = [u_pre(:,1:kf_pre) , u_line(:,1:kf_line) , u_post(:,1:kf_post)]; <span class="comment">% This line is written very carefully. So, dont worry about its correctness!</span>
+
+        <span class="keyword">end</span>
+</pre><h2>Computing planned open-loop deterministic controls (or nominal controls) for unicycle model.<a name="14"></a></h2><pre class="codeinput">        <span class="keyword">function</span> nominal_traj = generate_VALID_open_loop_point2point_traj(x_initial,x_final)
+            <span class="comment">% "x_initial" and "x_final" are vectors that indicate the start</span>
+            <span class="comment">% and final position of the state trajectory, we are planning</span>
+            <span class="comment">% the control "up" for.</span>
+            <span class="keyword">if</span> isa(x_initial , <span class="string">'state'</span>), x_initial = x_initial.val; <span class="keyword">end</span>
+            <span class="keyword">if</span> isa(x_final , <span class="string">'state'</span>), x_final = x_final.val; <span class="keyword">end</span>
+            <span class="comment">% minimum turn radius resutls from dividing the minimum linear</span>
+            <span class="comment">% velocity to maximum angular velocity. However, here we assume</span>
+            <span class="comment">% that the linear velocity is constant.</span>
+            radius = Unicycle_robot.turn_radius_min;
+            initial_circle_center = [radius*cos(x_initial(3)-pi/2) ; radius*sin(x_initial(3)-pi/2)] + x_initial(1:2);
+            final_circle_center = [radius*cos(x_final(3)-pi/2) ; radius*sin(x_final(3)-pi/2)] + x_final(1:2);
+            <span class="comment">%             tth = 0:0.1:2*pi+.1;plot(initial_circle_center(1)+radius*cos(tth), initial_circle_center(2)+radius*sin(tth)); %TO DEBUG -  DONT DELETE</span>
+            <span class="comment">%             tth = 0:0.1:2*pi+.1;plot(final_circle_center(1)+radius*cos(tth), final_circle_center(2)+radius*sin(tth)); %TO DEBUG -  DONT DELETE</span>
+            gamma_tangent = atan2( final_circle_center(2) - initial_circle_center(2) , final_circle_center(1) - initial_circle_center(1) ); <span class="comment">% The angle of the tangent line</span>
+
+            gamma_start_of_tangent_line = gamma_tangent + pi/2; <span class="comment">% the angle on which the starting point of the tangent line lies on orbit i.</span>
+            gamma_end_of_tangent_line = gamma_tangent + pi/2; <span class="comment">% the angle on which the ending point of the tangent line lies on orbit i.</span>
+
+            initial_robot_gamma =   x_initial(3) + pi/2; <span class="comment">% Note that this is not robot's heading angle. This says that at which angle robot lies on the circle.</span>
+            final_robot_gamma   =   x_final(3)    + pi/2; <span class="comment">% Note that this is not robot's heading angle. This says that at which angle robot lies on the circle.</span>
+
+            only_forward_motion = 0;
+
+            <span class="comment">% Turn part on the first circle</span>
+            entire_th_on_initial_circle = delta_theta_turn(initial_robot_gamma, gamma_start_of_tangent_line, <span class="string">'cw'</span>); <span class="comment">% NOTE: this must be a negative number as we turn CLOCKWISE.</span>
+            <span class="keyword">if</span> only_forward_motion  ||  entire_th_on_initial_circle &gt;= -pi <span class="comment">% keep going forward, where heading direction points to the "clockwise" direction.</span>
+                delta_theta_on_turns = - Unicycle_robot.angular_velocity_max * Unicycle_robot.dt ; <span class="comment">%VERY IMPORTANT: since we want to traverse the circles clockwise, the angular velocity has to be NEGATIVE.</span>
+                kf_pre_rational = entire_th_on_initial_circle/delta_theta_on_turns;
+                kf_pre = ceil(kf_pre_rational);
+                V_pre = Unicycle_robot.linear_velocity_min_on_orbit * [ones(1,kf_pre-1) , kf_pre_rational-floor(kf_pre_rational)]; <span class="comment">% In the forward motion, the linear velocity has to be positive</span>
+                omega_pre = -Unicycle_robot.angular_velocity_max * [ones(1,kf_pre-1) , kf_pre_rational-floor(kf_pre_rational)];  <span class="comment">%VERY IMPORTANT: since we want to traverse the circles clockwise, the angular velocity has to be NEGATIVE.</span>
+            <span class="keyword">else</span>  <span class="comment">% going backwards, where the heading direction still points to the "clockwise" direction.</span>
+                entire_th_on_initial_circle = 2*pi + entire_th_on_initial_circle; <span class="comment">% Note that the "entire_th_on_final_circle" before summation is negative, and after summation gets positive.</span>
+                delta_theta_on_turns = Unicycle_robot.angular_velocity_max * Unicycle_robot.dt ; <span class="comment">%VERY IMPORTANT: since we want to traverse the circles clockwise BUT BACKWARDS, the angular velocity has to be POSITIVE.</span>
+                kf_pre_rational = entire_th_on_initial_circle/delta_theta_on_turns;
+                kf_pre = ceil(kf_pre_rational);
+                V_pre = - Unicycle_robot.linear_velocity_min_on_orbit * [ones(1,kf_pre-1) , kf_pre_rational-floor(kf_pre_rational)]; <span class="comment">% In backwards motion, the linear velocity has to be negative</span>
+                omega_pre = Unicycle_robot.angular_velocity_max * [ones(1,kf_pre-1) , kf_pre_rational-floor(kf_pre_rational)];  <span class="comment">%VERY IMPORTANT: since we want to traverse the circles clockwise BUT BACKWARDS, the angular velocity has to be POSITIVE.</span>
+            <span class="keyword">end</span>
+            u_pre = [V_pre ; omega_pre];
+            w_zero = zeros(Unicycle_robot.wDim,1); <span class="comment">% no noise</span>
+            x_pre(:,1) = x_initial;
+            <span class="keyword">for</span> k=1:kf_pre
+                x_pre(:,k+1) = MotionModel_class.f_discrete(x_pre(:,k),u_pre(:,k),w_zero);
+                tmp = state(x_pre(:,k+1)); <span class="keyword">if</span> tmp.is_constraint_violated, nominal_traj =[]; <span class="keyword">return</span>; <span class="keyword">end</span>
+                <span class="comment">%                 tmp.draw(); % FOR DEBUGGING</span>
+            <span class="keyword">end</span>
+            <span class="comment">% Line part</span>
+            tanget_line_length = norm ( final_circle_center - initial_circle_center ) ;
+            step_length = Unicycle_robot.linear_velocity_max * Unicycle_robot.dt;
+            kf_line_rational = tanget_line_length/step_length;
+            kf_line = ceil(kf_line_rational);
+            V_line = Unicycle_robot.linear_velocity_max * [ones(1,kf_line-1) , kf_line_rational-floor(kf_line_rational)];
+            omega_line = zeros(1,kf_line);
+            u_line = [V_line;omega_line];
+            x_line(:,1) = x_pre(:,kf_pre+1);
+            <span class="keyword">for</span> k=1:kf_line
+                x_line(:,k+1) = MotionModel_class.f_discrete(x_line(:,k),u_line(:,k),w_zero);
+                tmp = state(x_line(:,k+1)); <span class="keyword">if</span> tmp.is_constraint_violated, nominal_traj =[]; <span class="keyword">return</span>; <span class="keyword">end</span>
+                <span class="comment">%                 tmp.draw(); % FOR DEBUGGING</span>
+            <span class="keyword">end</span>
+            <span class="comment">% Turn part on the final circle</span>
+            entire_th_on_final_circle = delta_theta_turn(gamma_end_of_tangent_line, final_robot_gamma, <span class="string">'cw'</span>); <span class="comment">% NOTE: this must be a negative number as we turn CLOCKWISE.</span>
+            <span class="keyword">if</span> only_forward_motion  ||  entire_th_on_final_circle &gt;= -pi
+                delta_theta_on_turns = - Unicycle_robot.angular_velocity_max * Unicycle_robot.dt ; <span class="comment">%VERY IMPORTANT: since we want to traverse the circles clockwise, the angular velocity has to be NEGATIVE.</span>
+                kf_post_rational = entire_th_on_final_circle/delta_theta_on_turns;
+                kf_post = ceil(kf_post_rational);
+                V_post = Unicycle_robot.linear_velocity_min_on_orbit * [ones(1,kf_post-1) , kf_post_rational-floor(kf_post_rational)]; <span class="comment">% In the forward motion, the linear velocity has to be positive</span>
+                omega_post = - Unicycle_robot.angular_velocity_max * [ones(1,kf_post-1) , kf_post_rational-floor(kf_post_rational)];  <span class="comment">%VERY IMPORTANT: since we want to traverse the circles clockwise, the angular velocity has to be NEGATIVE.</span>
+            <span class="keyword">else</span>
+                entire_th_on_final_circle = 2*pi + entire_th_on_final_circle; <span class="comment">% Note that the "entire_th_on_final_circle" before summation is negative, and after summation gets positive.</span>
+                delta_theta_on_turns = Unicycle_robot.angular_velocity_max * Unicycle_robot.dt ; <span class="comment">%VERY IMPORTANT: since we want to traverse the circles clockwise BUT BACKWARDS, the angular velocity has to be POSITIVE.</span>
+                kf_post_rational = entire_th_on_final_circle/delta_theta_on_turns;
+                kf_post = ceil(kf_post_rational);
+                V_post = - Unicycle_robot.linear_velocity_min_on_orbit * [ones(1,kf_post-1) , kf_post_rational-floor(kf_post_rational)]; <span class="comment">% In backwards motion, the linear velocity has to be negative</span>
+                omega_post = Unicycle_robot.angular_velocity_max * [ones(1,kf_post-1) , kf_post_rational-floor(kf_post_rational)];  <span class="comment">%VERY IMPORTANT: since we want to traverse the circles clockwise BUT BACKWARDS, the angular velocity has to be POSITIVE.</span>
+            <span class="keyword">end</span>
+            u_post = [V_post ; omega_post];
+            x_post(:,1) = x_line(:,kf_line+1);
+            <span class="keyword">for</span> k=1:kf_post
+                x_post(:,k+1) = MotionModel_class.f_discrete(x_post(:,k),u_post(:,k),w_zero);
+                tmp = state(x_post(:,k+1)); <span class="keyword">if</span> tmp.is_constraint_violated, nominal_traj =[]; <span class="keyword">return</span>; <span class="keyword">end</span>
+                <span class="comment">%                 tmp.draw(); % FOR DEBUGGING</span>
+            <span class="keyword">end</span>
+
+            nominal_traj.x = [x_pre(:,1:kf_pre) , x_line(:,1:kf_line) , x_post(:,1:kf_post+1)]; <span class="comment">% This line is written very carefully. So, dont worry about its correctness!</span>
+            nominal_traj.u = [u_pre(:,1:kf_pre) , u_line(:,1:kf_line) , u_post(:,1:kf_post)]; <span class="comment">% This line is written very carefully. So, dont worry about its correctness!</span>
+
+        <span class="keyword">end</span>
+</pre><h2>Computing planned open-loop deterministic state trajectory (or nominal trajectory) for unicycle model.<a name="15"></a></h2><p>In computing the planned trajectory, system is assumed to be deterministic, so the noise is zero.</p><p><img src="Unicycle_robot_eq28998.png" alt="$$ x^p_{K+1} = f (x^p_{K}, u^p_k, 0 ) $$"></p><pre class="codeinput">        <span class="keyword">function</span> x_p = compute_planned_traj(x_initial,u_p,kf)
+            <span class="comment">% noiselss motion</span>
+            x_p = zeros(state.dim,kf+1);
+            x_p(:,1) = x_initial;
+            <span class="keyword">for</span> k = 1:kf
+                x_p(:,k+1) = Unicycle_robot.f_discrete(x_p(:,k),u_p(:,k),zeros(Unicycle_robot.wDim,1));
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+</pre><h2>Sample a valid orbit (periodic trajectory)<a name="16"></a></h2><pre class="codeinput">        <span class="keyword">function</span> orbit = sample_a_valid_orbit()
+            [x_temp,y_temp]=ginput(1);
+            <span class="keyword">if</span> isempty(x_temp)
+                orbit = [];
+                <span class="keyword">return</span>
+            <span class="keyword">else</span>
+                orbit_center = [x_temp;y_temp];
+                orbit = Unicycle_robot.generate_orbit(orbit_center);
+                orbit = Unicycle_robot.draw_orbit(orbit);
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+</pre><h2>Construct an orbit<a name="17"></a></h2><pre class="codeinput">        <span class="keyword">function</span> orbit = generate_orbit(orbit_center)
+            <span class="comment">% minimum orbit radius resutls from dividing the minimum linear</span>
+            <span class="comment">% velocity to maximum angular velocity. However, here we assume</span>
+            <span class="comment">% that the linear velocity is constant.</span>
+            orbit.radius = Unicycle_robot.turn_radius_min;
+            orbit_length_meter = 2*pi*orbit.radius;
+            orbit_length_time_continuous = orbit_length_meter/Unicycle_robot.linear_velocity_min_on_orbit;
+            T_rational = orbit_length_time_continuous/Unicycle_robot.dt;
+            T = ceil(T_rational);
+            orbit.period = T;
+            orbit.center = orbit_center;
+
+            <span class="comment">% defining controls on the orbit</span>
+            V_p = Unicycle_robot.linear_velocity_min_on_orbit * [ones(1,T-1) , T_rational-floor(T_rational)]; <span class="comment">% we traverse the orbit with minimum linear velocity</span>
+            omega_p = Unicycle_robot.angular_velocity_max * [ones(1,T-1) , T_rational-floor(T_rational)]; <span class="comment">% we traverse the orbit with maximum angular velocity</span>
+            u_p = [V_p;omega_p];
+            w_zero = zeros(Unicycle_robot.wDim,1); <span class="comment">% no noise</span>
+
+            <span class="comment">% defining state steps on the orbit</span>
+            x_p(:,1) = [orbit_center - [0;orbit.radius] ; 0*pi/180]; <span class="comment">% initial x</span>
+            <span class="keyword">for</span> k=1:T
+                x_p(:,k+1) = MotionModel_class.f_discrete(x_p(:,k),u_p(:,k),w_zero);
+            <span class="keyword">end</span>
+            orbit.x = x_p(:,1:T);  <span class="comment">% "x_p" is of length T+1, but "x_p(:,T+1)" is equal to "x_p(:,1)"</span>
+            orbit.u = u_p;  <span class="comment">% "u_p" is of length T.</span>
+            orbit.plot_handle = [];
+        <span class="keyword">end</span>
+</pre><h2>Draw an orbit<a name="18"></a></h2><pre class="codeinput">        <span class="keyword">function</span> orbit = draw_orbit(orbit,varargin)
+            <span class="comment">% This function draws the orbit.</span>
+            <span class="comment">% default values</span>
+            orbit_color = <span class="string">'b'</span>; <span class="comment">% Default value for "OrbitTextColor" property. % User-provided value for "OrbitTextColor" property.</span>
+            orbit_width = 2; <span class="comment">% User-provided value for "orbit_width" property. % User-provided value for shifting the text a little bit to the left. % for some reason MATLAB shifts the starting point of the text a little bit to the right. So, here we return it back.</span>
+            robot_shape = <span class="string">'triangle'</span>; <span class="comment">% The shape of robot (to draw trajectories and to show direction of edges and orbits)</span>
+            robot_size = 1; <span class="comment">% Robot size on orbits (to draw trajectories and to show direction of edges and orbits)</span>
+            orbit_trajectory_flag = 0; <span class="comment">% Make it one if you want to see the orbit trajectories. Zero, otherwise.</span>
+            text_size = 12;
+            text_color = <span class="string">'b'</span>;
+            text_shift = 0.8;
+            orbit_text = [];
+
+            <span class="comment">% parsing the varargin</span>
+            <span class="keyword">if</span> ~isempty(varargin)
+                <span class="keyword">for</span> i = 1 : 2 : length(varargin)
+                    <span class="keyword">switch</span> lower(varargin{i})
+                        <span class="keyword">case</span> lower(<span class="string">'RobotSize'</span>)
+                            robot_size = varargin{i+1};
+                        <span class="keyword">case</span> lower(<span class="string">'OrbitWidth'</span>)
+                            orbit_width = varargin{i+1};
+                        <span class="keyword">case</span> lower(<span class="string">'OrbitColor'</span>)
+                            orbit_color = varargin{i+1};
+                        <span class="keyword">case</span> lower(<span class="string">'OrbitText'</span>)
+                            orbit_text = varargin{i+1};
+                    <span class="keyword">end</span>
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+            <span class="comment">% start drawing</span>
+            <span class="keyword">if</span> orbit_trajectory_flag == 1
+                orbit.plot_handle = [];
+                <span class="keyword">for</span> k=1:orbit.period
+                    Xstate = state(orbit.x(:,k));
+                    Xstate = Xstate.draw(<span class="string">'RobotShape'</span>,robot_shape,<span class="string">'robotsize'</span>,robot_size);
+                    orbit.plot_handle = [orbit.plot_handle,Xstate.head_handle,Xstate.text_handle,Xstate.tria_handle];
+                <span class="keyword">end</span>
+                tmp = plot(orbit.x(1,:) , orbit.x(2,:),orbit_color);
+                orbit.plot_handle = [orbit.plot_handle,tmp];
+            <span class="keyword">else</span>
+                orbit.plot_handle = [];
+                th_orbit_draw = [0:0.1:2*pi , 2*pi];
+                x_orbit_draw = orbit.center(1) + orbit.radius*cos(th_orbit_draw);
+                y_orbit_draw = orbit.center(2) + orbit.radius*sin(th_orbit_draw);
+                tmp_h = plot(x_orbit_draw,y_orbit_draw,<span class="string">'lineWidth'</span>,orbit_width);
+                Xstate = state(orbit.x(:,1));
+                Xstate = Xstate.draw(<span class="string">'RobotShape'</span>,robot_shape,<span class="string">'robotsize'</span>,robot_size);
+                orbit.plot_handle = [orbit.plot_handle,tmp_h,Xstate.head_handle,Xstate.text_handle,Xstate.tria_handle];
+            <span class="keyword">end</span>
+
+            <span class="keyword">if</span> ~isempty(orbit_text)
+                text_pos = orbit.center;
+                text_pos(1) = text_pos(1) - text_shift; <span class="comment">% for some reason MATLAB shifts the starting point of the text a little bit to the right. So, here we return it back.</span>
+                tmp_handle = text( text_pos(1), text_pos(2), orbit_text, <span class="string">'fontsize'</span>, text_size, <span class="string">'color'</span>, text_color);
+                orbit.plot_handle = [orbit.plot_handle,tmp_handle];
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+</pre><h2>Generate open-loop Orbit-to-Orbit trajectory<a name="19"></a></h2><pre class="codeinput">        <span class="keyword">function</span> nominal_traj = generate_open_loop_orbit2orbit_traj(start_orbit, end_orbit) <span class="comment">% generates open-loop trajectories between two start and end orbits</span>
+            <span class="comment">% check if the both orbits are turning in the same</span>
+            <span class="comment">% direction or not.</span>
+            direction_start_orbit = sign(start_orbit.u(1,1))*sign(start_orbit.u(2,1));
+            direction_end_orbit = sign(end_orbit.u(1,1))*sign(end_orbit.u(2,1));
+            <span class="comment">% finding the connecting edge between orbits.</span>
+            <span class="keyword">if</span> direction_start_orbit == direction_end_orbit <span class="comment">% both orbits turn in a same direction</span>
+                gamma = atan2( end_orbit.center(2) - start_orbit.center(2) , end_orbit.center(1) - start_orbit.center(1) );
+                temp_edge_start = start_orbit.radius * [ cos(gamma-pi/2) ; sin(gamma-pi/2) ] + start_orbit.center;
+                temp_edge_end = end_orbit.radius* [ cos(gamma-pi/2) ; sin(gamma-pi/2) ] + end_orbit.center;
+            <span class="keyword">else</span>
+                error(<span class="string">'different directions have not been implemented in PNPRM yet.'</span>)
+            <span class="keyword">end</span>
+            temp_traj.x(:,1) = temp_edge_start;  temp_traj.x(:,2) = temp_edge_end;  <span class="comment">% we generate this trajectory (only composed of start and end points) to check the collision probabilities before generating the edges.</span>
+            collision = Unicycle_robot.is_constraints_violated(temp_traj);  <span class="comment">% checking intersection with obstacles</span>
+            <span class="keyword">if</span> collision == 1
+                nominal_traj = [];
+                <span class="keyword">return</span>
+            <span class="keyword">else</span>
+                <span class="comment">% construction edge trajectory</span>
+                tmp_traj_start = [temp_edge_start ; gamma ];
+                V_p = start_orbit.u(1,1);
+                step_length = V_p * Unicycle_robot.dt;
+                edge_length = norm ( end_orbit.center - start_orbit.center ) ;
+                edge_steps = floor(edge_length/step_length);
+
+                omega_p = 0;
+                u_p = [V_p;omega_p];
+                w_zero = zeros(MotionModel_class.wDim , 1); <span class="comment">% no noise</span>
+
+                nominal_traj.x(:,1) = tmp_traj_start;
+                <span class="keyword">for</span> k =1:edge_steps
+                    nominal_traj.x(:,k+1) = MotionModel_class.f_discrete(nominal_traj.x(:,k), u_p, w_zero);
+                <span class="keyword">end</span>
+                nominal_traj.u(:,1:edge_steps) = repmat(u_p,1,edge_steps);
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+</pre><h2>check if the trajectory is collision-free or not<a name="20"></a></h2><pre class="codeinput">        <span class="keyword">function</span> YesNo = is_constraints_violated(open_loop_traj) <span class="comment">% this function checks if the "open_loop_traj" violates any constraints or not. For example it checks collision with obstacles.</span>
+            <span class="comment">% In this class the open loop trajectories are indeed straight</span>
+            <span class="comment">% lines. So, we use following simplified procedure to check the</span>
+            <span class="comment">% collisions.</span>
+            error(<span class="string">'This function is obsolete. Instead, we have the "generate_VALID_open_loop_point2point_traj" function'</span>)
+            YesNo = 0;
+            Obst = obstacles_class.obst;
+            edge_start = open_loop_traj.x(1:2 , 1);
+            edge_end = open_loop_traj.x(1:2 , end);
+
+            N_obst = size(Obst,2);
+            <span class="keyword">for</span> ib=1:N_obst
+                X_obs=[Obst{ib}(:,1);Obst{ib}(1,1)];
+                Y_obs=[Obst{ib}(:,2);Obst{ib}(1,2)];
+                X_edge=[edge_start(1);edge_end(1)];
+                Y_edge=[edge_start(2);edge_end(2)];
+                [x_inters,~] = polyxpoly(X_obs,Y_obs,X_edge,Y_edge);
+                <span class="keyword">if</span> ~isempty(x_inters)
+                    YesNo=1;
+                    <span class="keyword">return</span>
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+
+        <span class="keyword">end</span>
+</pre><h2>Draw nominal trajectories<a name="21"></a></h2><pre class="codeinput">        <span class="keyword">function</span> traj_plot_handle = draw_nominal_traj(nominal_traj, traj_flag)
+            traj_plot_handle = [];
+            <span class="keyword">if</span> traj_flag == 1
+                <span class="keyword">for</span> k = 1 : size(nominal_traj.x , 2)
+                    tmp_Xstate = state (nominal_traj.x(:,k) );
+                    tmp_Xstate.draw(<span class="string">'RobotShape'</span>,<span class="string">'triangle'</span>,<span class="string">'robotsize'</span>,1);<span class="comment">%,'TriaColor',color(cycles));</span>
+                    <span class="comment">%traj_plot_handle(k:k+2) =</span>
+                    <span class="comment">%[tmp_Xstate.head_handle,tmp_Xstate.text_handle,tmp_Xstate.tria_handle];</span>
+                <span class="keyword">end</span>
+            <span class="keyword">else</span>
+                tmp_handle = plot(nominal_traj.x(1,:) , nominal_traj.x(2,:));
+                traj_plot_handle = [traj_plot_handle , tmp_handle];
+                len = size( nominal_traj.x , 2);
+                tmp_Xstate = state( nominal_traj.x(:,floor(len/2)) ); <span class="comment">% to plot the direction of the line.</span>
+<span class="comment">%                 tmp_Xstate = tmp_Xstate.draw('RobotShape','triangle','robotsize',2);</span>
+<span class="comment">%                 traj_plot_handle = [traj_plot_handle , tmp_Xstate.plot_handle , tmp_Xstate.head_handle , tmp_Xstate.tria_handle , tmp_Xstate.text_handle ];</span>
+                drawnow
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+</pre><h2>Draw orbit neighborhood<a name="22"></a></h2><pre class="codeinput">        <span class="keyword">function</span> plot_handle = draw_orbit_neighborhood(orbit, scale)
+            tmp_th = 0:0.1:2*pi;
+            x = orbit.center(1);
+            y = orbit.center(2);
+            plot_handle = plot(scale*cos(tmp_th) + x , scale*sin(tmp_th) + y, <span class="string">'--'</span>);
+        <span class="keyword">end</span>
+</pre><pre class="codeinput">    <span class="keyword">end</span>
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><pre class="codeoutput">Undefined variable "state" or class "state.dim".</pre><h2>Generating Control-dependent and independent noises<a name="25"></a></h2><p><img src="Unicycle_robot_eq84585.png" alt="$$ U'_n \sim \mathcal{N}(0_{2\times 1} , I_{2\times 2}), ~~~ U_n =&#xA;(P^{U_n})^{1/2}U'_n\sim\mathcal{N}(0_{2\times 1} , P^{Un}),~~~W^g \sim \mathcal{N}(0_{3\times 1} , P^{W^g})$$"></p><p>The reason we do not use "mvnrnd" to generate <img src="Unicycle_robot_eq38783.png" alt="$U_n$"> is the speed. The way we do here is much faster than using "mvnrnd".</p><pre class="codeinput"><span class="keyword">function</span> [Un,Wg] = generate_control_and_indep_process_noise(U)
+<span class="comment">% generate Un</span>
+indep_part_of_Un = randn(Unicycle_robot.ctDim,1);
+P_Un = control_noise_covariance(U);
+Un = indep_part_of_Un.*diag(P_Un.^(1/2));
+<span class="comment">% generate Wg</span>
+Wg = mvnrnd(zeros(Unicycle_robot.stDim,1),Unicycle_robot.P_Wg)';
+<span class="keyword">end</span>
+</pre><h2>Generating Control-dependent Noise Covariance<a name="26"></a></h2><p><img src="Unicycle_robot_eq27216.png" alt="$$ P^{U_n} = \left(   \begin{array}{cc}     (\eta_V V + \sigma_{b_V})^2 &amp; 0\\     0 &amp; (\eta_{\omega} \omega + \sigma_{b_{\omega}})^2\\   \end{array}\right) $$">,</p><p>where, <img src="Unicycle_robot_eq41900.png" alt="$\eta_u=(\eta_V,\eta_{\omega})^T$"> and <img src="Unicycle_robot_eq29239.png" alt="$\sigma_{b_u}=(\sigma_{b_V},\sigma_{b_{\omega}})^T$">.</p><pre class="codeinput"><span class="keyword">function</span> P_Un = control_noise_covariance(U)
+u_std=(Unicycle_robot.eta_u).*U+(Unicycle_robot.sigma_b_u);
+P_Un=diag(u_std.^2);
+<span class="keyword">end</span>
+</pre><h2>Generating deterministic open loop controls (nominal controls)<a name="27"></a></h2><p>I think this function should go out of this class maybe.</p><pre class="codeinput"><span class="keyword">function</span> [u_p,kf] = compute_planned_control_unicycle(X_initial,X_final)
+<span class="comment">% inputs</span>
+x_c=[X_initial(1),X_final(1)];
+y_c=[X_initial(2),X_final(2)];
+dt=user_data_class.par.motion_model_parameters.dt;
+omega_path=user_data_class.par.motion_model_parameters.omega_const_path; <span class="comment">% constant rotational velocity during turnings</span>
+V_path=user_data_class.par.motion_model_parameters.V_const_path; <span class="comment">% constant translational velocity during straight movements</span>
+<span class="comment">%stDim=Unicycle_robot.stDim;</span>
+ctDim=Unicycle_robot.ctDim;
+<span class="comment">% preallocation</span>
+th_p=zeros(1,length(x_c));
+delta_th_p=zeros(1,length(x_c));
+rotation_steps=zeros(length(x_c)-1,1);
+delta_disp=zeros(length(x_c)-1,1);
+translation_steps=zeros(length(x_c)-1,1);
+total_num_steps=0;
+
+<span class="comment">% Dividing the motion to pure translations and rotations</span>
+th_initial=X_initial(3);
+<span class="keyword">for</span> i=1:length(x_c)-1
+    <span class="comment">% rotations</span>
+    th_p(i)=atan2((y_c(i+1)-y_c(i)),(x_c(i+1)-x_c(i)));
+    <span class="keyword">if</span> i&gt;1, delta_th_p(i)=th_p(i)-th_p(i-1); <span class="keyword">else</span> delta_th_p(i)=th_p(i)-th_initial; <span class="keyword">end</span>;
+    rotation_steps(i)=abs(delta_th_p(i)/(omega_path*dt));
+    <span class="comment">%translations</span>
+    delta_disp(i)=sqrt(    (y_c(i+1)-y_c(i))^2+(x_c(i+1)-x_c(i))^2    );
+    translation_steps(i)=abs(delta_disp(i)/(V_path*dt));
+    total_num_steps=total_num_steps+ceil(rotation_steps(i))+ceil(translation_steps(i));
+<span class="keyword">end</span>
+kf=total_num_steps;
+<span class="comment">% Computing Velocities along the path</span>
+<span class="comment">% omega_path=zeros(1,kf);</span>
+<span class="comment">% v_path=zeros(1,kf);</span>
+u_p=nan(ctDim,kf+1);
+
+start_ind_w=1;
+<span class="comment">% end_ind_w=start_ind_w+ceil(rotation_steps(1))-1;</span>
+end_ind_w=start_ind_w+floor(rotation_steps(1));
+<span class="keyword">for</span> i=1:length(x_c)-1
+    <span class="comment">%Rotation</span>
+    <span class="keyword">if</span> end_ind_w~=0
+        u_const = [ 0 ; omega_path*sign(delta_th_p(i)) ];
+        u_p(:,start_ind_w:end_ind_w-1)=repmat(u_const,1,floor(rotation_steps(i)));
+        u_const_end=u_const * (rotation_steps(i)-floor(rotation_steps(i)));
+        u_p(:,end_ind_w)=u_const_end;
+    <span class="keyword">end</span>
+    <span class="comment">%Translations</span>
+    u_const = [ V_path ; 0 ];
+    u_p(:,end_ind_w+1:end_ind_w+ceil(translation_steps(i))-1)=repmat(u_const,1,floor(translation_steps(i)));
+    u_const_end=u_const*(translation_steps(i)-floor(translation_steps(i)));
+    u_p(:,end_ind_w+ceil(translation_steps(i)))=u_const_end;
+    <span class="comment">%Preparing for the next path segment</span>
+    <span class="keyword">if</span>  i~=length(x_c)-1    <span class="comment">%% This "if" is just for avoiding the error massege that appears due to non-existence of rotation_steps(length(x_c))</span>
+        start_ind_w=start_ind_w+ceil(rotation_steps(i))+ceil(translation_steps(i));
+        end_ind_w=start_ind_w+ceil(rotation_steps(i+1))-1;
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+<span class="comment">% u_p=[x_dot;theta_dot];</span>
+<span class="comment">% u_p=[u_p,[nan;nan]];</span>
+<span class="keyword">end</span>
+</pre><h2>Generating deterministic open loop controls with bounded curvature (nominal controls)<a name="28"></a></h2><p>I think this function should go out of this class maybe.</p><pre class="codeinput"><span class="keyword">function</span> [u_p,kf] = compute_planned_control_unicycle_bounded_curvature(X_initial,X_final)
+<span class="comment">% inputs</span>
+x_c=[X_initial(1),X_final(1)];
+y_c=[X_initial(2),X_final(2)];
+dt=user_data_class.par.motion_model_parameters.dt;
+omega_path=user_data_class.par.motion_model_parameters.omega_const_path; <span class="comment">% constant rotational velocity during turnings</span>
+V_path=user_data_class.par.motion_model_parameters.V_const_path; <span class="comment">% constant translational velocity during straight movements</span>
+<span class="comment">%stDim=Unicycle_robot.stDim;</span>
+ctDim=Unicycle_robot.ctDim;
+<span class="comment">% preallocation</span>
+th_p=zeros(1,length(x_c));
+delta_th_p=zeros(1,length(x_c));
+rotation_steps=zeros(length(x_c)-1,1);
+delta_disp=zeros(length(x_c)-1,1);
+translation_steps=zeros(length(x_c)-1,1);
+total_num_steps=0;
+
+<span class="comment">% Dividing the motion to pure translations and rotations</span>
+th_initial=X_initial(3);
+<span class="keyword">for</span> i=1:length(x_c)-1
+    <span class="comment">% rotations</span>
+    th_p(i)=atan2((y_c(i+1)-y_c(i)),(x_c(i+1)-x_c(i)));
+    <span class="keyword">if</span> i&gt;1, delta_th_p(i)=th_p(i)-th_p(i-1); <span class="keyword">else</span> delta_th_p(i)=th_p(i)-th_initial; <span class="keyword">end</span>;
+    rotation_steps(i)=abs(delta_th_p(i)/(omega_path*dt));
+    <span class="comment">%translations</span>
+    delta_disp(i)=sqrt(    (y_c(i+1)-y_c(i))^2+(x_c(i+1)-x_c(i))^2    );
+    translation_steps(i)=abs(delta_disp(i)/(V_path*dt));
+    total_num_steps=total_num_steps+ceil(rotation_steps(i))+ceil(translation_steps(i));
+<span class="keyword">end</span>
+kf=total_num_steps;
+<span class="comment">% Computing Velocities along the path</span>
+<span class="comment">% omega_path=zeros(1,kf);</span>
+<span class="comment">% v_path=zeros(1,kf);</span>
+u_p=nan(ctDim,kf+1);
+
+start_ind_w=1;
+<span class="comment">% end_ind_w=start_ind_w+ceil(rotation_steps(1))-1;</span>
+end_ind_w=start_ind_w+floor(rotation_steps(1));
+<span class="keyword">for</span> i=1:length(x_c)-1
+    <span class="comment">%Rotation</span>
+    <span class="keyword">if</span> end_ind_w~=0
+        u_const = [ 0 ; omega_path*sign(delta_th_p(i)) ];
+        u_p(:,start_ind_w:end_ind_w-1)=repmat(u_const,1,floor(rotation_steps(i)));
+        u_const_end=u_const * (rotation_steps(i)-floor(rotation_steps(i)));
+        u_p(:,end_ind_w)=u_const_end;
+    <span class="keyword">end</span>
+    <span class="comment">%Translations</span>
+    u_const = [ V_path ; 0 ];
+    u_p(:,end_ind_w+1:end_ind_w+ceil(translation_steps(i))-1)=repmat(u_const,1,floor(translation_steps(i)));
+    u_const_end=u_const*(translation_steps(i)-floor(translation_steps(i)));
+    u_p(:,end_ind_w+ceil(translation_steps(i)))=u_const_end;
+    <span class="comment">%Preparing for the next path segment</span>
+    <span class="keyword">if</span>  i~=length(x_c)-1    <span class="comment">%% This "if" is just for avoiding the error massege that appears due to non-existence of rotation_steps(length(x_c))</span>
+        start_ind_w=start_ind_w+ceil(rotation_steps(i))+ceil(translation_steps(i));
+        end_ind_w=start_ind_w+ceil(rotation_steps(i+1))-1;
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+<span class="comment">% u_p=[x_dot;theta_dot];</span>
+<span class="comment">% u_p=[u_p,[nan;nan]];</span>
+<span class="keyword">end</span>
+</pre><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+%% Class Definition
+classdef Unicycle_robot < handle
+    %==============================  UNICYCLE  MOTION MODEL =========================================
+    % Note that because the class is defined as a handle class, the
+    % properties must be defined such that they are do not change from an
+    % object to another one.
+    
+    %% Properties
+    properties (Constant = true)
+        stDim = state.dim; % state dimension
+        ctDim = 2;  % control vector dimension
+        wDim = 5;   % Process noise (W) dimension  % For the generality we also consider the additive noise on kinematics equation (3 dimension), but it most probably will set to zero. The main noise is a 2 dimensional noise which is added to the controls.
+        dt = user_data_class.par.motion_model_parameters.dt;
+        base_length = user_data_class.par.motion_model_parameters.base_length;  % distance between robot's rear wheels.
+        sigma_b_u = user_data_class.par.motion_model_parameters.sigma_b_u_unicycle;
+        eta_u = user_data_class.par.motion_model_parameters.eta_u_unicycle;
+        P_Wg = user_data_class.par.motion_model_parameters.P_Wg;
+    end
+    
+    properties (Constant = true) % orbit-related properties
+        turn_radius_min = 1.5; % indeed we need to define the minimum linear velocity in turnings (on orbits) and then find the minimum radius accordingly. But, we picked the more intuitive way.
+        angular_velocity_max = 140*pi/180; % degree per second (converted to radian per second)
+        linear_velocity_min_on_orbit = Unicycle_robot.turn_radius_min*Unicycle_robot.angular_velocity_max; % note that on the straight line the minimum velocity can go to zero. But, in turnings (on orbit) the linear velocity cannot fall below this value.
+        linear_velocity_max = 15;
+    end
+    
+    %% Methods
+    methods (Static = true)
+        %% Continuous dynamics
+        function x_dot = f_contin(x,u,w) %#ok<STOUT,INUSD>
+            % This is not needed yet in unicycle model.
+        end
+        %% Discrete dynamics
+        % $$ x_k = x_{k-1}+ [V_k\cos\theta_k, V_k\sin\theta_k,
+        % \omega_k]^T\delta t + [V^n_k\cos\theta_k, V^n_k\sin\theta_k,
+        % \omega^n_k]^T\sqrt{\delta t} + W^g\sqrt{\delta t}$$
+        function x_next = f_discrete(x,u,w)
+            if length(u) ~= 2, error('SFMP: In this unicycle model, the dimension of control has to be 2'), end
+            Un = w(1:Unicycle_robot.ctDim); % The size of Un may be different from ctDim in some other model.
+            Wg = w(Unicycle_robot.ctDim+1 : Unicycle_robot.wDim); % The size of Wg may be different from stDim in some other model.
+            c = cos(x(3));
+            s = sin(x(3));
+            d_t = Unicycle_robot.dt;
+            x_next = x + [u(1)*c ; u(1)*s ; u(2)]*d_t  +  [Un(1)*c ; Un(1)*s ; Un(2)]*sqrt(d_t)  +  Wg*sqrt(d_t);
+        end
+        %% Matrix A: State Jacobian in Discrete dynamics
+        %
+        % $$ \mathbf{A} = \frac{\partial x_k}{\partial x_{k-1}} = I  
+        %    + \left(
+        %   \begin{array}{ccc}
+        %     0 & 0 & -V_k^p\sin\theta^p\\
+        %     0 & 0 &  V_k^p\cos\theta^p\\
+        %     0 & 0 & 0
+        %   \end{array}\right) \delta t
+        %    + \left(
+        %   \begin{array}{ccc}
+        %     0 & 0 & -V_k^n\sin\theta^p\\
+        %     0 & 0 &  V_k^n\cos\theta^p\\
+        %     0 & 0 & 0
+        %   \end{array}\right)\sqrt{\delta t} $$ 
+        %
+        % Note that in most cases, we assume that we do not have access to
+        % the exact value of noises. Thus, we input $\mathbf{E}(V^n)$, which is zero to
+        % compute the linearization matrices.
+        function A = df_dx_func(x,u,w)
+             if (length(u) ~= 2 || length(w) ~= 5), error('SFMP: In this unicycle model, the dimension of control has to be 2 and noise has to be 5'), end
+            Un = w(1:Unicycle_robot.ctDim); % The size of Un may be different from ctDim in some other model.
+            %   Wg = w(Unicycle_robot.ctDim+1 : Unicycle_robot.wDim);
+            %   % The size of Wg may be different from stDim in some other
+            %   model.  In this Jacobian "Wg" does not appear.
+            c = cos(x(3));
+            s = sin(x(3));
+            d_t = Unicycle_robot.dt;
+            A = eye(Unicycle_robot.stDim) + [0 0 -u(1)*s; 0 0 u(1)*c; 0 0 0] * d_t + [0 0 -Un(1)*s; 0 0 Un(1)*c; 0 0 0] * sqrt(d_t);
+        end
+        %% Matrix A: State Jacobian in Continuous dynamics
+        function Acontin = df_contin_dx(x,u,w) %#ok<STOUT,INUSD>
+            % Not yet implemented.
+        end
+        %% Matrix B: State to Control Jacobian in Discrete dynamics
+        %
+        % $$ \mathbf{B} = \frac{\partial x_k}{\partial u_{k-1}} = 
+        %    \left(
+        %   \begin{array}{cc}
+        %     \cos\theta^p & 0\\
+        %     \sin\theta^p & 0\\
+        %     0 & 1
+        %   \end{array}\right) \delta t $$
+        %
+        function B = df_du_func(x,u,w) %#ok<INUSD>
+            th = x(3);
+            B = [cos(th) , 0  ;  sin(th) , 0  ;  0 , 1] * Unicycle_robot.dt;
+        end
+        %% Matrix G: State to noise Jacobian in Discrete dynamics
+        %
+        % $$ \mathbf{G} = \frac{\partial x_k}{\partial w_{k-1}} = 
+        %    \left(
+        %   \begin{array}{ccccc}
+        %     \cos\theta^p & 0 & 1 & 0 & 0\\
+        %     \sin\theta^p & 0 & 0 & 1 & 0\\
+        %     0 & 1 & 0 & 0 & 1
+        %   \end{array}\right) \sqrt{\delta t} $$
+        %
+        function G = df_dw_func(x,u,w) %#ok<INUSD>
+            th=x(3);
+            G = [cos(th) , 0 , 1 , 0 , 0 ;  sin(th) , 0 , 0 ,1,0 ;  0 , 1 , 0 ,0,1] * sqrt(Unicycle_robot.dt);
+        end
+        %% Generating process noise
+        % The whole process noise $w$ consists of control-dependent noise $U_n$ and
+        % control-independent noise $W^g$.
+        function w = generate_process_noise(x,u) %#ok<INUSD>
+            [Un,Wg] = generate_control_and_indep_process_noise(u);
+            w = [Un;Wg];
+        end
+        %% Computing process noise covarinace
+        function Q_process_noise = process_noise_cov(x,u) %#ok<INUSD>
+            P_Un = control_noise_covariance(u);
+            Q_process_noise = blkdiag(P_Un,Unicycle_robot.P_Wg);
+        end
+        %% Computing planned open-loop deterministic controls (or nominal controls) for unicycle model.
+        function nominal_traj = generate_open_loop_point2point_traj(x_initial,x_final)
+            % "x_initial" and "x_final" are vectors that indicate the start
+            % and final position of the state trajectory, we are planning
+            % the control "up" for.
+            if isa(x_initial , 'state'), x_initial = x_initial.val; end
+            if isa(x_final , 'state'), x_final = x_final.val; end
+            % minimum turn radius resutls from dividing the minimum linear
+            % velocity to maximum angular velocity. However, here we assume
+            % that the linear velocity is constant.
+            radius = Unicycle_robot.turn_radius_min;
+            initial_circle_center = [radius*cos(x_initial(3)-pi/2) ; radius*sin(x_initial(3)-pi/2)] + x_initial(1:2);
+            final_circle_center = [radius*cos(x_final(3)-pi/2) ; radius*sin(x_final(3)-pi/2)] + x_final(1:2);
+            %             tth = 0:0.1:2*pi+.1;plot(initial_circle_center(1)+radius*cos(tth), initial_circle_center(2)+radius*sin(tth)); %TO DEBUG -  DONT DELETE
+            %             tth = 0:0.1:2*pi+.1;plot(final_circle_center(1)+radius*cos(tth), final_circle_center(2)+radius*sin(tth)); %TO DEBUG -  DONT DELETE
+            gamma_tangent = atan2( final_circle_center(2) - initial_circle_center(2) , final_circle_center(1) - initial_circle_center(1) ); % The angle of the tangent line
+            
+            gamma_start_of_tangent_line = gamma_tangent + pi/2; % the angle on which the starting point of the tangent line lies on orbit i.
+            gamma_end_of_tangent_line = gamma_tangent + pi/2; % the angle on which the ending point of the tangent line lies on orbit i.
+            
+            initial_robot_gamma =   x_initial(3) + pi/2; % Note that this is not robot's heading angle. This says that at which angle robot lies on the circle.
+            final_robot_gamma   =   x_final(3)    + pi/2; % Note that this is not robot's heading angle. This says that at which angle robot lies on the circle.
+            
+            % Turn part on the first circle
+            entire_th_on_initial_circle = delta_theta_turn(initial_robot_gamma, gamma_start_of_tangent_line, 'cw'); % NOTE: this must be a negative number as we turn CLOCKWISE.
+            delta_theta_on_turns = - Unicycle_robot.angular_velocity_max * Unicycle_robot.dt ; %VERY IMPORTANT: since we want to traverse the circles clockwise, the angular velocity has to be NEGATIVE.
+            kf_pre_rational = entire_th_on_initial_circle/delta_theta_on_turns; 
+            kf_pre = ceil(kf_pre_rational);
+            V_pre = Unicycle_robot.linear_velocity_min_on_orbit * [ones(1,kf_pre-1) , kf_pre_rational-floor(kf_pre_rational)];
+            omega_pre = -Unicycle_robot.angular_velocity_max * [ones(1,kf_pre-1) , kf_pre_rational-floor(kf_pre_rational)];  %VERY IMPORTANT: since we want to traverse the circles clockwise, the angular velocity has to be NEGATIVE.
+            u_pre = [V_pre ; omega_pre];
+            w_zero = zeros(Unicycle_robot.wDim,1); % no noise
+            x_pre(:,1) = x_initial;
+            for k=1:kf_pre
+                x_pre(:,k+1) = MotionModel_class.f_discrete(x_pre(:,k),u_pre(:,k),w_zero);
+                %                 tmp = state(x_pre(:,k+1));tmp.draw(); % FOR DEBUGGING
+            end
+            % Line part
+            tanget_line_length = norm ( final_circle_center - initial_circle_center ) ;
+            step_length = Unicycle_robot.linear_velocity_max * Unicycle_robot.dt;
+            kf_line_rational = tanget_line_length/step_length;
+            kf_line = ceil(kf_line_rational);
+            V_line = Unicycle_robot.linear_velocity_max * [ones(1,kf_line-1) , kf_line_rational-floor(kf_line_rational)];
+            omega_line = zeros(1,kf_line);
+            u_line = [V_line;omega_line];
+            x_line(:,1) = x_pre(:,kf_pre+1);
+            for k=1:kf_line
+                x_line(:,k+1) = MotionModel_class.f_discrete(x_line(:,k),u_line(:,k),w_zero);
+                %                 tmp = state(x_line(:,k+1));tmp.draw(); % FOR DEBUGGING
+            end
+            % Turn part on the final circle
+            th_on_final_circle = delta_theta_turn(gamma_end_of_tangent_line, final_robot_gamma, 'cw'); % NOTE: this must be a negative number as we turn CLOCKWISE.
+            kf_post_rational = th_on_final_circle/delta_theta_on_turns;
+            kf_post = ceil(kf_post_rational);
+            V_post = Unicycle_robot.linear_velocity_min_on_orbit * [ones(1,kf_post-1) , kf_post_rational-floor(kf_post_rational)];
+            omega_post = -Unicycle_robot.angular_velocity_max * [ones(1,kf_post-1) , kf_post_rational-floor(kf_post_rational)];  %VERY IMPORTANT: since we want to traverse the circles clockwise, the angular velocity has to be NEGATIVE.
+            u_post = [V_post ; omega_post];
+            x_post(:,1) = x_line(:,kf_line+1);
+            for k=1:kf_post
+                x_post(:,k+1) = MotionModel_class.f_discrete(x_post(:,k),u_post(:,k),w_zero);
+                %                 tmp = state(x_post(:,k+1));tmp.draw(); % FOR DEBUGGING
+            end
+            
+            nominal_traj.x = [x_pre(:,1:kf_pre) , x_line(:,1:kf_line) , x_post(:,1:kf_post+1)]; % This line is written very carefully. So, dont worry about its correctness!
+            nominal_traj.u = [u_pre(:,1:kf_pre) , u_line(:,1:kf_line) , u_post(:,1:kf_post)]; % This line is written very carefully. So, dont worry about its correctness!
+            
+        end
+                %% Computing planned open-loop deterministic controls (or nominal controls) for unicycle model.
+        function nominal_traj = generate_VALID_open_loop_point2point_traj(x_initial,x_final)
+            % "x_initial" and "x_final" are vectors that indicate the start
+            % and final position of the state trajectory, we are planning
+            % the control "up" for.
+            if isa(x_initial , 'state'), x_initial = x_initial.val; end
+            if isa(x_final , 'state'), x_final = x_final.val; end
+            % minimum turn radius resutls from dividing the minimum linear
+            % velocity to maximum angular velocity. However, here we assume
+            % that the linear velocity is constant.
+            radius = Unicycle_robot.turn_radius_min;
+            initial_circle_center = [radius*cos(x_initial(3)-pi/2) ; radius*sin(x_initial(3)-pi/2)] + x_initial(1:2);
+            final_circle_center = [radius*cos(x_final(3)-pi/2) ; radius*sin(x_final(3)-pi/2)] + x_final(1:2);
+            %             tth = 0:0.1:2*pi+.1;plot(initial_circle_center(1)+radius*cos(tth), initial_circle_center(2)+radius*sin(tth)); %TO DEBUG -  DONT DELETE
+            %             tth = 0:0.1:2*pi+.1;plot(final_circle_center(1)+radius*cos(tth), final_circle_center(2)+radius*sin(tth)); %TO DEBUG -  DONT DELETE
+            gamma_tangent = atan2( final_circle_center(2) - initial_circle_center(2) , final_circle_center(1) - initial_circle_center(1) ); % The angle of the tangent line
+            
+            gamma_start_of_tangent_line = gamma_tangent + pi/2; % the angle on which the starting point of the tangent line lies on orbit i.
+            gamma_end_of_tangent_line = gamma_tangent + pi/2; % the angle on which the ending point of the tangent line lies on orbit i.
+            
+            initial_robot_gamma =   x_initial(3) + pi/2; % Note that this is not robot's heading angle. This says that at which angle robot lies on the circle.
+            final_robot_gamma   =   x_final(3)    + pi/2; % Note that this is not robot's heading angle. This says that at which angle robot lies on the circle.
+            
+            only_forward_motion = 0;
+            
+            % Turn part on the first circle
+            entire_th_on_initial_circle = delta_theta_turn(initial_robot_gamma, gamma_start_of_tangent_line, 'cw'); % NOTE: this must be a negative number as we turn CLOCKWISE.
+            if only_forward_motion  ||  entire_th_on_initial_circle >= -pi % keep going forward, where heading direction points to the "clockwise" direction.
+                delta_theta_on_turns = - Unicycle_robot.angular_velocity_max * Unicycle_robot.dt ; %VERY IMPORTANT: since we want to traverse the circles clockwise, the angular velocity has to be NEGATIVE.
+                kf_pre_rational = entire_th_on_initial_circle/delta_theta_on_turns;
+                kf_pre = ceil(kf_pre_rational);
+                V_pre = Unicycle_robot.linear_velocity_min_on_orbit * [ones(1,kf_pre-1) , kf_pre_rational-floor(kf_pre_rational)]; % In the forward motion, the linear velocity has to be positive
+                omega_pre = -Unicycle_robot.angular_velocity_max * [ones(1,kf_pre-1) , kf_pre_rational-floor(kf_pre_rational)];  %VERY IMPORTANT: since we want to traverse the circles clockwise, the angular velocity has to be NEGATIVE.
+            else  % going backwards, where the heading direction still points to the "clockwise" direction.
+                entire_th_on_initial_circle = 2*pi + entire_th_on_initial_circle; % Note that the "entire_th_on_final_circle" before summation is negative, and after summation gets positive.
+                delta_theta_on_turns = Unicycle_robot.angular_velocity_max * Unicycle_robot.dt ; %VERY IMPORTANT: since we want to traverse the circles clockwise BUT BACKWARDS, the angular velocity has to be POSITIVE.
+                kf_pre_rational = entire_th_on_initial_circle/delta_theta_on_turns;
+                kf_pre = ceil(kf_pre_rational);
+                V_pre = - Unicycle_robot.linear_velocity_min_on_orbit * [ones(1,kf_pre-1) , kf_pre_rational-floor(kf_pre_rational)]; % In backwards motion, the linear velocity has to be negative
+                omega_pre = Unicycle_robot.angular_velocity_max * [ones(1,kf_pre-1) , kf_pre_rational-floor(kf_pre_rational)];  %VERY IMPORTANT: since we want to traverse the circles clockwise BUT BACKWARDS, the angular velocity has to be POSITIVE.
+            end
+            u_pre = [V_pre ; omega_pre];
+            w_zero = zeros(Unicycle_robot.wDim,1); % no noise
+            x_pre(:,1) = x_initial;
+            for k=1:kf_pre
+                x_pre(:,k+1) = MotionModel_class.f_discrete(x_pre(:,k),u_pre(:,k),w_zero);
+                tmp = state(x_pre(:,k+1)); if tmp.is_constraint_violated, nominal_traj =[]; return; end
+                %                 tmp.draw(); % FOR DEBUGGING
+            end
+            % Line part
+            tanget_line_length = norm ( final_circle_center - initial_circle_center ) ;
+            step_length = Unicycle_robot.linear_velocity_max * Unicycle_robot.dt;
+            kf_line_rational = tanget_line_length/step_length;
+            kf_line = ceil(kf_line_rational);
+            V_line = Unicycle_robot.linear_velocity_max * [ones(1,kf_line-1) , kf_line_rational-floor(kf_line_rational)];
+            omega_line = zeros(1,kf_line);
+            u_line = [V_line;omega_line];
+            x_line(:,1) = x_pre(:,kf_pre+1);
+            for k=1:kf_line
+                x_line(:,k+1) = MotionModel_class.f_discrete(x_line(:,k),u_line(:,k),w_zero);
+                tmp = state(x_line(:,k+1)); if tmp.is_constraint_violated, nominal_traj =[]; return; end
+                %                 tmp.draw(); % FOR DEBUGGING
+            end
+            % Turn part on the final circle
+            entire_th_on_final_circle = delta_theta_turn(gamma_end_of_tangent_line, final_robot_gamma, 'cw'); % NOTE: this must be a negative number as we turn CLOCKWISE.
+            if only_forward_motion  ||  entire_th_on_final_circle >= -pi
+                delta_theta_on_turns = - Unicycle_robot.angular_velocity_max * Unicycle_robot.dt ; %VERY IMPORTANT: since we want to traverse the circles clockwise, the angular velocity has to be NEGATIVE.
+                kf_post_rational = entire_th_on_final_circle/delta_theta_on_turns;
+                kf_post = ceil(kf_post_rational);
+                V_post = Unicycle_robot.linear_velocity_min_on_orbit * [ones(1,kf_post-1) , kf_post_rational-floor(kf_post_rational)]; % In the forward motion, the linear velocity has to be positive
+                omega_post = - Unicycle_robot.angular_velocity_max * [ones(1,kf_post-1) , kf_post_rational-floor(kf_post_rational)];  %VERY IMPORTANT: since we want to traverse the circles clockwise, the angular velocity has to be NEGATIVE.
+            else
+                entire_th_on_final_circle = 2*pi + entire_th_on_final_circle; % Note that the "entire_th_on_final_circle" before summation is negative, and after summation gets positive.
+                delta_theta_on_turns = Unicycle_robot.angular_velocity_max * Unicycle_robot.dt ; %VERY IMPORTANT: since we want to traverse the circles clockwise BUT BACKWARDS, the angular velocity has to be POSITIVE.
+                kf_post_rational = entire_th_on_final_circle/delta_theta_on_turns;
+                kf_post = ceil(kf_post_rational);
+                V_post = - Unicycle_robot.linear_velocity_min_on_orbit * [ones(1,kf_post-1) , kf_post_rational-floor(kf_post_rational)]; % In backwards motion, the linear velocity has to be negative
+                omega_post = Unicycle_robot.angular_velocity_max * [ones(1,kf_post-1) , kf_post_rational-floor(kf_post_rational)];  %VERY IMPORTANT: since we want to traverse the circles clockwise BUT BACKWARDS, the angular velocity has to be POSITIVE.
+            end
+            u_post = [V_post ; omega_post];
+            x_post(:,1) = x_line(:,kf_line+1);
+            for k=1:kf_post
+                x_post(:,k+1) = MotionModel_class.f_discrete(x_post(:,k),u_post(:,k),w_zero);
+                tmp = state(x_post(:,k+1)); if tmp.is_constraint_violated, nominal_traj =[]; return; end
+                %                 tmp.draw(); % FOR DEBUGGING
+            end
+            
+            nominal_traj.x = [x_pre(:,1:kf_pre) , x_line(:,1:kf_line) , x_post(:,1:kf_post+1)]; % This line is written very carefully. So, dont worry about its correctness!
+            nominal_traj.u = [u_pre(:,1:kf_pre) , u_line(:,1:kf_line) , u_post(:,1:kf_post)]; % This line is written very carefully. So, dont worry about its correctness!
+            
+        end
+        %% Computing planned open-loop deterministic state trajectory (or nominal trajectory) for unicycle model. 
+        % In computing the planned trajectory, system is assumed to be deterministic, so the noise is zero.
+        %
+        % $$ x^p_{K+1} = f (x^p_{K}, u^p_k, 0 ) $$
+        %
+        function x_p = compute_planned_traj(x_initial,u_p,kf)
+            % noiselss motion
+            x_p = zeros(state.dim,kf+1);
+            x_p(:,1) = x_initial;
+            for k = 1:kf
+                x_p(:,k+1) = Unicycle_robot.f_discrete(x_p(:,k),u_p(:,k),zeros(Unicycle_robot.wDim,1));
+            end
+        end
+        %% Sample a valid orbit (periodic trajectory)
+        function orbit = sample_a_valid_orbit()
+            [x_temp,y_temp]=ginput(1);
+            if isempty(x_temp)
+                orbit = [];
+                return
+            else
+                orbit_center = [x_temp;y_temp];
+                orbit = Unicycle_robot.generate_orbit(orbit_center);
+                orbit = Unicycle_robot.draw_orbit(orbit);
+            end
+            
+        end
+        
+        %% Construct an orbit
+        function orbit = generate_orbit(orbit_center)
+            % minimum orbit radius resutls from dividing the minimum linear
+            % velocity to maximum angular velocity. However, here we assume
+            % that the linear velocity is constant.
+            orbit.radius = Unicycle_robot.turn_radius_min;
+            orbit_length_meter = 2*pi*orbit.radius;
+            orbit_length_time_continuous = orbit_length_meter/Unicycle_robot.linear_velocity_min_on_orbit;
+            T_rational = orbit_length_time_continuous/Unicycle_robot.dt;
+            T = ceil(T_rational);
+            orbit.period = T;
+            orbit.center = orbit_center;
+            
+            % defining controls on the orbit
+            V_p = Unicycle_robot.linear_velocity_min_on_orbit * [ones(1,T-1) , T_rational-floor(T_rational)]; % we traverse the orbit with minimum linear velocity
+            omega_p = Unicycle_robot.angular_velocity_max * [ones(1,T-1) , T_rational-floor(T_rational)]; % we traverse the orbit with maximum angular velocity
+            u_p = [V_p;omega_p];
+            w_zero = zeros(Unicycle_robot.wDim,1); % no noise
+            
+            % defining state steps on the orbit
+            x_p(:,1) = [orbit_center - [0;orbit.radius] ; 0*pi/180]; % initial x
+            for k=1:T
+                x_p(:,k+1) = MotionModel_class.f_discrete(x_p(:,k),u_p(:,k),w_zero);
+            end
+            orbit.x = x_p(:,1:T);  % "x_p" is of length T+1, but "x_p(:,T+1)" is equal to "x_p(:,1)"
+            orbit.u = u_p;  % "u_p" is of length T.
+            orbit.plot_handle = [];
+        end
+        %% Draw an orbit
+        function orbit = draw_orbit(orbit,varargin)
+            % This function draws the orbit.
+            % default values
+            orbit_color = 'b'; % Default value for "OrbitTextColor" property. % User-provided value for "OrbitTextColor" property.
+            orbit_width = 2; % User-provided value for "orbit_width" property. % User-provided value for shifting the text a little bit to the left. % for some reason MATLAB shifts the starting point of the text a little bit to the right. So, here we return it back.
+            robot_shape = 'triangle'; % The shape of robot (to draw trajectories and to show direction of edges and orbits)
+            robot_size = 1; % Robot size on orbits (to draw trajectories and to show direction of edges and orbits)
+            orbit_trajectory_flag = 0; % Make it one if you want to see the orbit trajectories. Zero, otherwise.
+            text_size = 12;
+            text_color = 'b';
+            text_shift = 0.8;
+            orbit_text = [];
+            
+            % parsing the varargin
+            if ~isempty(varargin)
+                for i = 1 : 2 : length(varargin)
+                    switch lower(varargin{i})
+                        case lower('RobotSize')
+                            robot_size = varargin{i+1};
+                        case lower('OrbitWidth')
+                            orbit_width = varargin{i+1};
+                        case lower('OrbitColor')
+                            orbit_color = varargin{i+1};
+                        case lower('OrbitText')
+                            orbit_text = varargin{i+1};
+                    end
+                end
+            end
+            % start drawing
+            if orbit_trajectory_flag == 1
+                orbit.plot_handle = [];
+                for k=1:orbit.period
+                    Xstate = state(orbit.x(:,k));
+                    Xstate = Xstate.draw('RobotShape',robot_shape,'robotsize',robot_size);
+                    orbit.plot_handle = [orbit.plot_handle,Xstate.head_handle,Xstate.text_handle,Xstate.tria_handle];
+                end
+                tmp = plot(orbit.x(1,:) , orbit.x(2,:),orbit_color);
+                orbit.plot_handle = [orbit.plot_handle,tmp];
+            else
+                orbit.plot_handle = [];
+                th_orbit_draw = [0:0.1:2*pi , 2*pi];
+                x_orbit_draw = orbit.center(1) + orbit.radius*cos(th_orbit_draw);
+                y_orbit_draw = orbit.center(2) + orbit.radius*sin(th_orbit_draw);
+                tmp_h = plot(x_orbit_draw,y_orbit_draw,'lineWidth',orbit_width);
+                Xstate = state(orbit.x(:,1));
+                Xstate = Xstate.draw('RobotShape',robot_shape,'robotsize',robot_size);
+                orbit.plot_handle = [orbit.plot_handle,tmp_h,Xstate.head_handle,Xstate.text_handle,Xstate.tria_handle];
+            end
+            
+            if ~isempty(orbit_text)
+                text_pos = orbit.center;
+                text_pos(1) = text_pos(1) - text_shift; % for some reason MATLAB shifts the starting point of the text a little bit to the right. So, here we return it back.
+                tmp_handle = text( text_pos(1), text_pos(2), orbit_text, 'fontsize', text_size, 'color', text_color);
+                orbit.plot_handle = [orbit.plot_handle,tmp_handle];
+            end
+                
+        end
+        %% Generate open-loop Orbit-to-Orbit trajectory
+        function nominal_traj = generate_open_loop_orbit2orbit_traj(start_orbit, end_orbit) % generates open-loop trajectories between two start and end orbits
+            % check if the both orbits are turning in the same
+            % direction or not.
+            direction_start_orbit = sign(start_orbit.u(1,1))*sign(start_orbit.u(2,1));
+            direction_end_orbit = sign(end_orbit.u(1,1))*sign(end_orbit.u(2,1));
+            % finding the connecting edge between orbits.
+            if direction_start_orbit == direction_end_orbit % both orbits turn in a same direction
+                gamma = atan2( end_orbit.center(2) - start_orbit.center(2) , end_orbit.center(1) - start_orbit.center(1) );
+                temp_edge_start = start_orbit.radius * [ cos(gamma-pi/2) ; sin(gamma-pi/2) ] + start_orbit.center;
+                temp_edge_end = end_orbit.radius* [ cos(gamma-pi/2) ; sin(gamma-pi/2) ] + end_orbit.center;
+            else
+                error('different directions have not been implemented in PNPRM yet.')
+            end
+            temp_traj.x(:,1) = temp_edge_start;  temp_traj.x(:,2) = temp_edge_end;  % we generate this trajectory (only composed of start and end points) to check the collision probabilities before generating the edges.
+            collision = Unicycle_robot.is_constraints_violated(temp_traj);  % checking intersection with obstacles
+            if collision == 1
+                nominal_traj = [];
+                return
+            else
+                % construction edge trajectory
+                tmp_traj_start = [temp_edge_start ; gamma ];
+                V_p = start_orbit.u(1,1);
+                step_length = V_p * Unicycle_robot.dt;
+                edge_length = norm ( end_orbit.center - start_orbit.center ) ;
+                edge_steps = floor(edge_length/step_length);
+                
+                omega_p = 0;
+                u_p = [V_p;omega_p];
+                w_zero = zeros(MotionModel_class.wDim , 1); % no noise
+                
+                nominal_traj.x(:,1) = tmp_traj_start;
+                for k =1:edge_steps
+                    nominal_traj.x(:,k+1) = MotionModel_class.f_discrete(nominal_traj.x(:,k), u_p, w_zero);
+                end
+                nominal_traj.u(:,1:edge_steps) = repmat(u_p,1,edge_steps);
+            end
+        end
+        %% check if the trajectory is collision-free or not
+        function YesNo = is_constraints_violated(open_loop_traj) % this function checks if the "open_loop_traj" violates any constraints or not. For example it checks collision with obstacles.
+            % In this class the open loop trajectories are indeed straight
+            % lines. So, we use following simplified procedure to check the
+            % collisions.
+            error('This function is obsolete. Instead, we have the "generate_VALID_open_loop_point2point_traj" function')
+            YesNo = 0;
+            Obst = obstacles_class.obst;
+            edge_start = open_loop_traj.x(1:2 , 1);
+            edge_end = open_loop_traj.x(1:2 , end);
+            
+            N_obst = size(Obst,2);
+            for ib=1:N_obst
+                X_obs=[Obst{ib}(:,1);Obst{ib}(1,1)];
+                Y_obs=[Obst{ib}(:,2);Obst{ib}(1,2)];
+                X_edge=[edge_start(1);edge_end(1)];
+                Y_edge=[edge_start(2);edge_end(2)];
+                [x_inters,~] = polyxpoly(X_obs,Y_obs,X_edge,Y_edge);
+                if ~isempty(x_inters)
+                    YesNo=1;
+                    return
+                end
+            end
+            
+        end
+        %% Draw nominal trajectories
+        function traj_plot_handle = draw_nominal_traj(nominal_traj, traj_flag)
+            traj_plot_handle = [];
+            if traj_flag == 1
+                for k = 1 : size(nominal_traj.x , 2)
+                    tmp_Xstate = state (nominal_traj.x(:,k) );
+                    tmp_Xstate.draw('RobotShape','triangle','robotsize',1);%,'TriaColor',color(cycles));
+                    %traj_plot_handle(k:k+2) =
+                    %[tmp_Xstate.head_handle,tmp_Xstate.text_handle,tmp_Xstate.tria_handle];
+                end
+            else
+                tmp_handle = plot(nominal_traj.x(1,:) , nominal_traj.x(2,:));
+                traj_plot_handle = [traj_plot_handle , tmp_handle];
+                len = size( nominal_traj.x , 2);
+                tmp_Xstate = state( nominal_traj.x(:,floor(len/2)) ); % to plot the direction of the line.
+%                 tmp_Xstate = tmp_Xstate.draw('RobotShape','triangle','robotsize',2);
+%                 traj_plot_handle = [traj_plot_handle , tmp_Xstate.plot_handle , tmp_Xstate.head_handle , tmp_Xstate.tria_handle , tmp_Xstate.text_handle ];
+                drawnow
+            end
+        end
+        %% Draw orbit neighborhood
+        function plot_handle = draw_orbit_neighborhood(orbit, scale)
+            tmp_th = 0:0.1:2*pi;
+            x = orbit.center(1);
+            y = orbit.center(2);
+            plot_handle = plot(scale*cos(tmp_th) + x , scale*sin(tmp_th) + y, 'REPLACE_WITH_DASH_DASH');
+        end
+    end
+
+end
+
+%% Generating Control-dependent and independent noises
+%
+% $$ U'_n \sim \mathcal{N}(0_{2\times 1} , I_{2\times 2}), ~~~ U_n =
+% (P^{U_n})^{1/2}U'_n\sim\mathcal{N}(0_{2\times 1} , P^{Un}),~~~W^g \sim \mathcal{N}(0_{3\times 1} , P^{W^g})$$
+%
+% The reason we do not use "mvnrnd" to generate $U_n$ is the speed. The way
+% we do here is much faster than using "mvnrnd".
+function [Un,Wg] = generate_control_and_indep_process_noise(U)
+% generate Un
+indep_part_of_Un = randn(Unicycle_robot.ctDim,1);
+P_Un = control_noise_covariance(U);
+Un = indep_part_of_Un.*diag(P_Un.^(1/2));
+% generate Wg
+Wg = mvnrnd(zeros(Unicycle_robot.stDim,1),Unicycle_robot.P_Wg)';
+end
+%% Generating Control-dependent Noise Covariance
+%
+% $$ P^{U_n} = \left(
+%   \begin{array}{cc}
+%     (\eta_V V + \sigma_{b_V})^2 & 0\\
+%     0 & (\eta_{\omega} \omega + \sigma_{b_{\omega}})^2\\
+%   \end{array}\right) $$,
+%
+% where, $\eta_u=(\eta_V,\eta_{\omega})^T$ and
+% $\sigma_{b_u}=(\sigma_{b_V},\sigma_{b_{\omega}})^T$.
+function P_Un = control_noise_covariance(U)
+u_std=(Unicycle_robot.eta_u).*U+(Unicycle_robot.sigma_b_u);
+P_Un=diag(u_std.^2);
+end
+
+%% Generating deterministic open loop controls (nominal controls)
+% I think this function should go out of this class maybe.
+function [u_p,kf] = compute_planned_control_unicycle(X_initial,X_final)
+% inputs
+x_c=[X_initial(1),X_final(1)];
+y_c=[X_initial(2),X_final(2)];
+dt=user_data_class.par.motion_model_parameters.dt;
+omega_path=user_data_class.par.motion_model_parameters.omega_const_path; % constant rotational velocity during turnings
+V_path=user_data_class.par.motion_model_parameters.V_const_path; % constant translational velocity during straight movements
+%stDim=Unicycle_robot.stDim;
+ctDim=Unicycle_robot.ctDim;
+% preallocation
+th_p=zeros(1,length(x_c));
+delta_th_p=zeros(1,length(x_c));
+rotation_steps=zeros(length(x_c)-1,1);
+delta_disp=zeros(length(x_c)-1,1);
+translation_steps=zeros(length(x_c)-1,1);
+total_num_steps=0;
+
+% Dividing the motion to pure translations and rotations
+th_initial=X_initial(3);
+for i=1:length(x_c)-1
+    % rotations
+    th_p(i)=atan2((y_c(i+1)-y_c(i)),(x_c(i+1)-x_c(i)));
+    if i>1, delta_th_p(i)=th_p(i)-th_p(i-1); else delta_th_p(i)=th_p(i)-th_initial; end;
+    rotation_steps(i)=abs(delta_th_p(i)/(omega_path*dt));
+    %translations
+    delta_disp(i)=sqrt(    (y_c(i+1)-y_c(i))^2+(x_c(i+1)-x_c(i))^2    );
+    translation_steps(i)=abs(delta_disp(i)/(V_path*dt));
+    total_num_steps=total_num_steps+ceil(rotation_steps(i))+ceil(translation_steps(i));
+end
+kf=total_num_steps;
+% Computing Velocities along the path
+% omega_path=zeros(1,kf);
+% v_path=zeros(1,kf);
+u_p=nan(ctDim,kf+1);
+
+start_ind_w=1;
+% end_ind_w=start_ind_w+ceil(rotation_steps(1))-1;
+end_ind_w=start_ind_w+floor(rotation_steps(1));
+for i=1:length(x_c)-1
+    %Rotation
+    if end_ind_w~=0
+        u_const = [ 0 ; omega_path*sign(delta_th_p(i)) ];
+        u_p(:,start_ind_w:end_ind_w-1)=repmat(u_const,1,floor(rotation_steps(i)));
+        u_const_end=u_const * (rotation_steps(i)-floor(rotation_steps(i)));
+        u_p(:,end_ind_w)=u_const_end;
+    end
+    %Translations
+    u_const = [ V_path ; 0 ];
+    u_p(:,end_ind_w+1:end_ind_w+ceil(translation_steps(i))-1)=repmat(u_const,1,floor(translation_steps(i)));
+    u_const_end=u_const*(translation_steps(i)-floor(translation_steps(i)));
+    u_p(:,end_ind_w+ceil(translation_steps(i)))=u_const_end;
+    %Preparing for the next path segment
+    if  i~=length(x_c)-1    %% This "if" is just for avoiding the error massege that appears due to non-existence of rotation_steps(length(x_c))
+        start_ind_w=start_ind_w+ceil(rotation_steps(i))+ceil(translation_steps(i));
+        end_ind_w=start_ind_w+ceil(rotation_steps(i+1))-1;
+    end
+end
+% u_p=[x_dot;theta_dot];
+% u_p=[u_p,[nan;nan]];
+end
+
+%% Generating deterministic open loop controls with bounded curvature (nominal controls)
+% I think this function should go out of this class maybe.
+function [u_p,kf] = compute_planned_control_unicycle_bounded_curvature(X_initial,X_final)
+% inputs
+x_c=[X_initial(1),X_final(1)];
+y_c=[X_initial(2),X_final(2)];
+dt=user_data_class.par.motion_model_parameters.dt;
+omega_path=user_data_class.par.motion_model_parameters.omega_const_path; % constant rotational velocity during turnings
+V_path=user_data_class.par.motion_model_parameters.V_const_path; % constant translational velocity during straight movements
+%stDim=Unicycle_robot.stDim;
+ctDim=Unicycle_robot.ctDim;
+% preallocation
+th_p=zeros(1,length(x_c));
+delta_th_p=zeros(1,length(x_c));
+rotation_steps=zeros(length(x_c)-1,1);
+delta_disp=zeros(length(x_c)-1,1);
+translation_steps=zeros(length(x_c)-1,1);
+total_num_steps=0;
+
+% Dividing the motion to pure translations and rotations
+th_initial=X_initial(3);
+for i=1:length(x_c)-1
+    % rotations
+    th_p(i)=atan2((y_c(i+1)-y_c(i)),(x_c(i+1)-x_c(i)));
+    if i>1, delta_th_p(i)=th_p(i)-th_p(i-1); else delta_th_p(i)=th_p(i)-th_initial; end;
+    rotation_steps(i)=abs(delta_th_p(i)/(omega_path*dt));
+    %translations
+    delta_disp(i)=sqrt(    (y_c(i+1)-y_c(i))^2+(x_c(i+1)-x_c(i))^2    );
+    translation_steps(i)=abs(delta_disp(i)/(V_path*dt));
+    total_num_steps=total_num_steps+ceil(rotation_steps(i))+ceil(translation_steps(i));
+end
+kf=total_num_steps;
+% Computing Velocities along the path
+% omega_path=zeros(1,kf);
+% v_path=zeros(1,kf);
+u_p=nan(ctDim,kf+1);
+
+start_ind_w=1;
+% end_ind_w=start_ind_w+ceil(rotation_steps(1))-1;
+end_ind_w=start_ind_w+floor(rotation_steps(1));
+for i=1:length(x_c)-1
+    %Rotation
+    if end_ind_w~=0
+        u_const = [ 0 ; omega_path*sign(delta_th_p(i)) ];
+        u_p(:,start_ind_w:end_ind_w-1)=repmat(u_const,1,floor(rotation_steps(i)));
+        u_const_end=u_const * (rotation_steps(i)-floor(rotation_steps(i)));
+        u_p(:,end_ind_w)=u_const_end;
+    end
+    %Translations
+    u_const = [ V_path ; 0 ];
+    u_p(:,end_ind_w+1:end_ind_w+ceil(translation_steps(i))-1)=repmat(u_const,1,floor(translation_steps(i)));
+    u_const_end=u_const*(translation_steps(i)-floor(translation_steps(i)));
+    u_p(:,end_ind_w+ceil(translation_steps(i)))=u_const_end;
+    %Preparing for the next path segment
+    if  i~=length(x_c)-1    %% This "if" is just for avoiding the error massege that appears due to non-existence of rotation_steps(length(x_c))
+        start_ind_w=start_ind_w+ceil(rotation_steps(i))+ceil(translation_steps(i));
+        end_ind_w=start_ind_w+ceil(rotation_steps(i+1))-1;
+    end
+end
+% u_p=[x_dot;theta_dot];
+% u_p=[u_p,[nan;nan]];
+end
+##### SOURCE END #####
+--></body></html>

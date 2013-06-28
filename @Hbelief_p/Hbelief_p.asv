@@ -1,0 +1,58 @@
+classdef Hbelief_p % particle-based H-belief
+    properties (Constant = true)
+        num_p = user_data_class.par.par_n;  % number of particles
+    end
+    properties
+        Hparticles;
+        stopped_particles = zeros(Hbelief_p.num_p,1);
+        stopping_times = one;
+        collided_particles = zeros(Hbelief_p.num_p,1);
+        stat_Hmean;
+        stat_Hcov;
+    end
+    
+    methods
+        function obj = Hbelief_p(Hstate_particles)
+            if nargin ~= 0
+                % The input of structor is a collection of Hstate_particles in
+                % a vector
+                obj.Hparticles = Hstate_particles;
+            end
+        end
+        function obj = draw(obj,varargin)
+            tmp = get(gca,'NextPlot'); hold on
+            obj.Hparticles(1) = obj.Hparticles(1).draw(varargin{:});
+            for q = 2:obj.num_p
+                obj.Hparticles(q) = obj.Hparticles(q).draw(varargin{:});
+            end
+            set(gca,'NextPlot',tmp);
+        end
+        function obj = delete_plot(obj)
+            for i = 1:Hbelief_p.num_p
+                obj.Hparticles(i) = obj.Hparticles(i).delete_plot();
+            end
+        end
+        function obj = collision_check(obj)
+            for q = 1 : Hbelief_p.num_p
+                if obj.collided_particles(q) ~= 1; % we only check collision for the particles that have not been collided yet.
+                    obj.collided_particles(q) = obstacles_class.is_collided(obj.Hparticles(q).Xg);
+                end
+            end
+        end
+        function obj = animate_PHb(obj,varargin)
+            tmp = get(gca,'NextPlot'); hold on
+            if ~old_Hb_particle.stopped_particles(1) % In the animate function, we only draw the particles only if it has not been stopped already. Otherwise it has already been drawn.
+                obj.Hparticles(1) = obj.Hparticles(1).draw(varargin{:});
+            end
+            for q = 2:obj.num_p
+                if ~old_Hb_particle.stopped_particles(q) % In the animate function, we only draw the particles only if it has not been stopped already. Otherwise it has already been drawn.
+                    obj.Hparticles(q) = obj.Hparticles(q).draw(varargin{:});
+                end
+            end
+            set(gca,'NextPlot',tmp);
+            % then we delete the Hb in the previous step
+            error('THis function is not completed. Actually it seems that it has to be a method of Hb_seq not Hb.')
+            
+        end
+    end
+end

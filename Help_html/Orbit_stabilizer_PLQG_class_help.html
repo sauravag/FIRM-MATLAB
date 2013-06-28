@@ -1,0 +1,111 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <link rel="stylesheet" href="file:///C:/Program Files/MATLAB/R2010b/toolbox/matlab/helptools/private/helpwin.css">
+      <title>MATLAB File Help: Orbit_stabilizer_PLQG_class</title>
+   </head>
+   <body>
+      <!--Single-page help-->
+      <table border="0" cellspacing="0" width="100%">
+         <tr class="subheader">
+            <td class="headertitle">MATLAB File Help: Orbit_stabilizer_PLQG_class</td>
+            <td class="subheader-left"><a href="matlab:open @Orbit_stabilizer_PLQG_class\Orbit_stabilizer_PLQG_class.m">View code for Orbit_stabilizer_PLQG_class</a></td>
+            <td class="subheader-right"><a href="matlab:helpwin">Default Topics</a></td>
+         </tr>
+      </table>
+      <div class="title">Orbit_stabilizer_PLQG_class</div>
+      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">Orbit_stabilizer_PLQG_class</span> encapsulates the belief orbit stabilizer
+  concept in Periodic-node FIRM, which is implemented using Periodic
+  LQG controllers.</pre></div><!--after help -->
+      <!--Class-->
+      <div class="sectiontitle">Class Details</div>
+      <table class="class-details">
+         <tr>
+            <td class="class-detail-label">Superclasses</td>
+            <td><a href="matlab:helpwin('Stabilizer_interface')">Stabilizer_interface</a></td>
+         </tr>
+         <tr>
+            <td class="class-detail-label">Sealed</td>
+            <td>false</td>
+         </tr>
+         <tr>
+            <td class="class-detail-label">Construct on load</td>
+            <td>false</td>
+         </tr>
+      </table>
+      <!--Constructors-->
+      <div class="sectiontitle"><a name="constructors"></a>Constructor Summary
+      </div>
+      <table class="summary-list">
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('Orbit_stabilizer_PLQG_class.Orbit_stabilizer_PLQG_class')">Orbit_stabilizer_PLQG_class</a></td>
+            <td class="m-help">encapsulates the belief orbit stabilizer&nbsp;</td>
+         </tr>
+      </table>
+      <!--Properties-->
+      <div class="sectiontitle"><a name="properties"></a>Property Summary
+      </div>
+      <table class="summary-list">
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('Orbit_stabilizer_PLQG_class.par')">par</a></td>
+            <td class="m-help">parameters of the stabilizer&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('Orbit_stabilizer_PLQG_class.reachable_FIRM_nodes')">reachable_FIRM_nodes</a></td>
+            <td class="m-help">reachable FIRM nodes under the stabilizer&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('Orbit_stabilizer_PLQG_class.stabilizer_number')">stabilizer_number</a></td>
+            <td class="m-help">the stabilizer number among all FIRM stabilizers; % This is not initilized by the constructor, as it is not needed for the
+               class really. It is just for "display" purposes. So, if it is needed it has to be explicitly set from the callling function.&nbsp;
+            </td>
+         </tr>
+      </table>
+      <!--Methods-->
+      <div class="sectiontitle"><a name="methods"></a>Method Summary
+      </div>
+      <table class="summary-list">
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Orbit_stabilizer_PLQG_class.construct_reachable_FIRM_nodes')">construct_reachable_FIRM_nodes</a></td>
+            <td class="m-help">periodic_GHb = obj.controller.Periodic_Gaussian_Hb;  % This function has not been written for the periodic case yet.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Orbit_stabilizer_PLQG_class.construct_seq_of_Hb')">construct_seq_of_Hb</a></td>
+            <td class="m-help">for a given initial H-belief, returns a sequence of H-beliefs until reaching a FIRM node &nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Orbit_stabilizer_PLQG_class.execute_plan')">execute_plan</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Orbit_stabilizer_PLQG_class.execute_with_replanning')">execute_with_replanning</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Abstract 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Orbit_stabilizer_PLQG_class.execute')">execute</a></td>
+            <td class="m-help">returns the next Hstate, given the current Hstate. Also, returns&nbsp;</td>
+         </tr>
+      </table>
+   </body>
+</html>

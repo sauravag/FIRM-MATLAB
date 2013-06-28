@@ -1,0 +1,351 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <link rel="stylesheet" href="file:///C:/Program Files/MATLAB/R2012a/toolbox/matlab/helptools/private/helpwin.css">
+      <title>MATLAB File Help: Unicycle_robot</title>
+   </head>
+   <body>
+      <!--Single-page help-->
+      <table border="0" cellspacing="0" width="100%">
+         <tr class="subheader">
+            <td class="headertitle">MATLAB File Help: Unicycle_robot</td>
+            <td class="subheader-left"><a href="matlab:edit Unicycle_robot">View code for Unicycle_robot</a></td>
+            <td class="subheader-right"><a href="matlab:helpwin">Default Topics</a></td>
+         </tr>
+      </table>
+      <div class="title">Unicycle_robot</div>
+      <div class="helptext"><pre><!--helptext -->  Class Definition</pre></div><!--after help --><!--demo--><div class="footerlinktitle">Published output in the Help browser</div><div class="footerlink">
+       <a href="matlab:showdemo Unicycle_robot">showdemo Unicycle_robot</a>
+</div>
+      <!--Class-->
+      <div class="sectiontitle">Class Details</div>
+      <table class="class-details">
+         <tr>
+            <td class="class-detail-label">Superclasses</td>
+            <td><a href="matlab:helpwin('handle')">handle</a></td>
+         </tr>
+         <tr>
+            <td class="class-detail-label">Sealed</td>
+            <td>false</td>
+         </tr>
+         <tr>
+            <td class="class-detail-label">Construct on load</td>
+            <td>false</td>
+         </tr>
+      </table>
+      <!--Constructors-->
+      <div class="sectiontitle"><a name="constructors"></a>Constructor Summary
+      </div>
+      <table class="summary-list">
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.Unicycle_robot')">Unicycle_robot</a></td>
+            <td class="m-help">Class Definition&nbsp;</td>
+         </tr>
+      </table>
+      <!--Properties-->
+      <div class="sectiontitle"><a name="properties"></a>Property Summary
+      </div>
+      <table class="summary-list">
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.P_Wg')">P_Wg</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.angular_velocity_max')">angular_velocity_max</a></td>
+            <td class="m-help">degree per second (converted to radian per second)&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.base_length')">base_length</a></td>
+            <td class="m-help">distance between robot's rear wheels.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.ctDim')">ctDim</a></td>
+            <td class="m-help">control vector dimension&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.dt')">dt</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.eta_u')">eta_u</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.linear_velocity_max')">linear_velocity_max</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.linear_velocity_min_on_orbit')">linear_velocity_min_on_orbit</a></td>
+            <td class="m-help">note that on the straight line the minimum velocity can go to zero. But, in turnings (on orbit) the linear velocity cannot
+               fall below this value.&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.sigma_b_u')">sigma_b_u</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.stDim')">stDim</a></td>
+            <td class="m-help">state dimension&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.turn_radius_min')">turn_radius_min</a></td>
+            <td class="m-help">indeed we need to define the minimum linear velocity in turnings (on orbits) and then find the minimum radius accordingly.
+               But, we picked the more intuitive way.&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.wDim')">wDim</a></td>
+            <td class="m-help">Process noise (W) dimension  % For the generality we also consider the additive noise on kinematics equation (3 dimension),
+               but it most probably will set to zero. The main noise is a 2 dimensional noise which is added to the controls.&nbsp;
+            </td>
+         </tr>
+      </table>
+      <!--Methods-->
+      <div class="sectiontitle"><a name="methods"></a>Method Summary
+      </div>
+      <table class="summary-list">
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.addlistener')">addlistener</a></td>
+            <td class="m-help">Add listener for event.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Static 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.compute_planned_traj')">compute_planned_traj</a></td>
+            <td class="m-help">noiselss motion&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.delete')">delete</a></td>
+            <td class="m-help">Delete a handle object.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Static 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.df_contin_dx')">df_contin_dx</a></td>
+            <td class="m-help">Not yet implemented.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Static 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.df_du_func')">df_du_func</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Static 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.df_dw_func')">df_dw_func</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Static 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.df_dx_func')">df_dx_func</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Static 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.draw_nominal_traj')">draw_nominal_traj</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Static 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.draw_orbit')">draw_orbit</a></td>
+            <td class="m-help">This function draws the orbit.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Static 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.draw_orbit_neighborhood')">draw_orbit_neighborhood</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.eq')">eq</a></td>
+            <td class="m-help">== (EQ)   Test handle equality.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Static 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.f_contin')">f_contin</a></td>
+            <td class="m-help">This is not needed yet in unicycle model.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Static 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.f_discrete')">f_discrete</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.findobj')">findobj</a></td>
+            <td class="m-help">Find objects matching specified conditions.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.findprop')">findprop</a></td>
+            <td class="m-help">Find property of MATLAB handle object.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.ge')">ge</a></td>
+            <td class="m-help">&gt;= (GE)   Greater than or equal relation for handles.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Static 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.generate_VALID_open_loop_point2point_traj')">generate_VALID_open_loop_point2point_traj</a></td>
+            <td class="m-help">"x_initial" and "x_final" are vectors that indicate the start&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Static 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.generate_open_loop_orbit2orbit_traj')">generate_open_loop_orbit2orbit_traj</a></td>
+            <td class="m-help">check if the both orbits are turning in the same&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Static 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.generate_open_loop_point2point_traj')">generate_open_loop_point2point_traj</a></td>
+            <td class="m-help">"x_initial" and "x_final" are vectors that indicate the start&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Static 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.generate_orbit')">generate_orbit</a></td>
+            <td class="m-help">minimum orbit radius resutls from dividing the minimum linear&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Static 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.generate_process_noise')">generate_process_noise</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.gt')">gt</a></td>
+            <td class="m-help">&gt; (GT)   Greater than relation for handles.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Static 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.is_constraints_violated')">is_constraints_violated</a></td>
+            <td class="m-help">In this class the open loop trajectories are indeed straight&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Sealed 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.isvalid')">isvalid</a></td>
+            <td class="m-help">Test handle validity.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.le')">le</a></td>
+            <td class="m-help">&lt;= (LE)   Less than or equal relation for handles.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.lt')">lt</a></td>
+            <td class="m-help">&lt; (LT)   Less than relation for handles.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.ne')">ne</a></td>
+            <td class="m-help">~= (NE)   Not equal relation for handles.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.notify')">notify</a></td>
+            <td class="m-help">Notify listeners of event.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Static 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.process_noise_cov')">process_noise_cov</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Static 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('Unicycle_robot.sample_a_valid_orbit')">sample_a_valid_orbit</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+      </table>
+   </body>
+</html>

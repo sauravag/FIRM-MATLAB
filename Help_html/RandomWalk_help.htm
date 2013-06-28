@@ -1,0 +1,167 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <link rel="stylesheet" href="file:///C:/Program Files/MATLAB/R2012a/toolbox/matlab/helptools/private/helpwin.css">
+      <title>MATLAB File Help: RandomWalk</title>
+   </head>
+   <body>
+      <!--Single-page help-->
+      <table border="0" cellspacing="0" width="100%">
+         <tr class="subheader">
+            <td class="headertitle">MATLAB File Help: RandomWalk</td>
+            <td class="subheader-left"><a href="matlab:edit RandomWalk">View code for RandomWalk</a></td>
+            <td class="subheader-right"><a href="matlab:helpwin">Default Topics</a></td>
+         </tr>
+      </table>
+      <div class="title">RandomWalk</div>
+      <div class="helptext"><pre><!--helptext -->  Note that because the class is defined as a handle class, the
+  properties must be defined such that they are do not change from an
+  object to another one.</pre></div><!--after help -->
+      <!--Class-->
+      <div class="sectiontitle">Class Details</div>
+      <table class="class-details">
+         <tr>
+            <td class="class-detail-label">Superclasses</td>
+            <td><a href="matlab:helpwin('MotionModel_interface')">MotionModel_interface</a></td>
+         </tr>
+         <tr>
+            <td class="class-detail-label">Sealed</td>
+            <td>false</td>
+         </tr>
+         <tr>
+            <td class="class-detail-label">Construct on load</td>
+            <td>false</td>
+         </tr>
+      </table>
+      <!--Constructors-->
+      <div class="sectiontitle"><a name="constructors"></a>Constructor Summary
+      </div>
+      <table class="summary-list">
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('RandomWalk.RandomWalk')">RandomWalk</a></td>
+            <td class="m-help">Note that because the class is defined as a handle class, the&nbsp;</td>
+         </tr>
+      </table>
+      <!--Properties-->
+      <div class="sectiontitle"><a name="properties"></a>Property Summary
+      </div>
+      <table class="summary-list">
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('RandomWalk.P_Wg')">P_Wg</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('RandomWalk.ctDim')">ctDim</a></td>
+            <td class="m-help">control vector dimension&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('RandomWalk.dt')">dt</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('RandomWalk.eta_u')">eta_u</a></td>
+            <td class="m-help">At this point, we are not using this varaible. We should use it later to generalize the model. % A coefficient, which makes
+               the control noise intensity proportional to the control signal&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('RandomWalk.sigma_b_u')">sigma_b_u</a></td>
+            <td class="m-help">At this point, we are not using this varaible. We should use it later to generalize the model. % A constant bias intensity
+               (covariance) of the control noise&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('RandomWalk.stDim')">stDim</a></td>
+            <td class="m-help">state dimension&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('RandomWalk.velocity_max')">velocity_max</a></td>
+            <td class="m-help">Note that "V_const_path_team" is a vector and so is the "velocity_max"&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('RandomWalk.wDim')">wDim</a></td>
+            <td class="m-help">Process noise (W) dimension&nbsp;</td>
+         </tr>
+      </table>
+      <!--Methods-->
+      <div class="sectiontitle"><a name="methods"></a>Method Summary
+      </div>
+      <table class="summary-list">
+         <tr class="summary-item">
+            <td class="attributes">Static 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('RandomWalk.df_du_func')">df_du_func</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Static 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('RandomWalk.df_dw_func')">df_dw_func</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Static 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('RandomWalk.df_dx_func')">df_dx_func</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Static 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('RandomWalk.draw_nominal_traj')">draw_nominal_traj</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Static 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('RandomWalk.f_discrete')">f_discrete</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Static 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('RandomWalk.generate_VALID_open_loop_point2point_traj')">generate_VALID_open_loop_point2point_traj</a></td>
+            <td class="m-help">nominal_traj = generate_open_loop_point2point_traj(X_initial,X_final) % generates open-loop trajectories between two start
+               and goal states&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Static 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('RandomWalk.generate_process_noise')">generate_process_noise</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Static 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('RandomWalk.is_constraints_violated')">is_constraints_violated</a></td>
+            <td class="m-help">In this class the open loop trajectories are indeed straight&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">Static 
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('RandomWalk.process_noise_cov')">process_noise_cov</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+      </table>
+   </body>
+</html>

@@ -1,0 +1,54 @@
+classdef obstacles
+    %OBSTACLES Summary of this class goes here
+    %   Detailed explanation goes here
+    
+    properties
+        DataFilename = user_interface.par.datafilename;
+        obst;
+        boundary_handle;
+        fill_handle;
+    end
+    
+    methods
+        function obj = load_obs(obj)
+            par = user_interface.par;
+            if par.manual_obst == 1
+                figure(gcf);
+                title({'Please mark the vertices of polygonal obstacles'},'fontsize',14)
+                ib=0;
+%                 obs_handle;
+                while true
+                    axis(par.env_limits); axis square
+                    h_obs=impoly;
+                    obj.boundary_handle = [obj.boundary_handle, h_obs];
+                    if isempty(h_obs) && ib==0
+                        obj.obst=[];
+                        break
+                    elseif isempty(h_obs) && ib~=0
+                        obj.obst = inputed_obstacles;
+                        break
+                    else
+                        ib=ib+1;
+                        inputed_obstacles{ib} = h_obs.getPosition; %#ok<AGROW>
+                        fill_color_handle = fill(inputed_obstacles{ib}(:,1),inputed_obstacles{ib}(:,2),[.3 .3 .3]);
+                        obj.fill_handle = [obj.fill_handle, fill_color_handle];
+                    end
+                end
+                Obst_vertices = obj.obst; %#ok<NASGU>
+                save(obj.DataFilename,'Obst_vertices','-append')
+            elseif par.manual_obst == 0
+                load(obj.DataFilename,'Obst_vertices')
+                obj.obst = Obst_vertices; %#ok<NODEF>
+            end
+        end
+        
+        function obj = draw(obj)
+            for ob_ctr=1:length(obj.obst)
+                fill_color_handle = fill(obj.obst{ob_ctr}(:,1),obj.obst{ob_ctr}(:,2),[.3 .3 .3]);
+                obj.fill_handle = [obj.fill_handle, fill_color_handle];
+            end
+        end
+    end
+    
+end
+

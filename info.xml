@@ -1,0 +1,26 @@
+<productinfo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="optional">
+ <?xml-stylesheet type="text/xsl"href="optional"?>
+<!-- info.xml file for the Upslope toolbox -->
+<!-- Author: Ali-akbar Agha-mohammadi -->
+<!-- Copyright 2011-2012 The ???, Inc. -->
+<!-- Release element is not used, but provides documentation -->
+<matlabrelease>13</matlabrelease>
+<name>FIRM Motion Planning</name>
+<type>toolbox</type>
+<icon>$toolbox/matlab/icons/matlabicon.gif</icon>
+<help_location>C:\Ali\Dropbox\FIRM_toolbox_ver_current\Help_html</help_location>
+<!-- <help_location>$docroot/toolbox/FIRM</help_location>-->
+<!-- <help_location>$docroot/toolbox/FIRM</help_location>-->
+<!-- (Required) The name element appears in the Contents pane -->
+<!-- (Required) The type elementidentifies your package; pick one: -->
+<!-- matlab, toolbox, simulink, blockset, links_targets  -->
+<!-- The icon element is used in the Start button -->
+<!-- (Required) The help_location is relative path to help (HTML) file folder -->
+<list>	
+<listitem>
+<label>Help</label>
+<callback>doc FIRM</callback>
+<icon>$toolbox/matlab/icons/book_mat.gif</icon>
+</listitem>
+</list>
+</productinfo>

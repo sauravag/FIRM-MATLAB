@@ -1,0 +1,11 @@
+figure;
+xlabel('b')
+ylabel('pdf over belief')
+
+m = 4;
+sig = 1;
+dim = length(m);
+
+x = -
+
+pdf = (1/(((sqrt(2*pi))^dim)*det(sig)))*exp(-.5*(x-m)'*inv(sig)*(x-m));

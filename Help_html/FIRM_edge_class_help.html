@@ -1,0 +1,111 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <link rel="stylesheet" href="file:///C:/Program Files/MATLAB/R2010b/toolbox/matlab/helptools/private/helpwin.css">
+      <title>MATLAB File Help: FIRM_edge_class</title>
+   </head>
+   <body>
+      <!--Single-page help-->
+      <table border="0" cellspacing="0" width="100%">
+         <tr class="subheader">
+            <td class="headertitle">MATLAB File Help: FIRM_edge_class</td>
+            <td class="subheader-left"><a href="matlab:open @FIRM_edge_class\FIRM_edge_class.m">View code for FIRM_edge_class</a></td>
+            <td class="subheader-right"><a href="matlab:helpwin">Default Topics</a></td>
+         </tr>
+      </table>
+      <div class="title">FIRM_edge_class</div>
+      <div class="helptext"><pre><!--helptext -->  <span class="helptopic">FIRM_edge_class</span> encapsulates the properties and methods associated with defining FIRM edges.</pre></div><!--after help -->
+      <!--Class-->
+      <div class="sectiontitle">Class Details</div>
+      <table class="class-details">
+         <tr>
+            <td class="class-detail-label">Sealed</td>
+            <td>false</td>
+         </tr>
+         <tr>
+            <td class="class-detail-label">Construct on load</td>
+            <td>false</td>
+         </tr>
+      </table>
+      <!--Constructors-->
+      <div class="sectiontitle"><a name="constructors"></a>Constructor Summary
+      </div>
+      <table class="summary-list">
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('FIRM_edge_class.FIRM_edge_class')">FIRM_edge_class</a></td>
+            <td class="m-help">encapsulates the properties and methods associated with defining FIRM edges.&nbsp;</td>
+         </tr>
+      </table>
+      <!--Properties-->
+      <div class="sectiontitle"><a name="properties"></a>Property Summary
+      </div>
+      <table class="summary-list">
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('FIRM_edge_class.FIRM_cost')">FIRM_cost</a></td>
+            <td class="m-help">Total cost associated with the FIRM edge.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('FIRM_edge_class.FIRM_stopping_time')">FIRM_stopping_time</a></td>
+            <td class="m-help">The stopping time of the FIRM edge (stochastic length of the edge).&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('FIRM_edge_class.failure_probability')">failure_probability</a></td>
+            <td class="m-help">Failure probability ( the probability of NOT reaching a target node.)&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('FIRM_edge_class.filtering_cost')">filtering_cost</a></td>
+            <td class="m-help">The filtering cost associated with the FIRM edge.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('FIRM_edge_class.kf')">kf</a></td>
+            <td class="m-help">Nominal length of the edge. This length comes through designing the nominal control sequence u.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('FIRM_edge_class.number')">number</a></td>
+            <td class="m-help">absolute edge number (index).&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('FIRM_edge_class.possible_end_node_indices')">possible_end_node_indices</a></td>
+            <td class="m-help">The indices of possible target nodes of the edge. Note that we can have multiple "end_nodes" since we deal with stochastic
+               edges; that is why the property name is NOT "end_node".&nbsp;
+            </td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('FIRM_edge_class.reaching_probabilities')">reaching_probabilities</a></td>
+            <td class="m-help">A vector with the same size as "end_nodes" that describes the probability of reaching to the target nodes.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('FIRM_edge_class.start_node')">start_node</a></td>
+            <td class="m-help">starting node of the edge. Note that we can only have one "start_node".&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('FIRM_edge_class.target_node_stabilizer')">target_node_stabilizer</a></td>
+            <td class="m-help">The object, which stabilize the belief to one of the "possible_end_nodes".&nbsp;</td>
+         </tr>
+      </table>
+      <!--Methods-->
+      <div class="sectiontitle"><a name="methods"></a>Method Summary
+      </div>
+      <table class="summary-list">
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('FIRM_edge_class.construct')">construct</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('FIRM_edge_class.execute')">execute</a></td>
+            <td class="m-help">This function executes the feedback plan for a single robot (hstate). Also, in case the "replanning flag" is turned on by
+               the user, then if it&nbsp;
+            </td>
+         </tr>
+      </table>
+   </body>
+</html>

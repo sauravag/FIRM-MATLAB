@@ -1,0 +1,111 @@
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <link rel="stylesheet" href="file:///C:/Program Files/MATLAB/R2010b/toolbox/matlab/helptools/private/helpwin.css">
+      <title>MATLAB File Help: LQG_class</title>
+   </head>
+   <body>
+      <!--Single-page help-->
+      <table border="0" cellspacing="0" width="100%">
+         <tr class="subheader">
+            <td class="headertitle">MATLAB File Help: LQG_class</td>
+            <td class="subheader-left"><a href="matlab:open @LQG_class\LQG_class.m">View code for LQG_class</a></td>
+            <td class="subheader-right"><a href="matlab:helpwin">Default Topics</a></td>
+         </tr>
+      </table>
+      <div class="title">LQG_class</div>
+      <div class="helptext"><pre><!--helptext -->  LQG encapsulates the time-varying Linear Quadratic Gaussian Controller
+  Note that this class can use a lot of memory depending on the length
+  of state trajectory. Thus, you should clear the objects of this class
+  when you do not need them anymore. You can do that using
+  "erase_from_memory" function.</pre></div><!--after help -->
+      <!--Class-->
+      <div class="sectiontitle">Class Details</div>
+      <table class="class-details">
+         <tr>
+            <td class="class-detail-label">Sealed</td>
+            <td>false</td>
+         </tr>
+         <tr>
+            <td class="class-detail-label">Construct on load</td>
+            <td>false</td>
+         </tr>
+      </table>
+      <!--Constructors-->
+      <div class="sectiontitle"><a name="constructors"></a>Constructor Summary
+      </div>
+      <table class="summary-list">
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('LQG_class.LQG_class')">LQG_class</a></td>
+            <td class="m-help">LQG encapsulates the time-varying Linear Quadratic Gaussian Controller&nbsp;</td>
+         </tr>
+      </table>
+      <!--Properties-->
+      <div class="sectiontitle"><a name="properties"></a>Property Summary
+      </div>
+      <table class="summary-list">
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('LQG_class.L_seq')">L_seq</a></td>
+            <td class="m-help">feedback gain sequebce&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('LQG_class.filter_mode')">filter_mode</a></td>
+            <td class="m-help">this can be "EKF" or "LKF"&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('LQG_class.kf')">kf</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('LQG_class.planned_lnr_pts_seq')">planned_lnr_pts_seq</a></td>
+            <td class="m-help">linearization points (planned trajectory and controls.)&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('LQG_class.planned_lnr_sys_seq')">planned_lnr_sys_seq</a></td>
+            <td class="m-help">linear systems (planned systems.)&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="name"><a href="matlab:helpwin('LQG_class.valid_lnr_domain')">valid_lnr_domain</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+      </table>
+      <!--Methods-->
+      <div class="sectiontitle"><a name="methods"></a>Method Summary
+      </div>
+      <table class="summary-list">
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('LQG_class.erase_from_memory')">erase_from_memory</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('LQG_class.propagate_Hb_Gaussian')">propagate_Hb_Gaussian</a></td>
+            <td class="m-help">"k" is the current time.&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('LQG_class.propagate_Hb_particle')">propagate_Hb_particle</a></td>
+            <td class="m-help">&nbsp;</td>
+         </tr>
+         <tr class="summary-item">
+            <td class="attributes">
+               &nbsp;
+               
+            </td>
+            <td class="name"><a href="matlab:helpwin('LQG_class.propagate_Hstate')">propagate_Hstate</a></td>
+            <td class="m-help">propagates the Hstate&nbsp;</td>
+         </tr>
+      </table>
+   </body>
+</html>

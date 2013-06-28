@@ -1,0 +1,256 @@
+classdef FIRM_Periodic_LQG_based_class < FIRM_graph_interface
+    %FIRM_Periodic_LQG_based_class is the FIRM class based on stationary LQG controllers.
+    
+    properties
+    end
+    
+    methods
+        function obj = FIRM_Periodic_LQG_based_class(PRM_inp)
+            obj = obj@FIRM_graph_interface(PRM_inp);
+            obj.num_stabilizers = obj.PRM.num_orbits;
+            obj.Stabilizers = Orbit_stabilizer_PLQG_class.empty;
+            obj.Stabilizers(obj.num_stabilizers,1) = Orbit_stabilizer_PLQG_class; % Preallocate object array
+            obj.Nodes = FIRM_node_class.empty;
+            obj.Nodes(obj.num_nodes,1) = FIRM_node_class; % Preallocate object array
+            obj.Edges = FIRM_edge_class.empty;
+            obj.Edges(obj.num_edges,1) = FIRM_edge_class; % Preallocate object array
+        end
+        function obj = construct_all_stabilizers_and_FIRM_nodes(obj)
+            % This function constructs stabilizers used in PLQG-based FIRM framework and constructs reachable nodes under this stabilizers and assigns values to the "stabilizers" and "nodes" properties of the class.
+            num_of_nodes = obj.PRM.num_3Dnodes;
+            obj.num_nodes = num_of_nodes;
+            num_oribts = obj.PRM.num_orbits;
+            num_nodes_on_orbits = obj.PRM.par.num_nodes_on_orbits;
+            tic
+            % we design the stabilizers (belief orbit stabilizers) in the following loop.
+            for i = 1:obj.num_stabilizers % i is the stabilizer number (or orbit number in this class)
+                PRM_nodes_on_orbit = obj.PRM.nodes_3D(obj.PRM.corresponding_orbit == i);  % The set of PRM nodes on orbit  i
+                PRM_orbit = obj.PRM.orbits(i);
+                disp(['Orbit Stabilizer ',num2str(i),' out of total ',num2str(obj.num_stabilizers),' stabilizers'])
+                obj.Stabilizers(i) = Orbit_stabilizer_PLQG_class(PRM_nodes_on_orbit  ,  PRM_orbit  ,  i);
+            end
+            n = 0; % n represents the absolute number of 3D node (Not on a single orbit, but among all 3D nodes)
+            for i = 1:num_oribts % i is the orbit number
+                disp(['Constructing FIRM nodes ',num2str((i-1)*num_nodes_on_orbits+1:i*num_nodes_on_orbits),' out of total ',num2str(num_of_nodes),' nodes'])
+                obj.Stabilizers(i) = obj.Stabilizers(i).construct_reachable_FIRM_node( obj.PRM.node_time_stages_on_orbit );
+                reachable_FIRM_nodes = obj.Stabilizers(i).reachable_FIRM_nodes;
+                for alpha = 1:num_nodes_on_orbits % alpha is the node number on the orbit
+                    n = n+1; % n represents the absolute number of 3D node (Not on a single orbit, but among all 3D nodes)
+                    obj.Nodes(n) = reachable_FIRM_nodes(alpha);
+                end
+            end
+            disp(['Time elapsed for creating ',num2str(num_of_nodes),' nodes is ',num2str(toc),' seconds'])
+        end
+        function obj = construct_all_FIRM_edges(obj)
+            % This function constructs FIRM edges and assigns values to the "edges" property of the class.
+            num_oribts = obj.PRM.num_orbits;
+            num_nodes_on_orbits = obj.PRM.par.num_nodes_on_orbits;
+            tic
+            n = 0; % n represents the absolute number of 3D node (Not on a single orbit, but among all 3D nodes)
+            for io = 1:num_oribts % io is the orbit number
+                for alpha = 1:num_nodes_on_orbits % alpha is the number of node on the orbit
+                    edges_from_orbit_io = find(obj.PRM.edges_3D_list(:,1)==io);
+                    for ie = edges_from_orbit_io
+                        tic
+                        n = n+1; % absolute number of edge. Note that the numbe of FIRM edges in this case are not the same as number of PNPRM edges. Because in FIRM, we cosider node-to-orbit edges, but in PNPRM, we consider the orbit to orbit edges.
+                        
+                        %start_orbit_ind = obj.PRM.edges_3D_list(ie,1); % this must be the same as "io"
+                        end_orbit_ind = obj.PRM.edges_3D_list(ie,2);
+                        fprintf('Constructing edge %d, -------- starting from node %d on orbit %d to orbit %d.\n', n, alpha, io, end_orbit_ind )
+                        % The following funtion concatenates a part on orbit "io" and
+                        % the "PRM.orbit_edges_trajectory" to generate the node to
+                        % orbit trajectories.
+                        PRM_edge_traj = obj.PRM.generate_node_to_orbit_trajectory(io,alpha, end_orbit_ind);
+                        % To test correcness
+                        for iii=1:length(PRM_edge_traj.x)
+                            xp=state(PRM_edge_traj.x(:,iii));
+                            xp.draw('RobotShape','triangle','triacolor','g','color','g');
+                        end
+                        
+                        list_of_nodes_on_starting_orbit = find(obj.PRM.corresponding_orbit == io); % The list of node indices, which lie on the starting orbit "io"
+                        starting_node_ind = list_of_nodes_on_starting_orbit(alpha); % The absolute index of starting node
+                        starting_FIRM_node = obj.Nodes(starting_node_ind);
+                        
+                        end_edge_stabilizer = obj.Stabilizers(end_orbit_ind);
+                         
+                        obj.Edges(n) = FIRM_edge_class(starting_FIRM_node , end_edge_stabilizer , n , PRM_edge_traj ); % the last input has been added on 01/29/2012
+                        obj.Edges(n) = obj.Edges(n).construct();
+                        obj.time_of_edge_construction(n) = toc;
+                    end
+                end
+            end
+        end
+        function obj = DP_compute_cost_to_go_values(obj,goal_node_ind)
+            disp('We should bring the constants in this function to the "user_data_class".')
+            values = zeros(obj.num_nodes,1); % I can consider one more value here for failure state. However, I am going to handle the failure state in a different way as it is seen in below.
+            next_node = nan(obj.num_nodes,1); % next_node(i) is the output of "feedback pi", when we are at i-th node.
+            list_of_failure_prob = [obj.Edges.failure_probability]; % This is the list of failure probabilities corresponding to every edge. Note that the "brackets" at the right hand side play an important role here.
+            list_of_total_costs = -[obj.Edges.FIRM_cost]; % note that since we are doing "maximization", actually these are "rewards" NOT "costs". Thus, we have to make them negative.
+            Cfail = - user_data_class.par.failure_cost; %failure cost % similar to above line, this cost is also has to be negative.
+            
+            value_mat = []; % just for monitoring value updates. Otherwise, not useful.
+            new_values = ones(obj.num_nodes,1)*user_data_class.par.initial_values; % initializing node values.
+            while norm(values-new_values)>0.01
+                values = new_values;
+                value_mat = [value_mat,values]; %#ok<AGROW> % just for monitoring value updates. Otherwise, not useful.
+                for i = 1 : size(values,1)
+                    if i == goal_node_ind % The value of the goal node must remain unchanged.
+                        new_values(i) = values(i);
+                        next_node(i) = nan;
+                    else
+                        s_prime = find(obj.PRM.edges_3D_matrix(i,:)); % s_prime is the list of nodes that i-th node is connected to.
+                        candidate_values = []; % initialization
+                        for sp_ind = 1:length(s_prime)
+                            j = s_prime(sp_ind); % j is the next node index. Notice the difference between j and sp_ind.
+                            list_of_edges = obj.PRM.edges_3D_list;
+                            [~,edge_num] = intersect(list_of_edges,[i,j],'rows'); % this function returns the number of edge, whose start and end nodes are i and j, respectively.
+                            Pij = 1 - list_of_failure_prob(edge_num); % transition probability from node i to node j
+                            Cij = list_of_total_costs(edge_num); % cost of transition from node i to node j
+                            if i == j
+                                Cij = Cij + (-1000); % We add 1000 to the cost, so that robot does not stay in the current node. % Again it has to be negative.
+                            end
+                            % Note that in general by taking action j, there are some probabilities
+                            % that you land in different states (Here that probability is zero). In
+                            % that case, one more "for loop" has to be added here to compute the sum
+                            % over such states in the second term of below command.
+                            candidate_values = [candidate_values, Pij*(Cij + values(j)) + (1-Pij)*Cfail ]; %#ok<AGROW>
+                        end
+                        if isempty(candidate_values)
+                            new_values(i) = 0;
+                            next_node(i) = nan;
+                        else
+                            [new_values(i),best_sp_ind] = max(candidate_values);
+                            next_node(i) = s_prime(best_sp_ind);
+                        end
+                    end
+                end
+            end
+            % In the following we draw the evolution of node values.
+            curr_fig = gcf;
+            figure;
+            plot(value_mat')
+            figure(curr_fig);
+            drawnow
+            % in the following we draw the arrows on the
+            % storing the values and "feedback_pi" in the graph.
+            obj.cost_to_go = values;
+            obj.feedback_pi = next_node;
+            % in the following we plot the feedback pi on the graph.
+            selected_nodes = user_data_class.par.selected_nodes_for_plotting_feedback_pi;
+            if ~isempty(selected_nodes )
+                obj.plot_handle_feedback_pi = obj.PRM.draw_feedback_pi(obj.feedback_pi, selected_nodes);
+            end
+        end
+        function obj = Execute_FIRM(obj,start_node_ind,goal_node_ind)
+            initial_robot_ensemble = obj.Nodes(start_node_ind).sample_stationary_GHb; % in execution phase, we use the word "ensemble" instead of Hbelief_particle.
+            current_ensemble = initial_robot_ensemble; % initialization
+            current_GHb = obj.Nodes(start_node_ind).stationary_GHb;
+            current_node_ind = start_node_ind;
+            list_of_edges = obj.PRM.edges_3D_list;
+            while current_node_ind ~= goal_node_ind
+                next_node_ind = obj.feedback_pi(current_node_ind); % compute the next node on the graph using high level feedback "pi" on the graph.
+                [~,edge_num] = intersect(list_of_edges,[current_node_ind,next_node_ind],'rows'); % this function returns the number of edge, whose start and end nodes are "current_node_ind" and "next_node_ind", respectively.
+                current_ensemble.stopped_particles = zeros(Hbelief_p.num_p,1);
+                
+                [next_ensemble, next_GHb] = obj.Edges(edge_num).execute_ensemble_of_robots(current_ensemble, current_GHb);
+                if isempty(find(~next_ensemble.collided_particles & ~next_ensemble.unsuccessful_particles, 1)) % the ",1" at the end of arguments is MATLAB's suggestion to make the "find" command faster. Otherwise, it is not needed.
+                    error('Ali: Execution is failed, as all particles are collided or ran out of time.')
+                end
+                
+                current_ensemble = next_ensemble;
+                current_GHb = next_GHb;
+                current_node_ind = next_node_ind;
+            end
+            
+        end
+        function obj = Execute_FIRM_with_replanning(obj,start_node_ind,goal_node_ind)
+            initial_robot_ensemble_temp = obj.Nodes(start_node_ind).sample_stationary_GHb; % in this function, we do not propagate the ensemble. We only pick a single hstate from the ensemble and propagate it.
+            for q = 2:length(initial_robot_ensemble_temp.Hparticles) % here we can just pick one of particle. or run for all particles. Just remember the first one is the no-noise particle, so we may start from the second particle.
+                initial_hstate = initial_robot_ensemble_temp.Hparticles(q);
+                Execute_FIRM_with_replanning_single_robot(obj,initial_hstate,start_node_ind,goal_node_ind);
+            end
+        end
+    end
+    
+    methods (Access = private)
+        function Execute_FIRM_with_replanning_single_robot(obj,initial_hstate,start_node_ind,goal_node_ind)
+            % Note that we must NOT output the "obj" in
+            % this function, because we do not want the newly added node
+            % gets added to the main graph. We want the other robot (the
+            % next runs), use the same original graph. Thus, we want to treat the new nodes as the
+            % temporary nodes.
+            current_hstate = initial_hstate;
+            current_node_ind = start_node_ind;
+            list_of_edges = obj.PRM.edges_3D_list;
+            while current_node_ind ~= goal_node_ind
+                next_node_ind = obj.feedback_pi(current_node_ind); % compute the next node on the graph using high level feedback "pi" on the graph.
+                [~,edge_num] = intersect(list_of_edges,[current_node_ind,next_node_ind],'rows'); % this function returns the number of edge, whose start and end nodes are "current_node_ind" and next_node_ind", respectively.
+                current_GHb = obj.Nodes(current_node_ind).stationary_GHb;
+                [next_hstate, lost, failed] = obj.Edges(edge_num).execute_single_robot_with_replanning(current_hstate, current_GHb); % current_GHb is really not needed here. It is only for plotting purposes.
+                if failed
+                    break
+                end
+                if lost
+                    new_node_ind = obj.PRM.num_3Dnodes + 1; % this is the number of first newly added node (which coincides the existing estimation right at this point).
+                    obj.PRM = obj.PRM.add_a_node_and_its_sequel(next_hstate.b.est_mean); % add a node to PRM
+                    obj = obj.add_a_node_and_its_sequel(next_hstate.b); % add a node to FIRM
+                    if user_data_class.par.goBack_to_nearest_node
+                        nearest_node_ind = obj.PRM.compute_nearest_node_ind(new_node_ind);
+                        obj.feedback_pi(new_node_ind) = nearest_node_ind;
+                    else
+                        % in FIRM, we need to update the "feedback pi" too. Note that we are doing this in a naive way by updating whole values. The computationally less expensive way is only to compute the newly added node. However, the benefit of the current method is if we want to add the node to the graph (i.e. the new nodes which comes later can get connected to it.) this is correct to update the whole values.
+                        obj = obj.DP_compute_cost_to_go_values(goal_node_ind);
+                    end
+                    obj.Execute_FIRM_with_replanning_single_robot(next_hstate,new_node_ind,goal_node_ind);
+                    return
+                end
+                current_hstate = next_hstate;
+                current_node_ind = next_node_ind;
+            end
+        end
+        function obj = add_a_node_and_its_sequel(obj,b)
+            % HBRM node
+            PRM_new_node = b.est_mean;
+            new_node_ind = obj.num_nodes + 1;
+            obj.Nodes(new_node_ind) = FIRM_node_class(PRM_new_node,new_node_ind);
+            % inserting singleton GHb to the node
+            singleton_GHb = Hbelief_G(b.est_mean,b.est_mean,b.est_cov,blkdiag(b.est_cov,zeros(state.dim)));
+            obj.Nodes(new_node_ind).stationary_GHb = singleton_GHb;
+            % Important: Note that the "singleto_GHb", which is inserted as
+            % the "stationary_GHb" of the new node, is only used to produce
+            % the new edges at this stage. After producing the edges, we
+            % UPDATE the "stationary_GHb" by its real "stationary_GHb".
+            
+            % set the new number of nodes by one
+            obj.num_nodes = obj.PRM.num_3Dnodes;
+            % draw the new nodes
+            obj.Nodes(new_node_ind).stationary_GHb = obj.Nodes(new_node_ind).stationary_GHb.draw();
+            % new edges
+            old_num_of_edges = obj.num_edges;
+            obj.num_edges = size(obj.PRM.edges_3D_list,1);
+            for i = old_num_of_edges+1 : obj.num_edges
+                tic
+                disp(['Constructing edge ',num2str(i),' ...'])
+                start_ind = obj.PRM.edges_3D_list(i,1);
+                end_ind = obj.PRM.edges_3D_list(i,2);
+                obj.Edges(i) = FIRM_edge_class(obj.Nodes(start_ind),obj.Nodes(end_ind),i);
+                if ~user_data_class.par.goBack_to_nearest_node % if, in replanning, we go to the nearest node, we do not need to compute the uncertainty porpagation along the newly added edges.
+                    obj.Edges(i) = obj.Edges(i).construct();
+                end
+                obj.time_of_edge_construction(i) = toc;
+            end
+            
+            % In the following line we compute the real stationary GHb
+            % corresponding to the new node. Note that this has to be done
+            % after computing edges.
+            % Note that the reason we have to update this "stationary_GHb"
+            % from "singleton" value to this value, is that this newly
+            % added node can be the "end node" of some other edges which
+            % may be added later.
+            disp('Following is wrong!! because, if you want to use the added node again in the planning, the costs has to be computed based on the stationary GHb, not the singleton GHb.')
+            obj.Nodes(new_node_ind) = obj.Nodes(new_node_ind).construct_node();
+            obj.Nodes(new_node_ind).stationary_GHb = obj.Nodes(new_node_ind).stationary_GHb.draw();
+        end
+    end
+    
+end

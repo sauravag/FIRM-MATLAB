@@ -1,0 +1,119 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>MotionModel_interface</title><meta name="generator" content="MATLAB 7.11"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2012-08-17"><meta name="DC.source" content="MotionModel_interface.m"><style type="text/css">
+
+body {
+  background-color: white;
+  margin:10px;
+}
+
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows. */ 
+p,h1,h2,div.content div {
+  max-width: 600px;
+  /* Hack for IE6 */
+  width: auto !important; width: 600px;
+}
+
+pre.codeinput {
+  background: #EEEEEE;
+  padding: 10px;
+}
+@media print {
+  pre.codeinput {word-wrap:break-word; width:100%;}
+} 
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.codeoutput {
+  color: #666666;
+  padding: 10px;
+}
+
+pre.error {
+  color: red;
+}
+
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="keyword">classdef</span> MotionModel_interface
+
+    <span class="keyword">properties</span> (Abstract, Constant) <span class="comment">% note that all properties must be constant, because we have a lot of copies of this object and it can take a lot of memory otherwise.</span>
+        stDim; <span class="comment">% state dimension</span>
+        ctDim;  <span class="comment">% control vector dimension</span>
+        wDim;   <span class="comment">% Process noise (W) dimension</span>
+        dt; <span class="comment">% delta_t for time discretization</span>
+        sigma_b_u; <span class="comment">% A constant bias intensity (covariance) of the control noise</span>
+        eta_u; <span class="comment">% A coefficient, which makes the control noise intensity proportional to the control signal</span>
+        P_Wg; <span class="comment">% covariance of state-additive-noise</span>
+    <span class="keyword">end</span>
+
+    <span class="keyword">methods</span> (Abstract, Static)
+        x_next = f_discrete(x,u,w) <span class="comment">% discrete motion model equation</span>
+        A = df_dx_func(x,u,w) <span class="comment">% state Jacobian</span>
+        B = df_du_func(x,u,w) <span class="comment">% control Jacobian</span>
+        G = df_dw_func(x,u,w) <span class="comment">% nosie Jacobian</span>
+        w = generate_process_noise(x,u) <span class="comment">% simulate (generate) process noise based on the current poistion and controls</span>
+        Q_process_noise = process_noise_cov(x,u) <span class="comment">% compute the covariance of process noise based on the current poistion and controls</span>
+        nominal_traj = generate_open_loop_point2point_traj(X_initial,X_final) <span class="comment">% generates open-loop trajectories between two start and goal states</span>
+        YesNo = is_constraints_violated(open_loop_traj)
+        traj_plot_handle = draw_nominal_traj(nominal_traj, varargin)
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">Error using ==&gt; MotionModel_interface
+Creating an instance of the Abstract class 'MotionModel_interface' is not allowed.
+</pre><p class="footer"><br>
+      Published with MATLAB&reg; 7.11<br></p></div><!--
+##### SOURCE BEGIN #####
+classdef MotionModel_interface
+
+    properties (Abstract, Constant) % note that all properties must be constant, because we have a lot of copies of this object and it can take a lot of memory otherwise.
+        stDim; % state dimension
+        ctDim;  % control vector dimension
+        wDim;   % Process noise (W) dimension
+        dt; % delta_t for time discretization
+        sigma_b_u; % A constant bias intensity (covariance) of the control noise
+        eta_u; % A coefficient, which makes the control noise intensity proportional to the control signal
+        P_Wg; % covariance of state-additive-noise
+    end
+    
+    methods (Abstract, Static)
+        x_next = f_discrete(x,u,w) % discrete motion model equation
+        A = df_dx_func(x,u,w) % state Jacobian
+        B = df_du_func(x,u,w) % control Jacobian
+        G = df_dw_func(x,u,w) % nosie Jacobian
+        w = generate_process_noise(x,u) % simulate (generate) process noise based on the current poistion and controls
+        Q_process_noise = process_noise_cov(x,u) % compute the covariance of process noise based on the current poistion and controls
+        nominal_traj = generate_open_loop_point2point_traj(X_initial,X_final) % generates open-loop trajectories between two start and goal states
+        YesNo = is_constraints_violated(open_loop_traj)
+        traj_plot_handle = draw_nominal_traj(nominal_traj, varargin)
+    end
+end
+##### SOURCE END #####
+--></body></html>
