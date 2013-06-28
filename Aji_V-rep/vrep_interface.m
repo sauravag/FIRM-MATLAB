@@ -22,20 +22,19 @@ classdef vrep_interface %< SimulatorInterface
     end
     
     methods
-        function obj = vrep_interface()  % Constructor
-            
-            %obj = obj@SimulatorInterface();
-            
+        %% Constructor
+        function obj = vrep_interface()  
            % Setting up the connection
             obj.clientID = obj.vrep.simxStart('127.0.0.1',19999,true,true,5000,5); % port should be taken as input. options number < 20000 
                      
             if(obj.clientID>-1)
                 fprintf('Connecton Established\n');
-            else fprintf('Connection Failed...\nRetry\n');% Try to make a call to destructor and retry making the connection
+            else fprintf('Connection Failed...\nRetry\n');
                 obj.vrep.delete();
             end
         end
         
+        %% Destructor
         function obj = delete(obj)
             [res(19)] = obj.vrep.simxStopSimulation(obj.clientID, obj.vrep.simx_opmode_oneshot_wait);
             [res(18)] = obj.vrep.simxCloseScene(obj.clientID, obj.vrep.simx_opmode_oneshot_wait);
@@ -45,6 +44,8 @@ classdef vrep_interface %< SimulatorInterface
     end
        
     methods 
+        
+        %% Setting up the environment
         function obj = simInitialize(obj)
             % Transfer the .obj file (take the path from .obj file generator)
 %             [res(1)] = obj.vrep.simxTransferFile(obj.clientID,'/home/ajinkya/Dropbox/FIRM_toolbox_ver_current/cube1.obj','cube1.obj',20,obj.vrep.simx_opmode_oneshot_wait);
@@ -70,7 +71,7 @@ classdef vrep_interface %< SimulatorInterface
             end
         end
             
-        
+        %% Setting up the Robot
         function obj = SetRobot(obj,position)
              %Loading the Robot
 %             [res(7),obj.robot] = obj.vrep.simxLoadModel(obj.clientID,'/home/ajinkya/Dropbox/summer13/V-REP_PRO_EDU_V3_0_3_Linux/models/robots/mobile/dr20.ttm',0,obj.vrep.simx_opmode_oneshot_wait);
@@ -93,7 +94,7 @@ classdef vrep_interface %< SimulatorInterface
             [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[position.val(1),position.val(2), 0.1517],obj.vrep.simx_opmode_oneshot);
             [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,-1,[0,0,position.val(3)],obj.vrep.simx_opmode_oneshot);
              
-            %Setting the Environment
+            %Intializing the Environment
             [res(20)] = obj.vrep.simxStartSimulation(obj.clientID, obj.vrep.simx_opmode_oneshot); 
             [res(14)] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, obj.robot_joints(2), 0,obj.vrep.simx_opmode_streaming);
             [res(15)] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, obj.robot_joints(3), 0,obj.vrep.simx_opmode_streaming);
@@ -102,18 +103,18 @@ classdef vrep_interface %< SimulatorInterface
             pause(5);
         end
         
-        
+        %% Acquiring the Position of Data
         function obj = getRobot(obj)
            [res(11),obj.robot_position] = obj.vrep.simxGetObjectPosition(obj.clientID, obj.robot,-1, obj.vrep.simx_opmode_oneshot_wait);
            [res(12),obj.robot_orientation] = obj.vrep.simxGetObjectOrientation(obj.clientID, obj.robot, -1,obj.vrep.simx_opmode_oneshot_wait);
         end
         
-        
+        %% Refreshing the Scene but we don't need to do this for V-Rep
         function obj = refresh(obj)
         end
                 
+        %% Evolving the function
         function obj = evolve(obj,control,i)
-                
             linear_velocity = control(1);
             ang_velocity = control(2);
             wheelDiameter = 0.085;
@@ -136,5 +137,6 @@ classdef vrep_interface %< SimulatorInterface
 %             [res(16)] = obj.vrep.simxPauseSimulation(obj.clientID,obj.vrep.simx_opmode_oneshot_wait);
                                    
         end
+        %%
     end
 end
