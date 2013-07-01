@@ -1,67 +1,75 @@
-classdef laserScanner < vrep_interface
+classdef laserScanner
     
     properties
         laserResponse;
+        oneScan;
+        rob_pos;
+        rob_ori;
+        laserData;
+        laserTimeStamp;
+        robot_position;
+        robot_orientation;
         
     end
     
     methods
-        function obj = laserScanner(obj) %% Constructor
+        function obj = laserScanner(vrep,clientID,robot) %% Constructor
             %% Intializing Communication
-            [obj.laserResponse(1)] = vrep.simxSetStringSignal(obj.clientID,'request','laser',obj.vrep.simx_opmode_oneshot);
-            [obj.laserResponse(2),data] = vrep.simxGetStringSignal(obj.clientID,'reply',obj.vrep.simx_opmode_streaming);
-            [obj.laserResponse(3),rob_pos] = vrep.simxGetObjectPosition(obj.clientID, bot,-1, obj.vrep.simx_opmode_streaming);
-            [obj.laserResponse(4),rob_ori] = vrep.simxGetObjectOrientation(obj.clientID,bot,-1,obj.vrep.simx_opmode_streaming);
+            [obj.laserResponse(1)] = vrep.simxSetStringSignal(clientID,'request','laser',vrep.simx_opmode_oneshot);
+            [obj.laserResponse(2),obj.oneScan] = vrep.simxGetStringSignal(clientID,'reply',vrep.simx_opmode_streaming);
+            [obj.laserResponse(3),obj.rob_pos] = vrep.simxGetObjectPosition(clientID, robot,-1, vrep.simx_opmode_streaming);
+            [obj.laserResponse(4),obj.rob_ori] = vrep.simxGetObjectOrientation(clientID,robot,-1,vrep.simx_opmode_streaming);
         end
         
-        function obj = laserScan(obj,i)
+        function obj = Scan(obj,i,vrep,clientID,robot)
             %% Setting Laser Signal
-            [obj.laserResponse(1)] = obj.vrep.simxSetStringSignal(obj.obj.clientID,'request','laser',obj.vrep.simx_opmode_oneshot);
+            [obj.laserResponse(1)] = vrep.simxSetStringSignal(clientID,'request','laser',vrep.simx_opmode_oneshot);
             
-            if (obj.laserResponse(1)==obj.vrep.simx_error_noerror)
+            if (obj.laserResponse(1)==vrep.simx_error_noerror)
                 fprintf('Signal is Set\n');
                 
                 %% Receiving response from Laser
-                [obj.laserResponse(2),data] = obj.vrep.simxGetStringSignal(obj.obj.clientID,'reply',obj.vrep.simx_opmode_buffer);
+                [obj.laserResponse(2),obj.oneScan] = vrep.simxGetStringSignal(clientID,'reply',vrep.simx_opmode_buffer);
                 
-                if (obj.laserResponse(2)==obj.vrep.simx_error_noerror)
-                    obj.timeStamp(i) = obj.vrep.simxGetLastCmdTime(obj.clientID); %% Getting time Stamp for Communication Signal
-                    fprintf('Reply received\n')
+                if (obj.laserResponse(2)==vrep.simx_error_noerror)
+                    obj.laserTimeStamp(i) = vrep.simxGetLastCmdTime(clientID); %% Getting time Stamp for Communication Signal
+                    fprintf('Reply received\n');
                     
                     %% Acquiring Position
-                    [obj.laserResponse(3),rob_pos] = obj.vrep.simxGetObjectPosition(obj.clientID, obj.bot,-1, obj.vrep.simx_opmode_buffer);
-                    [obj.laserResponse(4),rob_ori] = obj.vrep.simxGetObjectOrientation(obj.clientID,obj.bot,-1,obj.vrep.simx_opmode_buffer);
+                    [obj.laserResponse(3),obj.rob_pos] = vrep.simxGetObjectPosition(clientID, robot,-1, vrep.simx_opmode_buffer);
+                    [obj.laserResponse(4),obj.rob_ori] = vrep.simxGetObjectOrientation(clientID,robot,-1,vrep.simx_opmode_buffer);
+                    %% Setting Positions in Correct format
+                    obj.robot_position(i,1) = obj.rob_pos(1);
+                    obj.robot_position(i,2) = obj.rob_pos(2);
+                    obj.robot_orientation = obj.rob_ori(3);
                 end
                 
-                %% Setting Positions in Correct format
-                obj.robot_position(i,1) = rob_pos(1);
-                obj.robot_position(i,2) = rob_pos(2);
-                obj.robot_position(i,3) = rob_ori(3);
+                
                 
                 
             else fprintf('Error in set signal');
             end
             
             %% Data Conversion from string to Numbers
-            if(numel(data~=0))
+            if(numel(obj.oneScan~=0))
                 count =1;
                 temp_count =1;
-                laser_data = zeros(1);
+                laser_Data = zeros(1);
                 
-                for j= 2:(length(data))
-                    if((data(j)== ',')||(data(j)=='}'))
-                        laser_data(count) = str2double(temp_data);
+                for j= 2:(length(obj.oneScan))
+                    if((obj.oneScan(j)== ',')||(obj.oneScan(j)=='}'))
+                        laser_Data(count) = str2double(temp_Data);
                         count = count+1;
                         temp_count = 1;
                         continue;
                     end
                     
-                    temp_data(temp_count) = data(j);
+                    temp_Data(temp_count) = obj.oneScan(j);
                     temp_count = temp_count+1;
                 end
                 
-                if(numel(laser_data)>1)
-                    reshapedData = reshape(laser_data,3,(length(laser_data)/3));
+                if(numel(laser_Data)>1)
+                    reshapedData = reshape(laser_Data,3,(length(laser_Data)/3));
                     
                     for k = 1:length(reshapedData)
                         obj.laserData(i,:,k) = reshapedData(:,k);
