@@ -1,12 +1,8 @@
 classdef vrep_interface %< SimulatorInterface
-    properties (Constant)
-        vrep = remApi('remoteApi', 'extApi.h');
-    end
-    
     properties
         %connection Property
         clientID;
-        
+        vrep;
         % Simulation Property
         loop;
         
@@ -37,6 +33,15 @@ classdef vrep_interface %< SimulatorInterface
     methods
         %% Constructor
         function obj = vrep_interface()
+            is32=exist([matlabroot,'/bin/win32'],'dir')~=0;
+            is64=exist([matlabroot,'/bin/win64'],'dir')~=0;
+            if is32
+                obj.vrep = remApi('remoteApi', 'extApi.h');
+            elseif is64
+                obj.vrep = remApi('remoteApi', 'extApi.h');
+            end
+            
+            
             % Setting up the connection
             obj.clientID = obj.vrep.simxStart('127.0.0.1',19999,true,true,5000,5); % port should be taken as input. options number < 20000
             
@@ -169,8 +174,8 @@ classdef vrep_interface %< SimulatorInterface
                 
                 case 1
                     obj.sensor = obj.sensor.Scan(obj.vrep,obj.clientID,obj.robot);
-                
-                                        
+                    
+                    
             end
             
         end

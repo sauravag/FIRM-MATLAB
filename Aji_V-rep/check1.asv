@@ -12,7 +12,7 @@ thresholds=default_thresholds_func();
 
 for i = 1:100
     
-    sim = sim.getSensorData;
+    sim = sim.getSensorData(1);
     laserData = squeeze(sim.sensor.laserData);
     if i>3
         scan.x = laserData(1,:).*100;

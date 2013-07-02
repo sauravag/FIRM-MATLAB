@@ -1,14 +1,22 @@
 classdef vrep_interface %< SimulatorInterface
     properties (Constant)
+        
         vrep = remApi('remoteApi', 'extApi.h');
     end
     
     properties
         %connection Property
         clientID;
+        
+        % Simulation Property
+        loop;
+        
+        %Scene Properties
         scene;
         obstacles;
         numberOfObjects=1;
+        
+        % Robot Properties
         robot;
         robot_joints;
         robot_position;
@@ -17,10 +25,13 @@ classdef vrep_interface %< SimulatorInterface
         interWheelDistance;
         leftJointVelocity;
         rightJointVelocity;
+        
+        % Sensor properties
         sensorChosen;
         sensorID;
         sensor;
-        loop;
+        
+        
         
     end
     
