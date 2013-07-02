@@ -1,6 +1,6 @@
 classdef FIRM_edge_class
     % FIRM_edge_class encapsulates the properties and methods associated with defining FIRM edges.
-    
+    %test
     properties
         start_node; % starting node of the edge. Note that we can only have one "start_node".
         possible_end_node_indices;  % The indices of possible target nodes of the edge. Note that we can have multiple "end_nodes" since we deal with stochastic edges; that is why the property name is NOT "end_node".
