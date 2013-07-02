@@ -21,7 +21,7 @@ classdef laserScanner
             [obj.laserResponse(4),obj.rob_ori] = vrep.simxGetObjectOrientation(clientID,robot,-1,vrep.simx_opmode_streaming);
         end
         
-        function obj = Scan(obj,i,vrep,clientID,robot)
+        function obj = Scan(obj,vrep,clientID,robot)
             %% Setting Laser Signal
             [obj.laserResponse(1)] = vrep.simxSetStringSignal(clientID,'request','laser',vrep.simx_opmode_oneshot);
             
@@ -32,16 +32,17 @@ classdef laserScanner
                 [obj.laserResponse(2),obj.oneScan] = vrep.simxGetStringSignal(clientID,'reply',vrep.simx_opmode_buffer);
                 
                 if (obj.laserResponse(2)==vrep.simx_error_noerror)
-                    obj.laserTimeStamp(i) = vrep.simxGetLastCmdTime(clientID); %% Getting time Stamp for Communication Signal
+                    obj.laserTimeStamp = vrep.simxGetLastCmdTime(clientID); %% Getting time Stamp for Communication Signal
                     fprintf('Reply received\n');
                     
                     %% Acquiring Position
                     [obj.laserResponse(3),obj.rob_pos] = vrep.simxGetObjectPosition(clientID, robot,-1, vrep.simx_opmode_buffer);
                     [obj.laserResponse(4),obj.rob_ori] = vrep.simxGetObjectOrientation(clientID,robot,-1,vrep.simx_opmode_buffer);
+                    
                     %% Setting Positions in Correct format
-                    obj.robot_position(i,1) = obj.rob_pos(1);
-                    obj.robot_position(i,2) = obj.rob_pos(2);
-                    obj.robot_orientation = obj.rob_ori(3);
+                    obj.robot_position(1) = obj.rob_pos(1); % Taking x out of {x,y,z}
+                    obj.robot_position(2) = obj.rob_pos(2); % Taking y out of {x,y,z}
+                    obj.robot_orientation = obj.rob_ori(3); % Taking gamma out of {alpha,beta,gamma}
                 end
                 
                 
@@ -72,7 +73,7 @@ classdef laserScanner
                     reshapedData = reshape(laser_Data,3,(length(laser_Data)/3));
                     
                     for k = 1:length(reshapedData)
-                        obj.laserData(i,:,k) = reshapedData(:,k);
+                        obj.laserData(:,k) = reshapedData(:,k);
                     end
                     
                 end
