@@ -2,6 +2,7 @@ classdef laserScanner
     
     properties
         laserResponse;
+        laserStatus = 0;
         oneScan;
         rob_pos;
         rob_ori;
@@ -19,6 +20,17 @@ classdef laserScanner
             [obj.laserResponse(2),obj.oneScan] = vrep.simxGetStringSignal(clientID,'reply',vrep.simx_opmode_streaming);
             [obj.laserResponse(3),obj.rob_pos] = vrep.simxGetObjectPosition(clientID, robot,-1, vrep.simx_opmode_streaming);
             [obj.laserResponse(4),obj.rob_ori] = vrep.simxGetObjectOrientation(clientID,robot,-1,vrep.simx_opmode_streaming);
+            
+            %% Checking for initial data reception
+            while obj.laserStatus ==0
+                [obj.laserResponse(1)] = vrep.simxSetStringSignal(clientID,'request','laser',vrep.simx_opmode_oneshot);
+                if (obj.laserResponse(1)==vrep.simx_error_noerror)
+                    [obj.laserResponse(2),obj.oneScan] = vrep.simxGetStringSignal(clientID,'reply',vrep.simx_opmode_buffer);
+                    if (obj.laserResponse(2)==vrep.simx_error_noerror)
+                        obj.laserStatus = 1;
+                    end
+                end
+            end
         end
         
         function obj = Scan(obj,vrep,clientID,robot)
@@ -43,12 +55,11 @@ classdef laserScanner
                     obj.robot_position(1) = obj.rob_pos(1); % Taking x out of {x,y,z}
                     obj.robot_position(2) = obj.rob_pos(2); % Taking y out of {x,y,z}
                     obj.robot_orientation = obj.rob_ori(3); % Taking gamma out of {alpha,beta,gamma}
+                    
+                else fprintf('Error in receiving Data\n');
                 end
                 
-                
-                
-                
-            else fprintf('Error in set signal');
+            else fprintf('Error in set signal\n');
             end
             
             %% Data Conversion from string to Numbers
