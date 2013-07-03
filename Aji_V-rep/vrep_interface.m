@@ -1,8 +1,19 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Vrep Simulator Interface Class%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%   Author  :   Ajinkya Jain
+%   email   :   jainajinkya92@gmail.com
+%   Date    :   July 2013
+%   Place   :   Dept. of Aerospace Engg., Texas A&M University, College
+%               Station, TX, US
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Developed as a part of FIRM Toolbox for Matlab
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 classdef vrep_interface %< SimulatorInterface
     properties
         %connection Property
-        clientID;
         vrep;
+        clientID;
         % Simulation Property
         loop;
         
@@ -25,9 +36,6 @@ classdef vrep_interface %< SimulatorInterface
         sensorChosen;
         sensorID;
         sensor;
-        
-        
-        
     end
     
     methods
@@ -36,9 +44,9 @@ classdef vrep_interface %< SimulatorInterface
             is32=exist([matlabroot,'/bin/win32'],'dir')~=0;
             is64=exist([matlabroot,'/bin/win64'],'dir')~=0;
             if is32
-                obj.vrep = remApi('remoteApi', 'extApi.h');
+                obj.vrep = remApi('remoteApi_32', 'extApi.h');
             elseif is64
-                obj.vrep = remApi('remoteApi', 'extApi.h');
+                obj.vrep = remApi('remoteApi_64', 'extApi.h');
             end
             
             
@@ -77,7 +85,7 @@ classdef vrep_interface %< SimulatorInterface
             %            end
             
             % Loading the environment and obstacles
-            obj.scene = 'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test2.ttt';
+            obj.scene = 'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test5.ttt';
             [res(3)] = obj.vrep.simxLoadScene(obj.clientID,obj.scene,0,obj.vrep.simx_opmode_oneshot_wait);
             
             for i=1:obj.numberOfObjects
@@ -126,7 +134,8 @@ classdef vrep_interface %< SimulatorInterface
             switch obj.sensorChosen
                 case 'laser'
                     obj.sensorID = 1;
-                    obj.sensor = laserScanner(obj.vrep,obj.clientID,obj.robot);
+                    %                     obj.sensor = laserScanner(obj.vrep,obj.clientID,obj.robot);
+                    obj.sensor = laser_Scanner(obj.vrep,obj.clientID,obj.robot);
                     
             end
             
@@ -178,6 +187,14 @@ classdef vrep_interface %< SimulatorInterface
                     
             end
             
+        end
+        
+        function obj = pauseSimulation(obj)
+            [res(16)] = obj.vrep.simxPauseSimulation(obj.clientID,obj.vrep.simx_opmode_oneshot);
+        end
+        
+        function obj = resumeSimulation(obj)
+            [res(13)] = obj.vrep.simxStartSimulation(obj.clientID, obj.vrep.simx_opmode_oneshot);
         end
         
     end
