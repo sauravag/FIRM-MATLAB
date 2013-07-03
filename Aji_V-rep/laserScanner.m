@@ -49,7 +49,7 @@ classdef laserScanner
                 %% Receiving response from Laser
                 [obj.laserResponse(2),obj.oneScan] = vrep.simxGetStringSignal(clientID,'reply',vrep.simx_opmode_buffer);
                 
-                if ((obj.laserResponse(2)==vrep.simx_error_noerror)&&(obj.oneScan(1)=='s'))
+                if ((obj.laserResponse(2)==vrep.simx_error_noerror))
                     obj.laserTimeStamp = vrep.simxGetLastCmdTime(clientID); %% Getting time Stamp for Communication Signal
                     fprintf('Reply received\n');
                     
@@ -64,7 +64,7 @@ classdef laserScanner
                     obj.robot_position(2) = obj.rob_pos(2); % Taking y out of {x,y,z}
                     obj.robot_orientation = obj.rob_ori(3); % Taking gamma out of {alpha,beta,gamma}
                     
-                else fprintf('Error in receiving Data\nSkipping Data\n');
+                else fprintf('Error in receiving Data\n');
                     
                     
                 end
