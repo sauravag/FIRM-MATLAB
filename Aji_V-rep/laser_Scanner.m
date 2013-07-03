@@ -41,7 +41,7 @@ classdef laser_Scanner
 %                 fprintf('Signal is Set\n');
                 
                 %% Receiving response from Laser
-                [obj.laserResponse(2),obj.oneScan] = vrep.simxGetStringSignal(clientID,'reply',vrep.simx_opmode_buffer);
+                [obj.laserResponse(2),obj.oneScan] = vrep.simxGetStringSignal(clientID,'reply',vrep.simx_opmode_oneshot_wait);
                 
                 if (obj.laserResponse(2)==vrep.simx_error_noerror)
                     obj.laserTimeStamp = vrep.simxGetLastCmdTime(clientID); %% Getting time Stamp for Communication Signal

@@ -85,7 +85,7 @@ classdef vrep_interface %< SimulatorInterface
             %            end
             
             % Loading the environment and obstacles
-            obj.scene = 'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test5.ttt';
+            obj.scene = 'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test3.ttt';
             [res(3)] = obj.vrep.simxLoadScene(obj.clientID,obj.scene,0,obj.vrep.simx_opmode_oneshot_wait);
             
             for i=1:obj.numberOfObjects
@@ -134,8 +134,8 @@ classdef vrep_interface %< SimulatorInterface
             switch obj.sensorChosen
                 case 'laser'
                     obj.sensorID = 1;
-                    %                     obj.sensor = laserScanner(obj.vrep,obj.clientID,obj.robot);
-                    obj.sensor = laser_Scanner(obj.vrep,obj.clientID,obj.robot);
+                    obj.sensor = laserScanner(obj.vrep,obj.clientID,obj.robot);
+%                     obj.sensor = laser_Scanner(obj.vrep,obj.clientID,obj.robot);
                     
             end
             
