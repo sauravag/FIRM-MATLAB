@@ -85,7 +85,7 @@ classdef vrep_interface %< SimulatorInterface
             %            end
             
             % Loading the environment and obstacles
-            obj.scene = 'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
+            obj.scene = fullfile([pwd,'laser_test_20.ttt']);%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
             [res(3)] = obj.vrep.simxLoadScene(obj.clientID,obj.scene,0,obj.vrep.simx_opmode_oneshot_wait);
             
             for i=1:obj.numberOfObjects
