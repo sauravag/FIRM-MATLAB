@@ -8,15 +8,17 @@ robot_init = [0 0 0];
 sim = vrep_interface();
 sim = sim.simInitialize();
 sim = sim.SetRobot(robot_init);
-% thresholds=default_thresholds_func();
+thresholds=default_thresholds_func();
 
 for i = 1:100
     
     sim = sim.getSensorData;
     laserData = squeeze(sim.sensor.laserData);
+%     removing outlier point
+    idx = find(abs(laserData(1,:))<10 & abs(laserData(2,:))<10);
     if i>3
-        scan.x = laserData(1,:).*100;
-        scan.y = laserData(2,:).*100;
+        scan.x = laserData(1,idx).*100;
+        scan.y = laserData(2,idx).*100;
         new_features_set=hierarchical_feature_extracting(scan,thresholds,'new');
     end
 end
