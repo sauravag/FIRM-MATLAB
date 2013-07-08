@@ -65,8 +65,6 @@ classdef laserScanner
                     obj.robot_orientation = obj.rob_ori(3); % Taking gamma out of {alpha,beta,gamma}
                     
                 else fprintf('Error in receiving Data\n');
-                    
-                    
                 end
                 
             else fprintf('Error in set signal\n');
@@ -100,7 +98,7 @@ classdef laserScanner
                 end
             end
             %%
-            %             pause(0.5); %% Necessary for communication. You may decrease the pause based on your requirements and System Capabilities
+            pause(0.5); %% Necessary for communication. You may decrease the pause based on your requirements and System Capabilities
             
         end
     end
