@@ -23,6 +23,7 @@ classdef vrep_interface %< SimulatorInterface
         numberOfObjects=1;
         
         % Robot Properties
+        robotModel;
         robot;
         robot_joints;
         robot_position;
@@ -84,8 +85,16 @@ classdef vrep_interface %< SimulatorInterface
             %                fprintf('scene saved at location: %s\n', obj.scene);
             %            end
             
+            fprintf('Enter the name of the robot model used : \ndr12 or dr20\n');
+            obj.robotModel = input('(Enter as string) :');
+            
             % Loading the environment and obstacles
-            obj.scene = fullfile(pwd,'laser_test_dr20.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
+            if(strcmp(obj.robotModel,'dr12'))
+                obj.scene = fullfile(pwd,'laser_test_dr12.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
+            elseif(strcmp(obj.robotModel,'dr20'))
+                obj.scene = fullfile(pwd,'laser_test_dr20.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
+            end
+            
             [res(3)] = obj.vrep.simxLoadScene(obj.clientID,obj.scene,0,obj.vrep.simx_opmode_oneshot_wait);
             
             for i=1:obj.numberOfObjects
@@ -108,24 +117,33 @@ classdef vrep_interface %< SimulatorInterface
             %             [res(19),y_max] = obj.vrep.simxGetObjectFloatParameter(obj.clientID, obj.robot_body, 19, obj.vrep.simx_opmode_oneshot_wait);
             %
             %             obj.interWheelDistance = y_max - y_min;
-            obj.interWheelDistance = 0.254;
             
-            [res, obj.robot] = obj.vrep.simxGetObjectHandle(obj.clientID,'dr20',obj.vrep.simx_opmode_oneshot_wait);
+            if(strcmp(obj.robotModel,'dr12'))
+                obj.interWheelDistance = 0.154;
+                [res, obj.robot] = obj.vrep.simxGetObjectHandle(obj.clientID,'dr12',obj.vrep.simx_opmode_oneshot_wait);
+                
+            elseif(strcmp(obj.robotModel,'dr20'))
+                obj.interWheelDistance = 0.254;
+                [res, obj.robot] = obj.vrep.simxGetObjectHandle(obj.clientID,'dr20',obj.vrep.simx_opmode_oneshot_wait);
+                
+            end
             
             
             %Handles for various parts of robot
             [res(8), obj.robot_joints] = obj.vrep.simxGetObjects(obj.clientID, obj.vrep.sim_object_joint_type,obj.vrep.simx_opmode_oneshot_wait);
             
             %Setting initial position
-            % remember to convert position[1] to position.val[1] and so
+            % remember to convert position[1] to position.val[1] and do so
             % when trying to use the full closed loop problem
-            robot_model = input('Enter Robot Model : For dr 12 Press 1 & for dr 20 Press 2 :    ');
-            if (robot_model== 1)
+            
+             if(strcmp(obj.robotModel,'dr12'))
                 [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[position(1),position(2), 0.0787],obj.vrep.simx_opmode_oneshot);
-            elseif (robot_model == 2)
+                [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,-1,[0,-(pi/2),position(3)],obj.vrep.simx_opmode_oneshot);
+           elseif(strcmp(obj.robotModel,'dr20'))
                 [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[position(1),position(2), 0.1517],obj.vrep.simx_opmode_oneshot);
+                [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,-1,[0,0,position(3)],obj.vrep.simx_opmode_oneshot);
             end
-            [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,-1,[0,0,position(3)],obj.vrep.simx_opmode_oneshot);
+            
             
             %Intializing the Environment
             [res(20)] = obj.vrep.simxStartSimulation(obj.clientID, obj.vrep.simx_opmode_oneshot);
