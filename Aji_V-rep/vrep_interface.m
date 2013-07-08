@@ -85,7 +85,7 @@ classdef vrep_interface %< SimulatorInterface
             %            end
             
             % Loading the environment and obstacles
-            obj.scene = 'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test3.ttt';
+            obj.scene = 'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
             [res(3)] = obj.vrep.simxLoadScene(obj.clientID,obj.scene,0,obj.vrep.simx_opmode_oneshot_wait);
             
             for i=1:obj.numberOfObjects
@@ -117,8 +117,14 @@ classdef vrep_interface %< SimulatorInterface
             [res(8), obj.robot_joints] = obj.vrep.simxGetObjects(obj.clientID, obj.vrep.sim_object_joint_type,obj.vrep.simx_opmode_oneshot_wait);
             
             %Setting initial position
-            % remmeber to convert position[1] to position.val[1] and so
-            [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[position(1),position(2), 0.0787],obj.vrep.simx_opmode_oneshot);
+            % remember to convert position[1] to position.val[1] and so
+            % when trying to use the full closed loop problem
+            robot_model = input('Enter Robot Model : For dr 12 Press 1 & for dr 20 Press 2 :    ');
+            if (robot_model== 1)
+                [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[position(1),position(2), 0.0787],obj.vrep.simx_opmode_oneshot);
+            elseif (robot_model == 2)
+                [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[position(1),position(2), 0.1517],obj.vrep.simx_opmode_oneshot);
+            end
             [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,-1,[0,-(pi/2),position(3)],obj.vrep.simx_opmode_oneshot);
             
             %Intializing the Environment
@@ -135,7 +141,7 @@ classdef vrep_interface %< SimulatorInterface
                 case 'laser'
                     obj.sensorID = 1;
                     obj.sensor = laserScanner(obj.vrep,obj.clientID,obj.robot);
-%                     obj.sensor = laser_Scanner(obj.vrep,obj.clientID,obj.robot);
+                    %                     obj.sensor = laser_Scanner(obj.vrep,obj.clientID,obj.robot);
                     
             end
             
