@@ -85,7 +85,7 @@ classdef vrep_interface %< SimulatorInterface
             %            end
             
             % Loading the environment and obstacles
-            obj.scene = fullfile([pwd,'laser_test_20.ttt']);%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
+            obj.scene = fullfile(pwd,'laser_test_dr20.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
             [res(3)] = obj.vrep.simxLoadScene(obj.clientID,obj.scene,0,obj.vrep.simx_opmode_oneshot_wait);
             
             for i=1:obj.numberOfObjects
@@ -110,7 +110,7 @@ classdef vrep_interface %< SimulatorInterface
             %             obj.interWheelDistance = y_max - y_min;
             obj.interWheelDistance = 0.254;
             
-            [res, obj.robot] = obj.vrep.simxGetObjectHandle(obj.clientID,'dr12',obj.vrep.simx_opmode_oneshot_wait);
+            [res, obj.robot] = obj.vrep.simxGetObjectHandle(obj.clientID,'dr20',obj.vrep.simx_opmode_oneshot_wait);
             
             
             %Handles for various parts of robot
@@ -125,7 +125,7 @@ classdef vrep_interface %< SimulatorInterface
             elseif (robot_model == 2)
                 [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[position(1),position(2), 0.1517],obj.vrep.simx_opmode_oneshot);
             end
-            [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,-1,[0,-(pi/2),position(3)],obj.vrep.simx_opmode_oneshot);
+            [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,-1,[0,0,position(3)],obj.vrep.simx_opmode_oneshot);
             
             %Intializing the Environment
             [res(20)] = obj.vrep.simxStartSimulation(obj.clientID, obj.vrep.simx_opmode_oneshot);
