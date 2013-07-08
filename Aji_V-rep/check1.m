@@ -17,8 +17,8 @@ for i = 1:100
 %     removing outlier point
     idx = find(abs(laserData(1,:))<10 & abs(laserData(2,:))<10);
     if i>3
-        scan.x = laserData(1,idx).*100;
-        scan.y = laserData(2,idx).*100;
+        scan.x = -laserData(2,idx).*100;
+        scan.y = laserData(1,idx).*100;
         new_features_set=hierarchical_feature_extracting(scan,thresholds,'new');
     end
 end
