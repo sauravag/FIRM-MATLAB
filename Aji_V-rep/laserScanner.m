@@ -16,16 +16,16 @@ classdef laserScanner
     end
     
     methods
-        function obj = laserScanner(vrep,clientID,robot) %% Constructor
+        function obj = laserScanner(vrep,clientID,robot,mode) %% Constructor
             %% Intializing Communication
-            [obj.laserResponse(1)] = vrep.simxSetStringSignal(clientID,'request','laser',vrep.simx_opmode_oneshot);
+            [obj.laserResponse(1)] = vrep.simxSetStringSignal(clientID,'request',mode,vrep.simx_opmode_oneshot);
             [obj.laserResponse(2),obj.oneScan] = vrep.simxGetStringSignal(clientID,'reply',vrep.simx_opmode_streaming);
             [obj.laserResponse(3),obj.rob_pos] = vrep.simxGetObjectPosition(clientID, robot,-1, vrep.simx_opmode_streaming);
             [obj.laserResponse(4),obj.rob_ori] = vrep.simxGetObjectOrientation(clientID,robot,-1,vrep.simx_opmode_streaming);
             
             %% Checking for initial data reception
             while obj.status ==0
-                [obj.laserResponse(1)] = vrep.simxSetStringSignal(clientID,'request','laser',vrep.simx_opmode_oneshot);
+                [obj.laserResponse(1)] = vrep.simxSetStringSignal(clientID,'request',mode,vrep.simx_opmode_oneshot);
                 if (obj.laserResponse(1)==vrep.simx_error_noerror)
                     [obj.laserResponse(2),obj.oneScan] = vrep.simxGetStringSignal(clientID,'reply',vrep.simx_opmode_buffer);
                     if (obj.laserResponse(2)==vrep.simx_error_noerror)
@@ -35,13 +35,13 @@ classdef laserScanner
             end
         end
         
-        function obj = Scan(obj,vrep,clientID,robot)
+        function obj = Scan(obj,vrep,clientID,robot,mode)
             %% Setting Laser Signal
-            [obj.laserResponse(1)] = vrep.simxSetStringSignal(clientID,'request','laser',vrep.simx_opmode_oneshot);
+            [obj.laserResponse(1)] = vrep.simxSetStringSignal(clientID,'request',mode,vrep.simx_opmode_oneshot);
             
             if (obj.laserResponse(1)==vrep.simx_error_noerror)
                 set_time = vrep.simxGetLastCmdTime(clientID);
-                fprintf('Signal is Set\n');
+%                 fprintf('Signal is Set\n');
                 settingtime = (set_time - obj.setTime)/1000;
                 pause(settingtime);
                 obj.setTime = set_time;
@@ -51,7 +51,7 @@ classdef laserScanner
                 
                 if ((obj.laserResponse(2)==vrep.simx_error_noerror))
                     obj.laserTimeStamp = vrep.simxGetLastCmdTime(clientID); %% Getting time Stamp for Communication Signal
-                    fprintf('Reply received\n');
+%                     fprintf('Reply received\n');
                     
                     
                     
