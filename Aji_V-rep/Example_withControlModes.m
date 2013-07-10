@@ -16,11 +16,14 @@ end
 sim = sim.SetRobot(robot_init,modeType);
 
 fprintf('Starting simulation\n');
-
-for i = 1:20
-    
+figure
+for i = 1:100
+    i
     sim = sim.getSensorData;
     laserData = squeeze(sim.sensor.laserData);
+    idx = find(abs(laserData(1,:))<10 & abs(laserData(2,:))<10);
+    laserData = laserData(:,idx);
+    plot(laserData(1,:),laserData(2,:),'.r')
     sim = sim.evolve([0.2 0]); %% Input linear velocity in m/s & angular velocity in rad/s
 end
 

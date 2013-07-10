@@ -24,7 +24,7 @@ classdef laserScanner
             [obj.laserResponse(4),obj.rob_ori] = vrep.simxGetObjectOrientation(clientID,robot,-1,vrep.simx_opmode_streaming);
             
             %% Checking for initial data reception
-            while obj.status ==0
+            while(obj.status ==0)
                 [obj.laserResponse(1)] = vrep.simxSetStringSignal(clientID,'request',mode,vrep.simx_opmode_oneshot);
                 if (obj.laserResponse(1)==vrep.simx_error_noerror)
                     [obj.laserResponse(2),obj.oneScan] = vrep.simxGetStringSignal(clientID,'reply',vrep.simx_opmode_buffer);
