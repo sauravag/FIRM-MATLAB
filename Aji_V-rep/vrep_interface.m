@@ -1,4 +1,4 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Vrep Simulator Interface Class%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%% Vrep Simulator Interface Class %%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   Author  :   Ajinkya Jain
 %   email   :   jainajinkya92@gmail.com

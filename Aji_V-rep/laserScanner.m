@@ -1,22 +1,52 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%% Laser Scanner Class %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%   Author  :   Ajinkya Jain
+%   email   :   jainajinkya92@gmail.com
+%   Date    :   July 2013
+%   Place   :   Dept. of Aerospace Engg., Texas A&M University, College
+%               Station, TX, US
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Developed as a part of FIRM Toolbox for Matlab
+% Useful Links:
+% Further details of the functions used in this class can be seen at:
+% http://www.v-rep.eu/helpFiles/en/remoteApiFunctionsMatlab.htm
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 classdef laserScanner
     
     properties
+        
+        % response of the laser (for debugging only; if response in '-1'
+        % then there is some error in execution of the command, else the
+        % command was executed correctly)
         laserResponse;
+        
+        % Checking the working condition of laser.
+        % '1' = working; '0'= not working
         status = 0;
+        
+        % Raw Data from single scan
         oneScan;
         rob_pos;
         rob_ori;
+        
+        % Refined Data for single scan
         laserData;
-        setTime;
-        getTime;
-        laserTimeStamp;
         robot_position;
         robot_orientation;
         
+        % Time settings for synchronization
+        setTime;
+        getTime;
+        laserTimeStamp;
+        
     end
     
+    
     methods
-        function obj = laserScanner(vrep,clientID,robot,mode) %% Constructor
+        %% Constructor
+        function obj = laserScanner(vrep,clientID,robot,mode)
             %% Intializing Communication
             [obj.laserResponse(1)] = vrep.simxSetStringSignal(clientID,'request',mode,vrep.simx_opmode_oneshot);
             [obj.laserResponse(2),obj.oneScan] = vrep.simxGetStringSignal(clientID,'reply',vrep.simx_opmode_streaming);
@@ -41,7 +71,7 @@ classdef laserScanner
             
             if (obj.laserResponse(1)==vrep.simx_error_noerror)
                 set_time = vrep.simxGetLastCmdTime(clientID);
-%                 fprintf('Signal is Set\n');
+                %                 fprintf('Signal is Set\n');
                 settingtime = (set_time - obj.setTime)/1000;
                 pause(settingtime);
                 obj.setTime = set_time;
@@ -51,7 +81,7 @@ classdef laserScanner
                 
                 if ((obj.laserResponse(2)==vrep.simx_error_noerror))
                     obj.laserTimeStamp = vrep.simxGetLastCmdTime(clientID); %% Getting time Stamp for Communication Signal
-%                     fprintf('Reply received\n');
+                    %                     fprintf('Reply received\n');
                     
                     
                     
