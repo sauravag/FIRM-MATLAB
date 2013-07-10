@@ -1,9 +1,11 @@
+%% This is the main script for doing FIRM using the simulated laser data
 
 %% Commands to get the data of the Laser Scanner
 close all;
 clear all;clc
 addpath(genpath('C:\Users\Amirhossein\Documents\GitHub\FIRM-MATLAB'));
 addpath(genpath('C:\Users\Amirhossein\Desktop\MyWork_TAMU\FIRM_with_simulated_laser\ECMR paper all things\ECMR_paper_codes\completed_after_paper_trends\for ECMR\'))
+addpath(genpath('C:\Users\Amirhossein\Desktop\MyWork_TAMU\FIRM_with_simulated_laser\SSS06.Prac1.DataAssociation'))
 robot_init = [0 0 0];
 sim = vrep_interface();
 sim = sim.simInitialize();
