@@ -106,7 +106,7 @@ classdef vrep_interface %< SimulatorInterface
                 if(strcmp(obj.robotModel,'dr12'))
                     obj.scene = fullfile(pwd,'laser_test_dr12.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
                 elseif(strcmp(obj.robotModel,'dr20'))
-                    obj.scene = fullfile(pwd,'laser_test_dr20.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
+                    obj.scene = fullfile(pwd,'env_fourthfloor.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
                 end
             end
             
