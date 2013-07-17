@@ -245,9 +245,9 @@ classdef ObservationModel_class < ObservationModel_interface
             old_prop{2}=get(gca,'XGrid'); % save the old "XGrid" property.
             old_prop{3}=get(gca,'YGrid'); % save the old "YGrid" property.
             grid on; % set the XGrid and YGrid to "on".
-            if ~isempty(user_data_class.par.figure_position)
-                set(gcf,'Position',user_data_class.par.figure_position)
-            end
+%             if ~isempty(user_data_class.par.figure_position)
+%                 set(gcf,'Position',user_data_class.par.figure_position)
+%             end
             axis(user_data_class.par.env_limits);
             set(gca,'DataAspectRatio',[1 1 1]); % makes the scaling of different axes the same. So, a circle is shown as a circle not ellipse.
         end

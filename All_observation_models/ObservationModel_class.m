@@ -133,10 +133,10 @@ classdef ObservationModel_class < ObservationModel_interface
             old_prop{2}=get(gca,'XGrid'); % save the old "XGrid" property.
             old_prop{3}=get(gca,'YGrid'); % save the old "YGrid" property.
             grid on; % set the XGrid and YGrid to "on".
-            if ~isempty(user_data_class.par.figure_position)
-                set(gcf,'Position',user_data_class.par.figure_position)
+            if ~isempty(user_data_class.par.sim.figure_position)
+                set(gcf,'Position',user_data_class.par.sim.figure_position)
             end
-            axis(user_data_class.par.env_limits);
+            axis(user_data_class.par.sim.env_limits);
             set(gca,'DataAspectRatio',[1 1 1]); % makes the scaling of different axes the same. So, a circle is shown as a circle not ellipse.
         end
         function reset_figure(old_prop) % This function resets the figure properties (size and other properties), to what they were before setting them in this class.

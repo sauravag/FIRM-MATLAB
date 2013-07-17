@@ -8,7 +8,7 @@
 <name>FIRM Motion Planning</name>
 <type>toolbox</type>
 <icon>$toolbox/matlab/icons/matlabicon.gif</icon>
-<help_location>C:\Ali\Dropbox\FIRM_toolbox_ver_current\Help_html</help_location>
+<help_location>C:\Users\Amirhossein\Documents\GitHub\FIRM-MATLAB\Help_html</help_location>
 <!-- <help_location>$docroot/toolbox/FIRM</help_location>-->
 <!-- <help_location>$docroot/toolbox/FIRM</help_location>-->
 <!-- (Required) The name element appears in the Contents pane -->

@@ -1,7 +1,4 @@
 clear classes;clear variables;close all;clc;
-seed =502; rand('state',seed);randn('state',seed); %#ok<RAND>
-addpath(genpath('General_functions')); % In this line we add everything inside the "General_functions" to the current paths of the matlab.
-startup
 load myfilebrkpnts;dbstop(s)
 
 % Parameters

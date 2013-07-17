@@ -79,6 +79,11 @@ else
     error('not implemented yet')
 end
 
+%=========== Random seed
+seed = 502; 
+rand('state',seed); %#ok<RAND>
+randn('state',seed); %#ok<RAND>
+par_new.seed = seed;
 
 %=========== FIRM Node Parameters
 mean_neighb_magnifying_coeff = 10; % this coefficient enlarges the mean neighborhood in FIRM node definition, which leads to faster stop and convergence times, if it is greater than 1.

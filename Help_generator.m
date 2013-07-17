@@ -183,7 +183,7 @@ for i = find(is_class_file | is_class_folder)
     end
     % The following line will be the part of the lines that will be written on the output of this method.
     % The starnge formattig comes from the special chars needed to produce the desired output for the final html help file
-    local_file_text = [local_file_text , [sprintf('%% * <'), strange_html_adress, sprintf(' |'), local_help_file_name(1:end-5), sprintf('|> - class explanation\n')]  ];  %#ok<AGROW>
+    local_file_text = [local_file_text , [sprintf('%% * <file:///'), strange_html_adress, sprintf(' |'), local_help_file_name(1:end-5), sprintf('|> - class explanation\n')]  ];  %#ok<AGROW>
 end
 
 % The following 'for loop' will run recursively the generate_help_for_a_folder() for the other folders that were not
