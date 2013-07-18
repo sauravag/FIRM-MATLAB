@@ -7,6 +7,7 @@ classdef obstacles_class < handle
         obst = obstacles_class.tmp_prop.obst;
         plot_3D_flag = obstacles_class.tmp_prop.plot_3D_flag;
         face_color = obstacles_class.tmp_prop.face_color
+        face_light = obstacles_class.tmp_prop.face_light
         edge_color = obstacles_class.tmp_prop.edge_color
         edge_width = obstacles_class.tmp_prop.edge_width
         top_height_3D = obstacles_class.tmp_prop.top_height_3D  % hight of the top of 3D obstacles
@@ -153,18 +154,18 @@ classdef obstacles_class < handle
             end
             fclose(fid);
         end
-        function plot_handle = draw(obst)
+        function plot_handle = draw()
             plot_handle = [];
             top_h = obstacles_class.top_height_3D;
             bottom_h = obstacles_class.bottom_height_3D;
-            for ob_ctr = 1:length(obst)
+            for ob_ctr = 1:length(obstacles_class.obst)
                 if 1%obstacles_class.plot_3D_flag== 1
                     % note that the vertices of obstacles are already
                     % ordered in the clockwise direction. So, the following
                     % algorithm to make 3D obstacles, makes sense.
-                    x = obst{ob_ctr}(:,1); % x coordinate of the obst. vertices
-                    y = obst{ob_ctr}(:,2); % y coordinate of the obst. vertices
-                    num_ver = size(obst{ob_ctr},1); % number of vertices of the obstacle "ob_ctr"
+                    x = obstacles_class.obst{ob_ctr}(:,1); % x coordinate of the obst. vertices
+                    y = obstacles_class.obst{ob_ctr}(:,2); % y coordinate of the obst. vertices
+                    num_ver = size(obstacles_class.obst{ob_ctr},1); % number of vertices of the obstacle "ob_ctr"
                     for i = 1:num_ver
                         j = i+1;
                         if j > num_ver, j =1; end % this is to connect the last vertice to the first one

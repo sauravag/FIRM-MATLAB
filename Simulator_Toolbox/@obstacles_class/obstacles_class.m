@@ -28,8 +28,6 @@ classdef obstacles_class < handle
             if Man_Obst == 0
                 LoadFileName = user_data_class.par.LoadFileName;
                 tmp_prop = obstacles_class.load(LoadFileName);
-                tmp_prop.fill_handle = obstacles_class.draw(tmp_prop.obst); % since we have the class is a handle class, we do NOT need to return the obj.
-                tmp_prop.boundary_handle = []; % in loading obstacles they do not have boundaries.
             else
                 tmp_prop = obstacles_class.request();
             end
@@ -134,4 +132,3 @@ classdef obstacles_class < handle
     end
     
 end
-

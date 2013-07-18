@@ -14,13 +14,11 @@ classdef EmbeddedSimulator < SimulatorInterface
             % problem entered by the user.
             obj.par = user_data_class.par.sim;
 %             obj.robot = Robot([0;0;0]);
-            obj.obstacle = obstacles_class;
         end
         % 2) initialize : initializes the simulator
         function obj = initialize(obj)
-            
-            % read object from .obj file
-%             obj.obstacle.get
+            obj.obstacle = obstacles_class;
+            obj.obstacle = obj.obstacle.draw();
             % video making
             if obj.par.video == 1;
                 global vidObj; %#ok<TLEV>

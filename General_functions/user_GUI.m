@@ -22,7 +22,7 @@ function varargout = user_GUI(varargin)
 
 % Edit the above text to modify the response to help user_GUI
 
-% Last Modified by GUIDE v2.5 18-Jul-2013 13:31:50
+% Last Modified by GUIDE v2.5 18-Jul-2013 16:20:03
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -462,19 +462,19 @@ function checkbox_manual_PRM_2D_nodes_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of checkbox_manual_PRM_2D_nodes
 
 
-% --- Executes on selection change in popupmenu4.
-function popupmenu4_Callback(hObject, eventdata, handles)
-% hObject    handle to popupmenu4 (see GCBO)
+% --- Executes on selection change in popupmenu_simulator.
+function popupmenu_simulator_Callback(hObject, eventdata, handles)
+% hObject    handle to popupmenu_simulator (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns popupmenu4 contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from popupmenu4
+% Hints: contents = cellstr(get(hObject,'String')) returns popupmenu_simulator contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popupmenu_simulator
 
 
 % --- Executes during object creation, after setting all properties.
-function popupmenu4_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to popupmenu4 (see GCBO)
+function popupmenu_simulator_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popupmenu_simulator (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
