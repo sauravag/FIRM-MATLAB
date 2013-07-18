@@ -67,6 +67,7 @@ for idx_obj =1:numel(objOutput.objects)
 end
 tmp_prop.obst = inputed_obstacles;
 
+% Creating Landmarks
 
 
 

@@ -5,6 +5,38 @@ function par_new = Input_XML_reader(old_par, par_new_from_GUI, new_output_direct
 
 par_new = par_new_from_GUI;   % first we copy the newly provided parameters from GUI
 
+%=========== Simulator Parameters
+warning('off', 'MATLAB:rmpath:DirNotFound'); % In the next line when we remove the paths, some warning may occur, if those path does not exist. So, we supress that warning here.
+rmpath( genpath('All_simulator_classes')); % This line remove all paths below the "All_state_classes" directory, which have been possibly added in the last run of the program.
+if strcmpi(par_new.selected_simulator,'Embedded Simulator')
+    typeDef('EmbeddedSimulator' , 'Simulator')
+elseif strcmpi(par_new.selected_simulator,'V-Rep Simulator')
+    typeDef('VRepSimulator' , 'Simulator')
+end
+
+monitor_pos = get(0,'MonitorPositions'); % first line is for the first monitor and second line is for the second monitor.
+if prod(monitor_pos(1,:))>0 % Checks if all the elements of the monitor screen coordinates are positive. If not, it means that first monitor should not be used.
+    main_monitor_pos = monitor_pos(1,:);
+else
+    main_monitor_pos = monitor_pos(end,:);
+end
+x_offset = 35;y_offset = 55;
+ratio = 0.8;
+par_new.sim.figure_position = [main_monitor_pos(1)+x_offset  ,  main_monitor_pos(2)+y_offset  ,  main_monitor_pos(3)*ratio  ,  main_monitor_pos(4)*ratio]; % if this variable is empty, figure size will be the default value.
+par_new.sim.video = 0;
+par_new.sim.video_directory = new_output_directory;
+par_new.sim.video_quality = 100;
+par_new.sim.interactive_disturbance_allowed = 0 ;
+par_new.sim.draw_at_every_n_steps = 1;
+par_new.sim.FrameRate = 5;
+par_new.sim.env_limits = [-5  5  -5  5]; %[-3.75 , 100 , -23.75 , 80]; %[0 100 0 100]; %[-3 155 -3 155]; %[-10 10 -10 10];%[-6 104 -28 85];%[-5 265 -5 225];%[-6 104 -28 85];
+par_new.sim.env_background_image_address = 'none'; %'C:\Ali\Academics\PhD_Paper_tryings\Needle_steering\Needle_pics_web\liver.png';%'none'; %'C:\Users\Ali\Desktop\Needle_pics_web\liver-panel5.png';  % This field has to be the address of some image or has to be 'none'
+par_new.sim.Lighting_and_3D_plots = 0;
+par_new.sim.imageResizeRatio = 0.25;
+par_new.sim.viewAngle = [30,40];
+par_new.sim.initialZoomRatio = 1.2;%2.5;
+par_new.sim.verboseFlag = 1;% (0: suppresses the inermediate code messages intended for debugging purposes | 1: simulator will display messages  )
+
 %=========== Motion Model Parameters
 warning('off', 'MATLAB:rmpath:DirNotFound'); % In the next line when we remove the paths, some warning may occur, if those path does not exist. So, we supress that warning here.
 rmpath( genpath('All_state_classes')); % This line remove all paths below the "All_state_classes" directory, which have been possibly added in the last run of the program.
@@ -65,7 +97,6 @@ elseif strcmpi(par_new.selected_observation_model,'Dynamical n-arm Manipulator')
 end
 
 par_new.observation_model_parameters = gather_observation_model_parameters(old_par, par_new.observation_model_parameters, par_new.selected_observation_model);
-
 
 
 %=========== Planning Problem (Solver) Parameters
@@ -184,29 +215,6 @@ par_new.PRM_parameters.num_nodes_on_orbits = 3; % number of nodes on each orbit
 % par_new.PRM_parameters.orbit_length = 50; % the length of orbit (orbit's time period)
 % par_new.PRM_parameters.orbit_radius = 4;
 
-%===========   Simulator parameters
-monitor_pos = get(0,'MonitorPositions'); % first line is for the first monitor and second line is for the second monitor.
-if prod(monitor_pos(1,:))>0 % Checks if all the elements of the monitor screen coordinates are positive. If not, it means that first monitor should not be used.
-    main_monitor_pos = monitor_pos(1,:);
-else
-    main_monitor_pos = monitor_pos(end,:);
-end
-x_offset = 35;y_offset = 55;
-ratio = 0.8;
-par_new.sim.figure_position = [main_monitor_pos(1)+x_offset  ,  main_monitor_pos(2)+y_offset  ,  main_monitor_pos(3)*ratio  ,  main_monitor_pos(4)*ratio]; % if this variable is empty, figure size will be the default value.
-par_new.sim.video = 0;
-par_new.sim.video_directory = new_output_directory;
-par_new.sim.video_quality = 100;
-par_new.sim.interactive_disturbance_allowed = 0 ;
-par_new.sim.draw_at_every_n_steps = 1;
-par_new.sim.FrameRate = 5;
-par_new.sim.env_limits = [-5  5  -5  5]; %[-3.75 , 100 , -23.75 , 80]; %[0 100 0 100]; %[-3 155 -3 155]; %[-10 10 -10 10];%[-6 104 -28 85];%[-5 265 -5 225];%[-6 104 -28 85];
-par_new.sim.env_background_image_address = 'none'; %'C:\Ali\Academics\PhD_Paper_tryings\Needle_steering\Needle_pics_web\liver.png';%'none'; %'C:\Users\Ali\Desktop\Needle_pics_web\liver-panel5.png';  % This field has to be the address of some image or has to be 'none'
-par_new.sim.Lighting_and_3D_plots = 0;
-par_new.sim.imageResizeRatio = 0.25;
-par_new.sim.viewAngle = [30,40];
-par_new.sim.initialZoomRatio = 1.2;%2.5;
-par_new.sim.verboseFlag = 1;% (0: suppresses the inermediate code messages intended for debugging purposes | 1: simulator will display messages  )
 
 
 
