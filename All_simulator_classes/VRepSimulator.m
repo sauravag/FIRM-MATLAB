@@ -9,16 +9,17 @@
 % Developed as a part of FIRM Toolbox for Matlab
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-classdef vrep_interface %< SimulatorInterface
+classdef VRepSimulator < SimulatorInterface
     properties
         %connection Property
         vrep;
         clientID;
+        
         % Simulation Property
-        loop;
+        newScene;
         dt = 0.05;
         controlType;
-        controlMode;
+        planner;
         
         %Scene Properties
         scene;
@@ -44,7 +45,7 @@ classdef vrep_interface %< SimulatorInterface
     
     methods
         %% Constructor
-        function obj = vrep_interface()
+        function obj = VRepSimulator()
             is32=exist([matlabroot,'/bin/win32'],'dir')~=0;
             is64=exist([matlabroot,'/bin/win64'],'dir')~=0;
             if is32
@@ -65,20 +66,22 @@ classdef vrep_interface %< SimulatorInterface
         end
         
         %% Destructor
-        function obj = delete(obj)
+        function obj = simDelete(obj)
             
-            fprintf('Stopping Simulation\n');
+            fprintf('Stopping Simulation and Calling Destructor\n');
             [res(19)] = obj.vrep.simxStopSimulation(obj.clientID, obj.vrep.simx_opmode_oneshot_wait);
             [res(18)] = obj.vrep.simxCloseScene(obj.clientID, obj.vrep.simx_opmode_oneshot_wait);
             obj.vrep.simxFinish(obj.clientID);
             obj.vrep.delete();
+            fprintf('Simulation Ended\n');
         end
     end
     
     methods
         
+        
         %% Setting up the environment
-        function obj = simInitialize(obj,controlMode)
+        function obj = initialize(obj,planner)
             % Transfer the .obj file (take the path from .obj file generator)
             %             [res(1)] = obj.vrep.simxTransferFile(obj.clientID,'/home/ajinkya/Dropbox/FIRM_toolbox_ver_current/cube1.obj','cube1.obj',20,obj.vrep.simx_opmode_oneshot_wait);
             %
@@ -93,16 +96,18 @@ classdef vrep_interface %< SimulatorInterface
             fprintf('Enter the name of the robot model used : \ndr12 or dr20\n');
             obj.robotModel = input('Enter the model : ','s');
             
-            obj.controlMode = controlMode;
+            obj.planner = planner;
             % Loading the environment and obstacles
-            if(obj.controlMode==1)
+            if(obj.planner==1)
                 if(strcmp(obj.robotModel,'dr12'))
                     obj.scene = fullfile(pwd,'laser_test_dr12_with_control.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
+                    [res(7),obj.robot] = obj.vrep.simxLoadModel(obj.clientID,'/home/ajinkya/Dropbox/summer13/V-REP_PRO_EDU_V3_0_3_Linux/models/robots/mobile/dr20.ttm',0,obj.vrep.simx_opmode_oneshot_wait);
                 elseif(strcmp(obj.robotModel,'dr20'))
                     obj.scene = fullfile(pwd,'laser_test_dr20_with_control.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
+                    [res(7),obj.robot] = obj.vrep.simxLoadModel(obj.clientID,'/home/ajinkya/Dropbox/summer13/V-REP_PRO_EDU_V3_0_3_Linux/models/robots/mobile/dr20.ttm',0,obj.vrep.simx_opmode_oneshot_wait);
                 end
                 
-            elseif(obj.controlMode==0)
+            elseif(obj.planner==0)
                 if(strcmp(obj.robotModel,'dr12'))
                     obj.scene = fullfile(pwd,'laser_test_dr12.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
                 elseif(strcmp(obj.robotModel,'dr20'))
@@ -119,19 +124,11 @@ classdef vrep_interface %< SimulatorInterface
                 [res(5)] = obj.vrep.simxSetObjectIntParameter(obj.clientID, obj.obstacles(i), 3003, 0,obj.vrep.simx_opmode_oneshot_wait);
                 [res(6)] = obj.vrep.simxSetObjectIntParameter(obj.clientID, obj.obstacles(i), 3004, ~0,obj.vrep.simx_opmode_oneshot_wait);
             end
-        end
-        
-        %% Setting up the Robot
-        function obj = SetRobot(obj,position,mode)
-            %Loading the Robot
+            
+            %% Initializing the robot
+            % Loading the Robot
             %             [res(7),obj.robot] = obj.vrep.simxLoadModel(obj.clientID,'/home/ajinkya/Dropbox/summer13/V-REP_PRO_EDU_V3_0_3_Linux/models/robots/mobile/dr20.ttm',0,obj.vrep.simx_opmode_oneshot_wait);
-            %
-            %             % Dimensions of Robot
-            %             [res(17),obj.robot_body] = obj.vrep.simxGetObjectHandle(obj.clientID, 'dr20_body_',obj.vrep.simx_opmode_oneshot_wait);
-            %             [res(18),y_min] = obj.vrep.simxGetObjectFloatParameter(obj.clientID, obj.robot_body, 16, obj.vrep.simx_opmode_oneshot_wait);
-            %             [res(19),y_max] = obj.vrep.simxGetObjectFloatParameter(obj.clientID, obj.robot_body, 19, obj.vrep.simx_opmode_oneshot_wait);
-            %
-            %             obj.interWheelDistance = y_max - y_min;
+            
             
             if(strcmp(obj.robotModel,'dr12'))
                 obj.interWheelDistance = 0.154;
@@ -147,7 +144,41 @@ classdef vrep_interface %< SimulatorInterface
             %Handles for various parts of robot
             [res(8), obj.robot_joints] = obj.vrep.simxGetObjects(obj.clientID, obj.vrep.sim_object_joint_type,obj.vrep.simx_opmode_oneshot_wait);
             
-            %Setting initial position
+            %Intializing the Environment
+            [res(20)] = obj.vrep.simxStartSimulation(obj.clientID, obj.vrep.simx_opmode_oneshot);
+            
+            
+            % checking for controlType
+            if(obj.planner==1)
+                fprintf('Enter the control mode type\nEnter "1" for Kinematic or "2" for Dynamic\n');
+                mode = input('Enter Choice :');
+                
+                if(mode==1)
+                    obj.controlType = 'kinematic';
+                elseif(mode==2)
+                    obj.controlType = 'dynamic';
+                    [res(14)] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, obj.robot_joints(2), 0,obj.vrep.simx_opmode_streaming);
+                    [res(15)] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, obj.robot_joints(3), 0,obj.vrep.simx_opmode_streaming);
+                end
+            end
+            
+            % Initialzing Sensors
+            obj.sensorChosen = 'laser';
+            switch obj.sensorChosen
+                case 'laser'
+                    obj.sensorID = 1;
+                    obj.sensor = laserScanner(obj.vrep,obj.clientID,obj.robot,obj.controlType);
+                    %                     obj.sensor = laser_Scanner(obj.vrep,obj.clientID,obj.robot);
+            end
+            
+            pause(2); % Giving time to V-Rep to initialize all the settings we modifies
+            
+        end
+        
+        %% Setting up the Robot
+        function obj = setRobot(obj,position)
+            
+            %Setting position of the robot
             % remember to convert position[1] to position.val[1] and do so
             % when trying to use the full closed loop problem
             
@@ -158,32 +189,6 @@ classdef vrep_interface %< SimulatorInterface
                 [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[position(1),position(2), 0.1517],obj.vrep.simx_opmode_oneshot);
                 [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,-1,[0,0,position(3)],obj.vrep.simx_opmode_oneshot);
             end
-            
-            
-            %Intializing the Environment
-            [res(20)] = obj.vrep.simxStartSimulation(obj.clientID, obj.vrep.simx_opmode_oneshot);
-            [res(14)] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, obj.robot_joints(2), 0,obj.vrep.simx_opmode_streaming);
-            [res(15)] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, obj.robot_joints(3), 0,obj.vrep.simx_opmode_streaming);
-            %             [res(21)] = obj.vrep.simxPauseSimulation(obj.clientID,obj.vrep.simx_opmode_oneshot);
-            obj.loop = 1;
-            if(mode==1)
-                obj.controlType = 'kinematic';
-            elseif(mode==2)
-                obj.controlType = 'dynamic';
-            end
-            pause(3);
-            
-            % Initialzing Sensors
-            obj.sensorChosen = 'laser';
-            switch obj.sensorChosen
-                case 'laser'
-                    obj.sensorID = 1;
-                    obj.sensor = laserScanner(obj.vrep,obj.clientID,obj.robot,obj.controlType);
-                    %                     obj.sensor = laser_Scanner(obj.vrep,obj.clientID,obj.robot);
-                    
-            end
-            
-            
         end
         
         %% Acquiring the Position of Data
@@ -199,7 +204,7 @@ classdef vrep_interface %< SimulatorInterface
         %% Evolving the function
         function obj = evolve(obj,control)
             
-            if(obj.controlMode==1)
+            if(obj.planner==1)
                 linear_velocity = control(1);
                 ang_velocity = control(2);
                 
@@ -279,21 +284,24 @@ classdef vrep_interface %< SimulatorInterface
                 
                 case 1
                     obj.sensor = obj.sensor.Scan(obj.vrep,obj.clientID,obj.robot,obj.controlType);
-                    
-                    
+                                     
             end
             
         end
         
-        function obj = pauseSimulation(obj)
+        function obj = simPause(obj)
             [res(16)] = obj.vrep.simxPauseSimulation(obj.clientID,obj.vrep.simx_opmode_oneshot);
             fprintf('Simulation Paused\n');
         end
         
-        function obj = resumeSimulation(obj)
+        function obj = simResume(obj)
             [res(13)] = obj.vrep.simxStartSimulation(obj.clientID, obj.vrep.simx_opmode_oneshot);
             frpintf('Simulation resumed');
         end
         
+        function obj = simStop(obj)
+            [res(19)] = obj.vrep.simxStopSimulation(obj.clientID, obj.vrep.simx_opmode_oneshot_wait);
+            fprintf('Simulation Stopped\n');
+        end
     end
 end
