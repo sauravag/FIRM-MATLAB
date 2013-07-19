@@ -15,6 +15,7 @@ classdef VRepSimulator < SimulatorInterface
         vrep;
         clientID;
         connectionStatus=0;
+		simulatorName = 'vrep';
         
         % Simulation Property
         newScene;
