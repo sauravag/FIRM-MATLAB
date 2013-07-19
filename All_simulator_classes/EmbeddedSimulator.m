@@ -2,23 +2,42 @@ classdef EmbeddedSimulator < SimulatorInterface
     properties
         sceneHierarchy %% an structure containing Scene Hierarchy (objects in the scene like floor , walls) and their children and properties
         robot
-        par;
+        par
         obstacle
         simulatorName = 'Embedded';
     end
-
+    
     methods
         % 1) constructor
         function obj = EmbeddedSimulator()
             % in constructor we retrive the paraemters of the planning
             % problem entered by the user.
             obj.par = user_data_class.par.sim;
-%             obj.robot = Robot([0;0;0]);
+            %             obj.robot = Robot([0;0;0]);
         end
         % 2) initialize : initializes the simulator
         function obj = initialize(obj)
-            obj.obstacle = obstacles_class;
-            obj.obstacle = obj.obstacle.draw();
+            old_prop = obj.set_figure(); %#ok<NASGU>
+            % Following "if" statements cause the code to first construct the existing
+            % parts of the environment, and then construct the parts that
+            % the user is going to build.
+            if user_data_class.par.observation_model_parameters.interactive_OM == 0
+                OM = ObservationModel_class; % The object OM is only created for "Constant" properties of the "ObservationModel_class" class to be initialized.
+                OM = OM.draw(); %#ok<NASGU>
+            end
+            if obj.par.intractive_obst == 0
+                obj.obstacle = obstacles_class; % The object "Obstacles" is never used. This line only cause the "Constant" properties of the "obstacles_class" class to be initialized.
+                obj.obstacle = obj.obstacle.draw();
+            end
+            
+            if obj.par.intractive_obst == 1
+                obj.obstacle = obstacles_class; % The object "Obstacles" is never used. This line only cause the "Constant" properties of the "obstacles_class" class to be initialized.
+            end
+            if user_data_class.par.observation_model_parameters.interactive_OM == 1
+                OM = ObservationModel_class; % The object OM is only created for "Constant" properties of the "ObservationModel_class" class to be initialized.
+                OM.plot_handle = ObservationModel_class.tmp_prop.tmp_plot_handle; % the "plot_handle" property is not a constant property. Thus, it has to be assigned to its value here.
+            end
+            
             % video making
             if obj.par.video == 1;
                 global vidObj; %#ok<TLEV>
@@ -93,41 +112,4 @@ classdef EmbeddedSimulator < SimulatorInterface
         end
     end
     
-% % % % % % % % end
-% % % % % % % % function obj = Environment_construction(obj)
-% % % % % % % % old_prop = set_figure(obj); %#ok<NASGU>
-% % % % % % % % % Following "if" statements cause the code to first construct the existing
-% % % % % % % % % parts of the environment, and then construct the parts that
-% % % % % % % % % the user is going to build.
-% % % % % % % % if user_data_class.par.observation_model_parameters.interactive_OM == 0
-% % % % % % % %     %     OM = ObservationModel_class; % The object OM is only created for "Constant" properties of the "ObservationModel_class" class to be initialized.
-% % % % % % % %     %     OM = OM.draw();
-% % % % % % % % end
-% % % % % % % % if obj.par.intractive_obst == 0
-% % % % % % % %     Obstacles = obstacles_class; %#ok<NASGU> % The object "Obstacles" is never used. This line only cause the "Constant" properties of the "obstacles_class" class to be initialized.
-% % % % % % % % end
-% % % % % % % % if obj.par.interactive_PRM == 0
-% % % % % % % %     %         if strcmpi(obj.par.solver,'Periodic LQG-based FIRM')
-% % % % % % % %     %             obj.PRM = PNPRM_class;
-% % % % % % % %     %             obj.PRM = obj.PRM.draw();
-% % % % % % % %     %         else
-% % % % % % % %     %     obj.PRM = PRM_class;
-% % % % % % % %     %     obj.PRM = obj.PRM.draw();
-% % % % % % % %     %         end
-% % % % % % % % end
-% % % % % % % % 
-% % % % % % % % if obj.par.intractive_obst == 1
-% % % % % % % %     Obstacles = obstacles_class; %#ok<NASGU> % The object "Obstacles" is never used. This line only cause the "Constant" properties of the "obstacles_class" class to be initialized.
-% % % % % % % % end
-% % % % % % % % if user_data_class.par.observation_model_parameters.interactive_OM == 1
-% % % % % % % %     %     OM = ObservationModel_class; % The object OM is only created for "Constant" properties of the "ObservationModel_class" class to be initialized.
-% % % % % % % %     %     OM.plot_handle = ObservationModel_class.tmp_prop.tmp_plot_handle; % the "plot_handle" property is not a constant property. Thus, it has to be assigned to its value here.
-% % % % % % % % end
-% % % % % % % % if obj.par.interactive_PRM == 1
-% % % % % % % %     %         if strcmpi(obj.par.solver,'Periodic LQG-based FIRM')
-% % % % % % % %     %             obj.PRM = PNPRM_class;
-% % % % % % % %     %         else
-% % % % % % % %     %     obj.PRM = PRM_class;
-% % % % % % % %     %         end
-% % % % % % % % end
 end

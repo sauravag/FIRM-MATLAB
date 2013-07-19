@@ -12,19 +12,16 @@ if user_data_class.par.Cancel_Run ~= 1
     sim = Simulator();
     sim = sim.initialize();
     
-    robot_init = state.sample_a_valid_state();
-    robot_goal = state.sample_a_valid_state();
+    robot_goal = state([0 0 0]);
     
-    OM = ObservationModel_class; % The object OM is only created for "Constant" properties of the "ObservationModel_class" class to be initialized.
-    OM = OM.draw();
-    robot_init.val = [0 0 0]';%state.sample_a_valid_state();
-    robot_goal.val = [0 0.1 0]'; %state.sample_a_valid_state();
-    
-    
-    lnr_pts_inp = [robot_goal.val;zeros(MotionModel_class.ctDim,1)];
+    lnr_pts_inp.x = robot_goal.val;
+    lnr_pts_inp.u = zeros(MotionModel_class.ctDim,1);
     
     ls = Linear_system_class(lnr_pts_inp);
-    SLQG_ = LQG_stationary_class(robot_goal.val);
+    controller = LQG_stationary_class(robot_goal.val);
+    
+    controller.propagate_Hstate
+    
     sim = sim. setRobot(robot_init);
     
     mm = MotionModel_class();
