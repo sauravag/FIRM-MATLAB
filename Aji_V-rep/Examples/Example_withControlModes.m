@@ -5,17 +5,9 @@ clear all;clc
 
 robot_init = [0 0 0];
 sim = vrep_interface();
-fprintf('Do you want to turn "on" the control mode or want it to remain "off" ?\n Enter "1" to turn on or "0" to keep it off\n');
-controlMode = input('Enter Choice : ');
-sim = sim.simInitialize(controlMode);
-if(controlMode==1)
-    fprintf('Enter the control mode type\nEnter "1" for Kinematic or "2" for Dynamic\n');
-    modeType = input('Enter Choice : ');
-else modeType = 0;
-end
-sim = sim.SetRobot(robot_init,modeType);
+sim = sim.simInitialize();
+sim = sim.SetRobot(robot_init);
 
-fprintf('Starting simulation\n');
 figure
 for i = 1:100
     i
@@ -27,7 +19,7 @@ for i = 1:100
     sim = sim.evolve([0.2 0]); %% Input linear velocity in m/s & angular velocity in rad/s
 end
 
-sim = sim.delete();
+sim = sim.simDelete();
 
 
 
