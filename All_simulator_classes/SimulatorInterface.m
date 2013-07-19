@@ -5,23 +5,27 @@ classdef SimulatorInterface
     end
     
     methods
-        % 1) constructor
+        % constructor
         function obj = SimulatorInterface()
+        end
+        
+        % destructor
+        function obj = simDelete(obj)
         end
     end
     methods (Abstract)
         
-        % 2) initialize : initializes the simulator 
+        % initialize : initializes the simulator 
         obj = initialize(obj)
-        % 3)SetRobot : change robot parameters 
+        % SetRobot : change robot parameters 
         obj = setRobot(obj)
-        % 4)GetRobot : get robot parameters
+        % GetRobot : get robot parameters
         obj = getRobot(obj)
-        % 5) Refresh : 
+        % Refresh : 
         obj = refresh(obj)        
-        % 6) stopRun (not sure about this one)
+        % stopRun (not sure about this one)
         obj = simStop(obj)  
-        % 7) evolve : evolve robot
+        % evolve : evolve robot
         x_new = evolve(u)
     end
 end

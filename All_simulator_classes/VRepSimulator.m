@@ -14,6 +14,8 @@ classdef VRepSimulator < SimulatorInterface
         %connection Property
         vrep;
         clientID;
+        connectionStatus=0;
+		simulatorName = 'vrep';
         
         % Simulation Property
         newScene;
@@ -46,6 +48,7 @@ classdef VRepSimulator < SimulatorInterface
     methods
         %% Constructor
         function obj = VRepSimulator()
+            % checking for correct dll file for connection
             is32=exist([matlabroot,'/bin/win32'],'dir')~=0;
             is64=exist([matlabroot,'/bin/win64'],'dir')~=0;
             if is32
@@ -54,14 +57,14 @@ classdef VRepSimulator < SimulatorInterface
                 obj.vrep = remApi('remoteApi_64', 'extApi.h');
             end
             
-            
             % Setting up the connection
-            obj.clientID = obj.vrep.simxStart('127.0.0.1',19999,true,true,5000,5); % port should be taken as input. options number < 20000
-            
-            if(obj.clientID>-1)
-                fprintf('Connecton Established\n');
-            else fprintf('Connection Failed...\nRetry\n');
-                obj.vrep.delete();
+            while(obj.connectionStatus==0) %Checking for the connection establishment
+                obj.clientID = obj.vrep.simxStart('127.0.0.1',19999,true,true,5000,5); % port should be taken as input. options number < 20000
+                if(obj.clientID>-1)
+                    fprintf('Connecton Established\n');
+                    obj.connectionStatus = 1;
+                else fprintf('Connection Failed...\nRetrying\n');
+                end
             end
         end
         
@@ -69,9 +72,9 @@ classdef VRepSimulator < SimulatorInterface
         function obj = simDelete(obj)
             
             fprintf('Stopping Simulation and Calling Destructor\n');
-            [res(19)] = obj.vrep.simxStopSimulation(obj.clientID, obj.vrep.simx_opmode_oneshot_wait);
-            [res(18)] = obj.vrep.simxCloseScene(obj.clientID, obj.vrep.simx_opmode_oneshot_wait);
-            obj.vrep.simxFinish(obj.clientID);
+            [res(19)] = obj.vrep.simxStopSimulation(obj.clientID, obj.vrep.simx_opmode_oneshot_wait); % Stopping Simulation
+            [res(18)] = obj.vrep.simxCloseScene(obj.clientID, obj.vrep.simx_opmode_oneshot_wait); % Closing the loaded V-Rep scene
+            obj.vrep.simxFinish(obj.clientID);  % Ending the connection
             obj.vrep.delete();
             fprintf('Simulation Ended\n');
         end
@@ -81,7 +84,7 @@ classdef VRepSimulator < SimulatorInterface
         
         
         %% Setting up the environment
-        function obj = initialize(obj,planner)
+        function obj = initialize(obj)
             % Transfer the .obj file (take the path from .obj file generator)
             %             [res(1)] = obj.vrep.simxTransferFile(obj.clientID,'/home/ajinkya/Dropbox/FIRM_toolbox_ver_current/cube1.obj','cube1.obj',20,obj.vrep.simx_opmode_oneshot_wait);
             %
@@ -93,41 +96,46 @@ classdef VRepSimulator < SimulatorInterface
             %                fprintf('scene saved at location: %s\n', obj.scene);
             %            end
             
+            
+            % Taking user input for choice of planner and robot model
             fprintf('Enter the name of the robot model used : \ndr12 or dr20\n');
             obj.robotModel = input('Enter the model : ','s');
             
-            obj.planner = planner;
-            % Loading the environment and obstacles
+            fprintf('Enter choice for the planner\n for FIRM enter "1" \tor\tfor V-Rep internal Planner enter "0" :\n')
+            obj.planner = input();
+            
+            % Loading the pre-customized environments and obstacles based on user choice
             if(obj.planner==1)
                 if(strcmp(obj.robotModel,'dr12'))
-                    obj.scene = fullfile(pwd,'laser_test_dr12_with_control.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
-                    [res(7),obj.robot] = obj.vrep.simxLoadModel(obj.clientID,'/home/ajinkya/Dropbox/summer13/V-REP_PRO_EDU_V3_0_3_Linux/models/robots/mobile/dr20.ttm',0,obj.vrep.simx_opmode_oneshot_wait);
+                    obj.scene = fullfile(pwd,'laser_test_dr12_with_control.ttt');
                 elseif(strcmp(obj.robotModel,'dr20'))
-                    obj.scene = fullfile(pwd,'laser_test_dr20_with_control.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
-                    [res(7),obj.robot] = obj.vrep.simxLoadModel(obj.clientID,'/home/ajinkya/Dropbox/summer13/V-REP_PRO_EDU_V3_0_3_Linux/models/robots/mobile/dr20.ttm',0,obj.vrep.simx_opmode_oneshot_wait);
+                    obj.scene = fullfile(pwd,'laser_test_dr20_with_control.ttt');
                 end
                 
             elseif(obj.planner==0)
                 if(strcmp(obj.robotModel,'dr12'))
-                    obj.scene = fullfile(pwd,'laser_test_dr12.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
+                    obj.scene = fullfile(pwd,'laser_test_dr12.ttt');
                 elseif(strcmp(obj.robotModel,'dr20'))
-                    obj.scene = fullfile(pwd,'env_fourthfloor.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
+                    obj.scene = fullfile(pwd,'env_fourthfloor.ttt');
                 end
             end
             
-            [res(3)] = obj.vrep.simxLoadScene(obj.clientID,obj.scene,0,obj.vrep.simx_opmode_oneshot_wait);
+            [res(3)] = obj.vrep.simxLoadScene(obj.clientID,obj.scene,0,obj.vrep.simx_opmode_oneshot_wait); % Loading the scene
             
+            % Getting handlers of all the obstacles present in the
+            % environment
             for i=1:obj.numberOfObjects
                 [res(4), obj.obstacles(i)] = obj.vrep.simxGetObjectHandle(obj.clientID,num2str(i),obj.vrep.simx_opmode_oneshot_wait);
                 
-                % changing the parameteres of the objects
+                % changing the parameteres of the scene objects
                 [res(5)] = obj.vrep.simxSetObjectIntParameter(obj.clientID, obj.obstacles(i), 3003, 0,obj.vrep.simx_opmode_oneshot_wait);
                 [res(6)] = obj.vrep.simxSetObjectIntParameter(obj.clientID, obj.obstacles(i), 3004, ~0,obj.vrep.simx_opmode_oneshot_wait);
             end
             
-            %% Initializing the robot
-            % Loading the Robot
-            %             [res(7),obj.robot] = obj.vrep.simxLoadModel(obj.clientID,'/home/ajinkya/Dropbox/summer13/V-REP_PRO_EDU_V3_0_3_Linux/models/robots/mobile/dr20.ttm',0,obj.vrep.simx_opmode_oneshot_wait);
+            % Initializing the robot
+                        
+                         % Loading the Robot
+                         %[res(7),obj.robot] = obj.vrep.simxLoadModel(obj.clientID,'/home/ajinkya/Dropbox/summer13/V-REP_PRO_EDU_V3_0_3_Linux/models/robots/mobile/dr20.ttm',0,obj.vrep.simx_opmode_oneshot_wait);
             
             
             if(strcmp(obj.robotModel,'dr12'))
@@ -168,10 +176,10 @@ classdef VRepSimulator < SimulatorInterface
                 case 'laser'
                     obj.sensorID = 1;
                     obj.sensor = laserScanner(obj.vrep,obj.clientID,obj.robot,obj.controlType);
-                    %                     obj.sensor = laser_Scanner(obj.vrep,obj.clientID,obj.robot);
+                    % can add more cases for other types of sensors
             end
             
-            pause(2); % Giving time to V-Rep to initialize all the settings we modifies
+            pause(2); % Giving time to V-Rep to initialize all the settings we modified
             
         end
         
@@ -205,45 +213,73 @@ classdef VRepSimulator < SimulatorInterface
         function obj = evolve(obj,control)
             
             if(obj.planner==1)
+                % Getting control signals from FIRM
+                % Note: The units of the control signals must be the same
+                % as chosen by the user in v-rep.The user settings in the
+                % v-rep can be adjusted by going to Vrep window, Menu
+                % bar -> Tools -> User Settings . Currently, the user
+                % ssettings should be set to length in 'meter', angle in
+                % 'radians' adn time in 'seconds'. So, velocity is in 'm/s'
+                % and angular velocity is in 'rad/s'
+                
                 linear_velocity = control(1);
                 ang_velocity = control(2);
                 
                 if(strcmp(obj.robotModel,'dr12'))
                     wheelDiameter = 0.086;
+                    % Converting control signals to wheel velocities
                     obj.leftJointVelocity = (linear_velocity - ((obj.interWheelDistance*ang_velocity)/2))*(2/wheelDiameter);
                     obj.rightJointVelocity = (linear_velocity + ((obj.interWheelDistance*ang_velocity)/2))*(2/wheelDiameter);
                     
                     if(strcmp(obj.controlType,'dynamic'))
+                        % Since simulation is dynamic we have to set the
+                        % joint (motor) velocities. Since Vrep tends to 
+                        % generate realistic dynamic siulations, so one cannot
+                        % set very high linear and angular velocities as they will lead to more
+                        % errorneous results. Also, motors will take
+                        % some finite time to reach the setted target
+                        % velocity and jumps won't be discrete
+                        
                         [res(14)] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, obj.robot_joints(2), obj.leftJointVelocity,obj.vrep.simx_opmode_oneshot);
                         [res(15)] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, obj.robot_joints(3), obj.rightJointVelocity,obj.vrep.simx_opmode_oneshot);
                         
                         
                     elseif(strcmp(obj.controlType,'kinematic'))
                         
+                        % Getting the joint positions 
                         [res(14),p]  = obj.vrep.simxGetJointPosition(obj.clientID,obj.robot_joints(2),obj.vrep.simx_opmode_streaming);
                         [res(14),q]  = obj.vrep.simxGetJointPosition(obj.clientID,obj.robot_joints(3),obj.vrep.simx_opmode_streaming);
                         
                         [res(14),p]  = obj.vrep.simxGetJointPosition(obj.clientID,obj.robot_joints(2),obj.vrep.simx_opmode_buffer);
                         [res(14),q]  = obj.vrep.simxGetJointPosition(obj.clientID,obj.robot_joints(3),obj.vrep.simx_opmode_buffer);
                         
-                        linMov = obj.dt*linear_velocity;
-                        rotMov = obj.dt*ang_velocity;
-                        obj = obj.getRobot();
+                        linMov = obj.dt*linear_velocity; % linear displacement
+                        rotMov = obj.dt*ang_velocity; % Angular dispalcement
+                        obj = obj.getRobot(); % Acquiring position
                         xDir = [cos(obj.robot_orientation(3)),sin(obj.robot_orientation(3)),0.0];
                         obj.robot_position(1) = obj.robot_position(1) + xDir(1)*linMov;
                         obj.robot_position(2) = obj.robot_position(2) + xDir(2)*linMov;
                         obj.robot_orientation(3) = obj.robot_orientation(3) + rotMov;
                         
-                        [res(16)] = obj.vrep.simxPauseCommunication(obj.clientID,1);
+                        % Updating the joint position with time
+                        [res(16)] = obj.vrep.simxPauseCommunication(obj.clientID,1); 
+                        % Pausing the communication will ensure
+                        % simulataneous application of the following
+                        % commands.
+                       
+                        % Updating Joints' position
                         [res(15)] = obj.vrep.simxSetJointPosition(obj.clientID,obj.robot_joints(2),(p+((obj.leftJointVelocity*obj.dt*2)/wheelDiameter)),obj.vrep.simx_opmode_oneshot);
                         [res(15)] = obj.vrep.simxSetJointPosition(obj.clientID,obj.robot_joints(3),(q+((obj.rightJointVelocity*obj.dt*2)/wheelDiameter)),obj.vrep.simx_opmode_oneshot);
+                       
+                        % Setting robot's position
                         [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[obj.robot_position(1),obj.robot_position(2), 0.0787],obj.vrep.simx_opmode_oneshot);
                         [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,-1,[0,-(pi/2),obj.robot_orientation(3)],obj.vrep.simx_opmode_oneshot);
-                        [res(16)] = obj.vrep.simxPauseCommunication(obj.clientID,0);
+                        [res(16)] = obj.vrep.simxPauseCommunication(obj.clientID,0); % Resuming communication
                     end
                     
                 elseif(strcmp(obj.robotModel,'dr20'))
                     wheelDiameter = 0.085;
+                    % Converting control signals to wheel velocities
                     obj.leftJointVelocity = (linear_velocity - ((obj.interWheelDistance*ang_velocity)/2))*(2/wheelDiameter);
                     obj.rightJointVelocity = (linear_velocity + ((obj.interWheelDistance*ang_velocity)/2))*(2/wheelDiameter);
                     
@@ -253,6 +289,7 @@ classdef VRepSimulator < SimulatorInterface
                         
                     elseif(strcmp(obj.controlType,'kinematic'))
                         
+                         % Getting the joint positions 
                         [res(14),p]  = obj.vrep.simxGetJointPosition(obj.clientID,obj.robot_joints(2),obj.vrep.simx_opmode_streaming);
                         [res(14),q]  = obj.vrep.simxGetJointPosition(obj.clientID,obj.robot_joints(3),obj.vrep.simx_opmode_streaming);
                         
@@ -267,12 +304,20 @@ classdef VRepSimulator < SimulatorInterface
                         obj.robot_position(2) = obj.robot_position(2) + xDir(2)*linMov;
                         obj.robot_orientation(3) = obj.robot_orientation(3) + rotMov;
                         
+                         % Updating the joint position with time
                         [res(16)] = obj.vrep.simxPauseCommunication(obj.clientID,1);
+                        % Pausing the communication will ensure
+                        % simulataneous application of the following
+                        % commands.
+                       
+                        % Updating Joints' position
                         [res(15)] = obj.vrep.simxSetJointPosition(obj.clientID,obj.robot_joints(2),(p+((obj.leftJointVelocity*obj.dt*2)/wheelDiameter)),obj.vrep.simx_opmode_oneshot);
                         [res(15)] = obj.vrep.simxSetJointPosition(obj.clientID,obj.robot_joints(3),(q+((obj.rightJointVelocity*obj.dt*2)/wheelDiameter)),obj.vrep.simx_opmode_oneshot);
+                       
+                         % Setting robot's position
                         [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[obj.robot_position(1),obj.robot_position(2), 0.1517],obj.vrep.simx_opmode_oneshot);
                         [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,-1,[0,0,obj.robot_orientation(3)],obj.vrep.simx_opmode_oneshot);
-                        [res(16)] = obj.vrep.simxPauseCommunication(obj.clientID,0);
+                        [res(16)] = obj.vrep.simxPauseCommunication(obj.clientID,0);% Resuming communication between MATLAB and V-rep
                     end
                 end
             end
@@ -283,22 +328,27 @@ classdef VRepSimulator < SimulatorInterface
             switch obj.sensorID
                 
                 case 1
+                    % Getting laser data
                     obj.sensor = obj.sensor.Scan(obj.vrep,obj.clientID,obj.robot,obj.controlType);
-                                     
+                    
+                    % Add more cases for other sensors
             end
             
         end
         
+        %% Pause Simulation
         function obj = simPause(obj)
             [res(16)] = obj.vrep.simxPauseSimulation(obj.clientID,obj.vrep.simx_opmode_oneshot);
             fprintf('Simulation Paused\n');
         end
         
+        %% Resume Simulation
         function obj = simResume(obj)
             [res(13)] = obj.vrep.simxStartSimulation(obj.clientID, obj.vrep.simx_opmode_oneshot);
             frpintf('Simulation resumed');
         end
         
+        %% Stop Simulation
         function obj = simStop(obj)
             [res(19)] = obj.vrep.simxStopSimulation(obj.clientID, obj.vrep.simx_opmode_oneshot_wait);
             fprintf('Simulation Stopped\n');
