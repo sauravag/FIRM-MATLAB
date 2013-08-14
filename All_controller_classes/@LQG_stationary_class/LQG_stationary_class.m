@@ -1,6 +1,7 @@
 classdef LQG_stationary_class %< LQG_base_class
     %   LQG_stationary_class encapsulates the Stationary Linear Quadratic Gaussian Controller
     properties
+        error('This class should be removed ASAP')
         lnr_pts;
         lnr_sys;
         Stationary_Gaussian_Hb;

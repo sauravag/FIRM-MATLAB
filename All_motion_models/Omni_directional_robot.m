@@ -6,6 +6,8 @@ classdef Omni_directional_robot < MotionModel_interface
         stDim = state.dim; % state dimension
         ctDim = 3;  % control vector dimension
         wDim = 6;   % Process noise (W) dimension
+        zeroControl = zeros(Omni_directional_robot.ctDim,1);
+        zeroNoise = zeros(Omni_directional_robot.wDim,1);
         dt = user_data_class.par.motion_model_parameters.dt;
         robot_link_length = user_data_class.par.motion_model_parameters.robot_link_length;
         sigma_b_u = user_data_class.par.motion_model_parameters.sigma_b_u_omni;

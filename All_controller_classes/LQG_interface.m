@@ -1,8 +1,8 @@
-classdef LQG_interface < Controller_base_class
+classdef LQG_interface < Controller_interface
     %   LQG_based_class, from which the "SLQG", "PLQG", and "FLQG" are derived.
     properties (Abstract)
-        Estimator
-        Separated_controller
+        estimator
+        separated_controller
         lnr_pts;
         lnr_sys;
     end

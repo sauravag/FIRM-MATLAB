@@ -1,8 +1,8 @@
 classdef Controller_interface
     %   LQG_stationary_class encapsulates the Stationary Linear Quadratic Gaussian Controller
     properties (Abstract)
-        Estimator
-        Separated_controller
+        estimator
+        separated_controller
     end
     
     methods (Abstract)

@@ -1,17 +1,27 @@
 
 %% Commands to get the data of the Laser Scanner
+
 close all;
 clear all;clc
+addpath(genpath('C:\Users\Amirhossein\Documents\GitHub\FIRM-MATLAB\'))
+
+clear classes;clear variables;close all;clc;
+seed =502; rand('state',seed);randn('state',seed); %#ok<RAND>
+% addpath(genpath('General_functions')); % In this line we add everything inside the "General_functions" to the current paths of the matlab.
+startup
+load myfilebrkpnts;dbstop(s)
+% Parameters
+user_data = user_data_class; % The object user_data will never be used. This line only cause the "Constant" properties of the "user_data_class" class to be initialized.
 addpath(genpath('C:\Users\Amirhossein\Documents\GitHub\FIRM-MATLAB'));
 addpath(genpath('C:\Users\Amirhossein\Desktop\MyWork_TAMU\FIRM_with_simulated_laser\ECMR paper all things\ECMR_paper_codes\completed_after_paper_trends\for ECMR\'))
 robot_init = [0 0 0];
-sim = vrep_interface();
-sim = sim.simInitialize();
-sim = sim.SetRobot(robot_init);
+sim = Simulator();
+sim = sim.initialize();
+sim = sim.setRobot(robot_init);
 thresholds=default_thresholds_func();
 
 for i = 1:100
-    
+    sim=sim.evolve([0.2 0]);
     sim = sim.getSensorData;
     laserData = squeeze(sim.sensor.laserData);
 %     removing outlier point
@@ -23,7 +33,7 @@ for i = 1:100
     end
 end
 
-sim = sim.delete();
+sim = sim.simDelete();
  
 
  

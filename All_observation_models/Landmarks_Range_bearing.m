@@ -7,6 +7,7 @@ classdef Landmarks_Range_bearing < ObservationModel_interface
         landmarks = Landmarks_Range_bearing.tmp_prop.landmarks;
         obsDim = Landmarks_Range_bearing.tmp_prop.obsDim;
         obsNoiseDim = Landmarks_Range_bearing.obsDim; % observation noise dimension. In some other observation models the noise dimension may be different from the observation dimension.
+        zeroNoise = zeros(Landmarks_Range_bearing.obsNoiseDim,1); % zero observation noise
         eta = user_data_class.par.observation_model_parameters.eta;
         sigma_b = user_data_class.par.observation_model_parameters.sigma_b;
     end

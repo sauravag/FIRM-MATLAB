@@ -11,18 +11,34 @@ if user_data_class.par.Cancel_Run ~= 1
     % instantiate the simulator
     sim = Simulator();
     sim = sim.initialize();
+    sim = sim.setRobot(state([4,4,3*pi/2]));
+    belief_init = belief(state([4,4,3*pi/2]), eye(state.dim));
     
+    sim = sim.setBelief(belief_init);
+    sim = sim.refresh();
+    
+    %     belief_init = belief(state([4,4,3*pi/2]), eye(state.dim));
     robot_goal = state([0 0 0]);
     
-    lnr_pts_inp.x = robot_goal.val;
-    lnr_pts_inp.u = zeros(MotionModel_class.ctDim,1);
+    controller = SLQG_class(robot_goal.val);
     
-    ls = Linear_system_class(lnr_pts_inp);
-    controller = LQG_stationary_class(robot_goal.val);
+    b = belief_init;
     
-    controller.propagate_Hstate
+    %     for i=1:1000
     
-    sim = sim. setRobot(robot_init);
+    %     end
+    
+    noiseFlag = 0;
+    for i =1:1:1000
+        
+        [b, reliable,sim]= controller.executeOneStep(b,sim,noiseFlag);
+        sim = sim.setBelief(b);
+        sim = sim.refresh();
+        
+        drawnow
+        pause(0.1)
+    end
+    
     
     mm = MotionModel_class();
     traj = MotionModel_class.generate_open_loop_point2point_traj(robot_init,robot_goal);

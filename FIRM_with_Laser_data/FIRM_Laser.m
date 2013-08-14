@@ -68,7 +68,21 @@ end
 tmp_prop.obst = inputed_obstacles;
 
 % Creating Landmarks
-
+for i=1:numel(inputed_obstacles)
+    
+end
+Landmarks = inputed_obstacles;
+            LoadFileName = user_data_class.par.LoadFileName;
+            SaveFileName = user_data_class.par.SaveFileName;
+%             Man_L = user_data_class.par.observation_model_parameters.interactive_OM;
+%             if Man_L == 0
+%                 save(SaveFileName,'Landmarks','-append')
+Landmarks = [];                
+for i=1:numel(inputed_obstacles)
+    Landmarks = [inputed_obstacles{i}(1:end-1,:)',Landmarks]
+    
+end
+                save(SaveFileName,'Landmarks','-append')
 
 
 

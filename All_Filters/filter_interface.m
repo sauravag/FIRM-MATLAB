@@ -3,6 +3,6 @@ classdef filter_interface
     methods (Abstract)
         obj = predict(obj, varargin)
         obj = update(obj, varargin)
-        obj = filter(obj, varargin)
+        obj = estimate(obj, varargin)
     end
 end

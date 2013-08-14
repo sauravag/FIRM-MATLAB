@@ -5,17 +5,18 @@ classdef EmbeddedSimulator < SimulatorInterface
         par
         obstacle
         simulatorName = 'Embedded';
+        belief
     end
     
     methods
-        % 1) constructor
+        % constructor
         function obj = EmbeddedSimulator()
             % in constructor we retrive the paraemters of the planning
             % problem entered by the user.
             obj.par = user_data_class.par.sim;
             %             obj.robot = Robot([0;0;0]);
         end
-        % 2) initialize : initializes the simulator
+        % initialize : initializes the simulator
         function obj = initialize(obj)
             old_prop = obj.set_figure(); %#ok<NASGU>
             % Following "if" statements cause the code to first construct the existing
@@ -46,7 +47,7 @@ classdef EmbeddedSimulator < SimulatorInterface
                 vidObj.FrameRate = obj.par.FrameRate;
                 open(vidObj);
             end
-%             obj = Environment_construction(obj); % Construct the environment (obstacles, landmarks, PRM)
+            %             obj = Environment_construction(obj); % Construct the environment (obstacles, landmarks, PRM)
             if ~strcmpi(obj.par.env_background_image_address,'none') % check to see if the environment has any background picuture or not
                 background = imread(obj.par.env_background_image_address);
                 smaller_background=imresize(background,EmbeddedSimulator.par.imageResizeRatio);
@@ -58,34 +59,69 @@ classdef EmbeddedSimulator < SimulatorInterface
                 camlight('right')
                 camzoom(EmbeddedSimulator.par.initialZoomRatio)
             end
-            
+            obj.robot = state();
+            obj.belief = belief();
         end
-        % 3)SetRobot : change robot parameters
+        % SetRobot : change robot parameters
         function obj = setRobot(obj,robot)
-            obj.robot = robot;
+            if ~isfield(obj.robot,'plot_handle') || isempty(obj.robot.plot_handle) % if this is empty, it shows that the robot field is not initialized yet or we have deleted
+                % its handle that is we want to dreaw ir wirh a new handle
+                obj.robot = robot;
+            else
+                % otherwose just update the value
+                obj.robot.val = robot.val;
+            end
         end
-        % 4)GetRobot : get robot parameters
+        % GetRobot : get robot parameters
         function robot = getRobot(obj)
             robot = obj.robot;
         end
-        % 5) Refresh :
+        % Refresh :
         function obj = refresh(obj)
-            obj.robot = obj.robot.delete_plot('head','triangle','text');
-            obj.robot = obj.robot.draw();
-                        
-
-%             disp('Refresh')
+%             obj.robot = obj.robot.delete_plot();
+%             obj.robot = obj.robot.draw();
+            obj.belief = obj.belief.delete_plot();
+            obj.belief = obj.belief.draw();
         end
-        % 6) stopRun (not sure about this one)
+        function b = getBelief(obj)
+            b=obj.belief;
+        end
+        function obj = setBelief(obj,b)
+            
+            if ~isfield(obj.belief,'ellipse_handle') || ~isempty(obj.belief.ellipse_handle) || ~isempty(obj.belief.est_mean.plot_handle)
+                % if any of the belief object's graphics handles are
+                % non-empty, we just
+                obj.belief.est_cov = b.est_cov;
+                obj.belief.est_mean.val = b.est_mean.val;
+            else
+                obj.belief = b;
+            end
+        end
+        % stopRun (not sure about this one)
         function obj = simStop(obj)
             disp('Simulation Stopped')
         end
-        % 7) evolve : evolve robot
-        function obj = evolve(obj,u)
-            w =  zeros(MotionModel_class.wDim,1);
+        % evolve : evolve robot
+        function obj = evolve(obj,u,noiseMode)
+            if noiseMode
+                w = MotionModel_class.generate_process_noise(obj.robot.val,u);
+            else
+                w = MotionModel_class.zeroNoise;
+            end
             obj.robot.val = MotionModel_class.f_discrete(obj.robot.val,u,w);
         end
-       
+        
+        function z = getObservation(obj,noiseMode)
+            % generating observation noise
+            if noiseMode
+                v = ObservationModel_class.generate_observation_noise(obj.robot.val);
+            else
+                v = ObservationModel_class.zeroNoise;
+            end
+            % constructing ground truth observation
+            z = ObservationModel_class.h_func(obj.robot.val,v);
+        end
+        
         
     end
     

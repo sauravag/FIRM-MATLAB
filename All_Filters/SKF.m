@@ -4,24 +4,27 @@ classdef SKF < kalman_filter_interface
         stationaryCov
     end
     methods
-       function b_next = estimate(b,U,Zg,lnr_sys_for_prd,lnr_sys_for_update)
+        function obj = SKF(lnr_sys)
+            [obj.stationaryGain,~,obj.stationaryCov] = SKF.stationary_gain_and_covariances(lnr_sys);
+        end
+        function b_next = estimate(obj,b,U,Zg,lnr_sys_for_prd,lnr_sys_for_update)
             if nargin < 5
                 error('Ali: The linearized systems has to be provided for LKF.')
             end
-            b_prd = SKF.predict(b,U,lnr_sys_for_prd);
-            b_next = SKF.update(b_prd,Zg,lnr_sys_for_update);
+            b_prd = obj.predict(b,U,lnr_sys_for_prd);
+            b_next = obj.update(b_prd,Zg,lnr_sys_for_update);
         end
-        function b_next = StationaryKF_estimate(b,U,Zg,lnr_sys,Stationary_Kalman_gain)
+        function b_next = StationaryKF_estimate(obj,b,U,Zg,lnr_sys,Stationary_Kalman_gain)
             disp('There is no mathmatical basis for the stationary KF if your system is not linear. So, do not use this. Use LKF and provide the stationary linear system as its inputs both for prediction and update. The problem with stationary KF is that the estimation covariance can become unsymmetric easily.')
             if nargin ~= 5
                 error('Ali: In StationaryKF the linearized system and the stationary Kalman gain have to be provided as the function inputs.')
             end
-            b_prd = SKF.prediction(b,U,lnr_sys);
+            b_prd = obj.prediction(b,U,lnr_sys);
             % The update function in StationaryKF is different from the
             % update function in LKF and EKF.
-            b_next = SKF.update_with_stationary_gain(b_prd,Zg,lnr_sys,Stationary_Kalman_gain);
+            b_next = obj.update_with_stationary_gain(b_prd,Zg,lnr_sys,Stationary_Kalman_gain);
         end
-        function b = update_with_stationary_gain(b_prd,Zg,lnr_sys,stationary_Kalman_gain)
+        function b = update_with_stationary_gain(obj,b_prd,Zg,lnr_sys,stationary_Kalman_gain)
             % lnr_sys is the linear or linearized system, Kalman filter is
             % designed for.
             H = lnr_sys.H;
@@ -54,7 +57,9 @@ classdef SKF < kalman_filter_interface
             
             b = belief(state(Xest_next),Pest_next);
         end
-        function [Kss_correct,Pprd_ss,Pest_ss] = stationary_gain_and_covariances(lnr_sys)
+    end
+    methods(Static)
+         function [Kss_correct,Pprd_ss,Pest_ss] = stationary_gain_and_covariances(lnr_sys)
             Ass = lnr_sys.A;
             %Bss is not needed
             Gss = lnr_sys.G;
@@ -78,7 +83,6 @@ classdef SKF < kalman_filter_interface
                     error('There are some issues with convergence')
                 end
             end
-            
         end
     end
 end

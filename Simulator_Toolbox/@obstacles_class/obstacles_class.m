@@ -3,79 +3,121 @@ classdef obstacles_class < handle
     %   Detailed explanation goes here
     
     properties (Constant = true) % Note that you cannot change the order of the definition of properties in this class due to its ugly structure!! (due to dependency between properties.)
-        tmp_prop = obstacles_class.get_obstacles();  % This property is not needed!! I only added it because I could not find any other way to initialize the constant properties. 
+        tmp_prop = obstacles_class.costant_property_constructor();  % I use this technique to initialize the costant properties in run-time. If I can find a better way to do it, I will update it, as it seems a little bit strange.
         obst = obstacles_class.tmp_prop.obst;
-        plot_3D_flag= user_data_class.par.sim.Lighting_and_3D_plots;
-        face_color = [.6,.2 0];
-        edge_color = obstacles_class.face_color*0.5;
-        edge_width = 0.5;
-        top_height_3D = 3; % hight of the top of 3D obstacles
-        bottom_height_3D = -obstacles_class.top_height_3D; % hight of the bottom of 3D obstacles 
-        face_light = 'phong';
-        edge_light = 'phong';
-        
-        obst_2D_color = obstacles_class.face_color; % this is only used when 2D obstacles are drawn (for example when user is importing them)
+        plot_3D_flag = obstacles_class.tmp_prop.plot_3D_flag;
+        face_color = obstacles_class.tmp_prop.face_color
+        face_light = obstacles_class.tmp_prop.face_light
+        edge_color = obstacles_class.tmp_prop.edge_color
+        edge_width = obstacles_class.tmp_prop.edge_width
+        top_height_3D = obstacles_class.tmp_prop.top_height_3D  % hight of the top of 3D obstacles
+        bottom_height_3D = obstacles_class.tmp_prop.bottom_height_3D; % hight of the bottom of 3D obstacles        face_light = tmp_prop
+        edge_light = obstacles_class.tmp_prop.edge_light;
+        obst_2D_color = obstacles_class.tmp_prop.obst_2D_color; % this is only used when 2D obstacles are drawn (for example when user is importing them)
     end
     properties (Access = private)
         boundary_handle = obstacles_class.tmp_prop.boundary_handle;
         fill_handle = obstacles_class.tmp_prop.fill_handle;
     end
-    
     methods (Static = true)
+        function temporary_props = costant_property_constructor()
+            obstacleStructure = obstacles_class.get_obstacles;
+            temporary_props.obst = obstacleStructure.obst;
+            temporary_props.boundary_handle = obstacleStructure.boundary_handle;
+            temporary_props.fill_handle = obstacleStructure.fill_handle;
+            temporary_props.plot_3D_flag = user_data_class.par.sim.Lighting_and_3D_plots;
+            temporary_props.face_color = [.6,.2 0];
+            temporary_props.edge_color =  temporary_props.face_color*0.5;
+            temporary_props.edge_width = 0.5;
+            temporary_props.top_height_3D = 3; % hight of the top of 3D obstacles
+            temporary_props.bottom_height_3D = -temporary_props.top_height_3D; % hight of the bottom of 3D obstacles
+            temporary_props.face_light = 'phong';
+            temporary_props.edge_light = 'phong';
+            temporary_props.obst_2D_color = temporary_props.face_color; % this is only used when 2D obstacles are drawn (for example when user is importing them)
+        end
         function tmp_prop = get_obstacles()
-            SaveFileName = user_data_class.par.SaveFileName;
             Man_Obst = user_data_class.par.sim.intractive_obst;
+            LoadFileName = user_data_class.par.environmentFile;
             if Man_Obst == 0
-                LoadFileName = user_data_class.par.LoadFileName;
-                tmp_prop = obstacles_class.load(LoadFileName);
-            else
-                tmp_prop = obstacles_class.request();
+                if exist(LoadFileName,'file')
+                    tmp_prop = obstacles_class.load(LoadFileName);
+                    %                     tmp_prop.fill_handle = obstacles_class.draw(tmp_prop.obst); % since we have the class is a handle class, we do NOT need to return the obj.
+                    %                     tmp_prop.boundary_handle = []; % in loading obstacles they do not have boundaries.
+                    %                     tmp_prop.fill_handle = [];
+                else
+                    disp(['File : ',LoadFileName,' does not exist. If you want to\n '])
+                    disp('switching to manual. ')
+                    Man_Obst = 1;
+                end
             end
-            Obst_vertices = tmp_prop.obst; %#ok<NASGU>
-            save(SaveFileName,'Obst_vertices','-append')
+            if Man_Obst == 1
+                tmp_prop = obstacles_class.request(LoadFileName);
+                Obst_vertices = tmp_prop.obst; %#ok<NASGU>
+            end
         end
         function tmp_prop = load(LoadFileName)
-            load(LoadFileName,'Obst_vertices')
-                        %=============================================
-%                         disp('Here, we add some specifice obstacles for an specific application (8arm manipulator). This line has to be removed ASAP.')
-%                         Obst_vertices{1} = [1.7,0.8 ; 3,0.8 ; 3,1.2 ; 1.7,1.2 ];
-%                         Obst_vertices{2} = [-0.65,0.8 ; 0.65,0.8 ; 0.65,1.2 ; -0.65,1.2 ];
-%                         Obst_vertices{3} = [-1.7,0.8 ; -3,0.8 ; -3,1.2 ; -1.7,1.2 ];
-            %=============================================
-%                         disp('Here, we add some specifice obstacles for an specific application (multi-robot). This line has to be removed ASAP.')
-%                         Obst_vertices{1} = [-3,5 ; -3,30 ; -30,30 ; -30,5 ];
-%                         Obst_vertices{2} = [3,5 ; 3,30 ; 30,30 ; 30,5 ];
-%                         Obst_vertices{3} = [17,35 ; 17,40 ; -17,40 ; -17,35 ];
-%                         Obst_vertices{4} = [22,35 ; 22,40 ; 35,40 ; 35,35 ];
-%                         Obst_vertices{5} = [-22,35 ; -22,40 ; -35,40 ; -35,35 ];
-            %=============================================
-%             disp('Here, we add some specifice obstacles for an specific application (multi-robot). This line has to be removed ASAP.')
-%             Obst_vertices{1} = [-30,-50 ; -30,50 ; -55,50 ; -55,-50 ];
-%             Obst_vertices{2} = [30,-50 ; 30,50 ; 55,50 ; 55,-50 ];
-            %=============================================
-%                         disp('Here, we add some specifice obstacles for an specific application (multi-robot). This line has to be removed ASAP.')
-%                         obst_radius = 10;
-%                         Base_obst = [-.5,1 ; .5,1 ; 1,.5 ; 1,-.5 ; .5,-1 ; -.5,-1 ; -1,-.5 ; -1,.5]*obst_radius;
-%                         ctr = 0;
-%                         passage_width = 5;
-%                         dist_of_obst = obst_radius*2 + passage_width;
-%                         for i_row = -1:1
-%                             for j_row = -1:1
-%                                 obst_center = [i_row * dist_of_obst ; j_row * dist_of_obst];
-%                                 ctr = ctr+1;
-%                                 Obst_vertices{ctr} = [Base_obst(:,1)+obst_center(1)  ,  Base_obst(:,2)+obst_center(2)];
-%                             end
-%                         end
-            %=============================================
-            tmp_prop.obst = Obst_vertices;
-        end
-        function tmp_prop = request()
+            %                 load(LoadFileName,'Obst_vertices')
+            objOutput=read_wobj(LoadFileName);
+            ObstVertices = objOutput.vertices;
+            tmp_prop.obst = ObstVertices;
+            
             figure(gcf);
+            axis(user_data_class.par.sim.env_limits)
+            title({'Please mark the vertices of polygonal obstacles'},'fontsize',14)
+            ib=0;
+            tmp_prop.boundary_handle = [];
+            tmp_prop.fill_handle = [];
+            %             if user_data_class.par_new.sim.verboseFlag
+            
+            cprintf('Blue','Reading objects from %s \n',LoadFileName)
+            %             end
+            for idx_obj =1:numel(objOutput.objects)
+                if (strcmp(objOutput.objects(idx_obj).type,'g'))
+                    if user_data_class.par.sim.verboseFlag
+                        cprintf('Red','object name : %d \n',objOutput.objects(idx_obj).data)
+                    end
+                elseif strcmp(objOutput.objects(idx_obj).type,'f')
+                    currentObjectVertIndices =unique(objOutput.objects(idx_obj).data.vertices(:));
+                    
+                    vertPosX = [ObstVertices(currentObjectVertIndices,1);ObstVertices(currentObjectVertIndices(1),1)];
+                    vertPosY = [ObstVertices(currentObjectVertIndices,2);ObstVertices(currentObjectVertIndices(1),2)];
+                    axis(user_data_class.par.sim.env_limits)
+                    h_obs=impoly(gca,[vertPosX,vertPosY]);
+                    tmp_prop.boundary_handle = [tmp_prop.boundary_handle, h_obs];
+                    if isempty(h_obs) && ib==0
+                        tmp_prop.obst=[];
+                        break
+                        % % %                     elseif isempty(h_obs) && ib~=0
+                        % % %                         tmp_prop.obst = inputed_obstacles;
+                        % % %                         break
+                    else
+                        ib=ib+1;
+                        inputed_obstacles{ib} = h_obs.getPosition; %#ok<AGROW>
+                        %         [inputed_obstacles{ib}(:,1),inputed_obstacles{ib}(:,2)] = poly2cw(inputed_obstacles{ib}(:,1),inputed_obstacles{ib}(:,2));  % ordering the polygon vertices in a clockwise order, if they are not already. % This is gonna be important in drawing 3D version of obstacles, or in projecting light on scene.
+                        fill_color_handle = fill(inputed_obstacles{ib}(:,1),inputed_obstacles{ib}(:,2),'r');
+                        tmp_prop.fill_handle = [tmp_prop.fill_handle, fill_color_handle];
+                    end
+                end
+            end
+            tmp_prop.obst = inputed_obstacles;
+            
+            
+            
+            
+            
+            
+            %             tmp_prop.boundary_handle = [];
+        end
+        function tmp_prop = request(name)
+            %             Obstacles = obstacles_class; %#ok<NASGU> % The object "Obstacles" is never used. This line only cause the "Constant" properties of the "obstacles_class" class to be initialized.
+            figure(gcf);
+            axis(user_data_class.par.sim.env_limits)
             title({'Please mark the vertices of polygonal obstacles'},'fontsize',14)
             ib=0;
             tmp_prop.boundary_handle = [];
             tmp_prop.fill_handle = [];
             while true
+                axis(user_data_class.par.sim.env_limits)
                 h_obs=impoly;
                 tmp_prop.boundary_handle = [tmp_prop.boundary_handle, h_obs];
                 if isempty(h_obs) && ib==0
@@ -87,24 +129,43 @@ classdef obstacles_class < handle
                 else
                     ib=ib+1;
                     inputed_obstacles{ib} = h_obs.getPosition; %#ok<AGROW>
-                    [inputed_obstacles{ib}(:,1),inputed_obstacles{ib}(:,2)] = poly2cw(inputed_obstacles{ib}(:,1),inputed_obstacles{ib}(:,2));  % ordering the polygon vertices in a clockwise order, if they are not already. % This is gonna be important in drawing 3D version of obstacles, or in projecting light on scene.
-                    fill_color_handle = fill(inputed_obstacles{ib}(:,1),inputed_obstacles{ib}(:,2),obstacles_class.obst_2D_color);
+                    %         [inputed_obstacles{ib}(:,1),inputed_obstacles{ib}(:,2)] = poly2cw(inputed_obstacles{ib}(:,1),inputed_obstacles{ib}(:,2));  % ordering the polygon vertices in a clockwise order, if they are not already. % This is gonna be important in drawing 3D version of obstacles, or in projecting light on scene.
+                    fill_color_handle = fill(inputed_obstacles{ib}(:,1),inputed_obstacles{ib}(:,2),'b');
                     tmp_prop.fill_handle = [tmp_prop.fill_handle, fill_color_handle];
                 end
             end
+            %             name = './test_delete_env8.obj';
+            fid = fopen(name,'w');
+            numOfVertices = 0;
+            for idx = 1:numel(inputed_obstacles)
+                %     inputed_obstacles{idx}
+                
+                numCurrentVertices = size(inputed_obstacles{idx},1);
+                C = [(1:(numCurrentVertices-1))' (2:numCurrentVertices)'; numCurrentVertices 1];
+                
+                dt = DelaunayTri(inputed_obstacles{idx}(:,1), inputed_obstacles{idx}(:,2), C);
+                io = dt.inOutStatus();
+                FV.vertices=[dt.X,zeros(size(dt.X,1),1)];
+                FV.faces=dt.Triangulation(io,:);
+                FV.faces = FV.faces + numOfVertices;
+                vertface2obj(FV.vertices,FV.faces,num2str(idx),fid)
+                numOfVertices = numCurrentVertices + numOfVertices;
+                
+            end
+            fclose(fid);
         end
-        function plot_handle = draw(obst)
+        function plot_handle = draw()
             plot_handle = [];
             top_h = obstacles_class.top_height_3D;
             bottom_h = obstacles_class.bottom_height_3D;
-            for ob_ctr = 1:length(obst)
+            for ob_ctr = 1:length(obstacles_class.obst)
                 if 1%obstacles_class.plot_3D_flag== 1
                     % note that the vertices of obstacles are already
                     % ordered in the clockwise direction. So, the following
                     % algorithm to make 3D obstacles, makes sense.
-                    x = obst{ob_ctr}(:,1); % x coordinate of the obst. vertices
-                    y = obst{ob_ctr}(:,2); % y coordinate of the obst. vertices
-                    num_ver = size(obst{ob_ctr},1); % number of vertices of the obstacle "ob_ctr"
+                    x = obstacles_class.obst{ob_ctr}(:,1); % x coordinate of the obst. vertices
+                    y = obstacles_class.obst{ob_ctr}(:,2); % y coordinate of the obst. vertices
+                    num_ver = size(obstacles_class.obst{ob_ctr},1); % number of vertices of the obstacle "ob_ctr"
                     for i = 1:num_ver
                         j = i+1;
                         if j > num_ver, j =1; end % this is to connect the last vertice to the first one
@@ -130,5 +191,5 @@ classdef obstacles_class < handle
             end
         end
     end
-    
 end
+

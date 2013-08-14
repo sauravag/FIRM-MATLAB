@@ -30,7 +30,8 @@ if ~strcmpi(OkCancel,'Cancel') % if the user press Ok button
     par_new.LoadFileName = New_LoadFileName;  % Since after loading the "par", the "LoadFileName" changes to whaterever exists in "par", we need to update it here with "New_LoadFileName".
     par_new.Cancel_Run = par_new_from_GUI.Cancel_Run;
     par_new.output_directory = new_output_directory;
-    par_new.environmentFile = fullfile(fileparts(which('Main.m')),'Environment_Construction','environment_forth_floor.obj');
+%     par_new.environmentFile = fullfile(fileparts(which('Main.m')),'Environment_Construction','environment_forth_floor.obj');
+    par_new.environmentFile = fullfile(fileparts(which('Main.m')),'FIRM_with_Laser_data','laser_env_map.obj');
     par_new.SaveFileName = fullfile(par_new.output_directory,'parameters.mat');
     
     %===========  saving the parameters in a file

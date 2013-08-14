@@ -4,7 +4,7 @@ classdef kalman_filter_interface < filter_interface
         obj = estimate(obj, varargin)
     end
     methods
-        function b_prd = predict(b,U,lnr_sys)
+        function b_prd = predict(obj, b, U, lnr_sys)
             % lnr_sys is the linear or linearized system, Kalman filter is
             % designed for.
             
@@ -18,11 +18,11 @@ classdef kalman_filter_interface < filter_interface
             Xest_old = b.est_mean.val;
             Pest_old = b.est_cov;
             
-            zerow = zeros(MotionModel_class.wDim,1);
+            zerow = MotionModel_class.zeroNoise;
             Xprd = MotionModel_class.f_discrete(Xest_old,U,zerow);
             
             % I removed following display, because it comes up there too
-            % much times!
+            % many times!
             %disp('AliFW: for LKF, it seems more correct to use linear prediction step.')
             
             
@@ -33,7 +33,7 @@ classdef kalman_filter_interface < filter_interface
             
             b_prd = belief(state(Xprd),Pprd);
         end
-        function b = update(b_prd,Zg,lnr_sys)
+        function b = update(obj, b_prd, Zg, lnr_sys)
             % lnr_sys is the linear or linearized system, Kalman filter is
             % designed for.
             H = lnr_sys.H;
