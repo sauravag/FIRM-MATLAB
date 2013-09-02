@@ -216,6 +216,10 @@ classdef Simulator < SimulatorInterface
             elseif(strcmp(obj.robotModel,'dr20'))
                 [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[position(1),position(2), 0.1517],obj.vrep.simx_opmode_oneshot);
                 [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,-1,[0,0,position(3)],obj.vrep.simx_opmode_oneshot);
+            elseif (strcmp(obj.robotModel,'youbot'))
+                                [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[position(1),position(2), 0.1517],obj.vrep.simx_opmode_oneshot);
+                [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,-1,[0,0,position(3)],obj.vrep.simx_opmode_oneshot);
+
             end
         end
         
@@ -351,7 +355,6 @@ classdef Simulator < SimulatorInterface
                         [res(15)] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, obj.robot_joints(3), obj.rightJointVelocity,obj.vrep.simx_opmode_oneshot);
                         for i=1:17
                         [res(14)] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, obj.robot_joints(i), obj.leftJointVelocity,obj.vrep.simx_opmode_oneshot);
-       
                         
                         end
                         

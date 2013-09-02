@@ -23,13 +23,16 @@ thresholds=default_thresholds_func();
 for i = 1:100
     sim=sim.evolve([0.2 0]);
     sim = sim.getSensorData;
+    i
     laserData = squeeze(sim.sensor.laserData);
+    if ~isempty(laserData )
 %     removing outlier point
     idx = find(abs(laserData(1,:))<10 & abs(laserData(2,:))<10);
     if i>3
         scan.x = -laserData(2,idx).*100;
         scan.y = laserData(1,idx).*100;
         new_features_set=hierarchical_feature_extracting(scan,thresholds,'new');
+    end
     end
 end
 

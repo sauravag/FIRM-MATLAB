@@ -69,7 +69,7 @@ classdef SLQG_class < LQG_interface
             [u , reliable] = obj.separated_controller.generate_feedback_control(oldBelief);
             % Apply control
             sim = sim.evolve(u, noiseFlag);
-%             sim = sim.refresh();
+            % sim = sim.refresh();
             % Get observation from simulator
             z = sim.getObservation(noiseFlag);
             
