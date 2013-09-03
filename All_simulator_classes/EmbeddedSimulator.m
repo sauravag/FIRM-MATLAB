@@ -78,10 +78,10 @@ classdef EmbeddedSimulator < SimulatorInterface
         end
         % Refresh :
         function obj = refresh(obj)
-%             obj.robot = obj.robot.delete_plot();
-%             obj.robot = obj.robot.draw();
-            obj.belief = obj.belief.delete_plot();
-            obj.belief = obj.belief.draw();
+            obj.robot = obj.robot.delete_plot();
+            obj.robot = obj.robot.draw();
+%             obj.belief = obj.belief.delete_plot();
+%             obj.belief = obj.belief.draw();
         end
         function b = getBelief(obj)
             b=obj.belief;

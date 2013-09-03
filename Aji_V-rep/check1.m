@@ -17,7 +17,7 @@ addpath(genpath('C:\Users\Amirhossein\Desktop\MyWork_TAMU\FIRM_with_simulated_la
 robot_init = [0 0 0];
 sim = Simulator();
 sim = sim.initialize();
-sim = sim.setRobot(robot_init);
+% sim = sim.setRobot(robot_init);
 thresholds=default_thresholds_func();
 
 for i = 1:100
