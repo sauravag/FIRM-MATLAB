@@ -15,7 +15,7 @@ if user_data_class.par.Cancel_Run ~= 1
     mm = MotionModel_class();
     traj = MotionModel_class.generate_open_loop_point2point_traj(robot_init,robot_goal);
     for k = 1:length(traj.u)
-        sim = sim.evolve(traj.u(:,k));
+        sim = sim.evolve(traj.u(:,k),0);
         sim = sim.refresh();
         pause(0.02)
     end
