@@ -36,7 +36,7 @@ classdef EmbeddedSimulator < SimulatorInterface
             end
             if user_data_class.par.observation_model_parameters.interactive_OM == 1
                 OM = ObservationModel_class; % The object OM is only created for "Constant" properties of the "ObservationModel_class" class to be initialized.
-                OM.plot_handle = ObservationModel_class.tmp_prop.tmp_plot_handle; % the "plot_handle" property is not a constant property. Thus, it has to be assigned to its value here.
+                OM.plot_handle = OM.draw();
             end
             
             % video making
@@ -111,7 +111,7 @@ classdef EmbeddedSimulator < SimulatorInterface
             obj.robot.val = MotionModel_class.f_discrete(obj.robot.val,u,w);
         end
         
-        function z = getObservation(obj,noiseMode)
+        function z = getObservation(obj, noiseMode)
             % generating observation noise
             if noiseMode
                 v = ObservationModel_class.generate_observation_noise(obj.robot.val);

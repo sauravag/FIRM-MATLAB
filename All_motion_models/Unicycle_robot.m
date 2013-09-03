@@ -15,6 +15,7 @@ classdef Unicycle_robot < handle
         sigma_b_u = user_data_class.par.motion_model_parameters.sigma_b_u_unicycle;
         eta_u = user_data_class.par.motion_model_parameters.eta_u_unicycle;
         P_Wg = user_data_class.par.motion_model_parameters.P_Wg;
+        zeroNoise = zeros(Unicycle_robot.wDim,1);
     end
     
     properties (Constant = true) % orbit-related properties
