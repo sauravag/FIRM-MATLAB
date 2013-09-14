@@ -4,8 +4,10 @@ classdef PRM_interface
     properties
         num_nodes = 0; % number of PRM nodes % initialization to zero is needed.
         num_stabilizers;
+        num_orbits; % Added by Saurav.
         nodes; % PRM nodes
         edges;
+        orbits;%added here by saurav
         edges_list; % list of PRM edges. It is an n-by-2 matrix, i-th row of which stores the starting and ending nodes of i-th edge.
         edges_matrix; % edges matrix. The (i,j)-th element is one if there exists an edge between nodes i and j. It is zero, otherwise.
         outgoing_edges;
@@ -31,6 +33,7 @@ classdef PRM_interface
                 obj = obj.load();
                 obj = obj.overwrite_nodes();
                 obj.par = user_data_class.par.PRM_parameters;  % IMPORTANT: note that you cannot put this command before the "load" command. Because, in that case the parameters of the loaded PRM will be considered, not the new parameters entered by the user.
+                obj = obj.draw();
                 obj = obj.save(); % In this case, the function "save" actually copies the previous PRM into the new output folder.
             else
                 obj.par = user_data_class.par.PRM_parameters;

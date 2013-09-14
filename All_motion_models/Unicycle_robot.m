@@ -1,8 +1,8 @@
 %% Class Definition
-classdef Unicycle_robot < handle
+classdef Unicycle_robot < MotionModel_interface
     %==============================  UNICYCLE  MOTION MODEL =========================================
     % Note that because the class is defined as a handle class, the
-    % properties must be defined such that they are do not change from an
+    % properties must be defined such that they do not change from an
     % object to another one.
     
     %% Properties

@@ -47,7 +47,7 @@ classdef EmbeddedSimulator < SimulatorInterface
                 vidObj.FrameRate = obj.par.FrameRate;
                 open(vidObj);
             end
-            %             obj = Environment_construction(obj); % Construct the environment (obstacles, landmarks, PRM)
+            %obj = Environment_construction(obj); % Construct the environment (obstacles, landmarks, PRM)
             if ~strcmpi(obj.par.env_background_image_address,'none') % check to see if the environment has any background picuture or not
                 background = imread(obj.par.env_background_image_address);
                 smaller_background=imresize(background,EmbeddedSimulator.par.imageResizeRatio);

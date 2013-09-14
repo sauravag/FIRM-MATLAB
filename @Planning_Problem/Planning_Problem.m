@@ -14,7 +14,7 @@ classdef Planning_Problem
             % problem entered by the user.
             obj.par = user_data_class.par.planning_problem_param;
             obj.sim = sim;
-            obj.PRM = sim.PRM;
+            obj.PRM = PRM_class;
         end
         function obj = solve(obj)
             [loading_folder_path, ~, ~] = fileparts(user_data_class.par.LoadFileName); % This line returns the path of the folder from which we want to load the parameters.
@@ -22,8 +22,9 @@ classdef Planning_Problem
             [saving_folder_path, ~, ~] = fileparts(user_data_class.par.SaveFileName); % This line returns the path of the folder into which we want to save the parameters.
             % --------------------------------------- Offline construction code
             if obj.par.Offline_construction_phase == 1  % Offline construction code
+                
                 if strcmpi(obj.par.solver,'Periodic LQG-based FIRM')
-                    obj.FIRM_graph = Orbit_based_FIRM_graph_class(obj.PRM); % the input PRM is an object of PNPRM class
+                    obj.FIRM_graph = PLQG_based_FIRM_graph_class(obj.PRM); % the input PRM is an object of PNPRM class
                 else 
                     obj.FIRM_graph = FIRM_graph_class(obj.PRM); % the input PRM is an object of PNPRM class
                 end                

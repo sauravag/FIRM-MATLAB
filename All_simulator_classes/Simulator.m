@@ -36,11 +36,7 @@ classdef Simulator < SimulatorInterface
             end
             if user_data_class.par.observation_model_parameters.interactive_OM == 1
                 OM = ObservationModel_class; % The object OM is only created for "Constant" properties of the "ObservationModel_class" class to be initialized.
-<<<<<<< HEAD
                 OM.plot_handle = OM.draw();
-=======
-                OM.plot_handle = ObservationModel_class.tmp_prop.tmp_plot_handle; % the "plot_handle" property is not a constant property. Thus, it has to be assigned to its value here.
->>>>>>> 100c5c606bfbbfa221df7afe793186da77bad5d9
             end
             
             % video making
@@ -51,7 +47,7 @@ classdef Simulator < SimulatorInterface
                 vidObj.FrameRate = obj.par.FrameRate;
                 open(vidObj);
             end
-            %             obj = Environment_construction(obj); % Construct the environment (obstacles, landmarks, PRM)
+            %obj = Environment_construction(obj); % Construct the environment (obstacles, landmarks, PRM)
             if ~strcmpi(obj.par.env_background_image_address,'none') % check to see if the environment has any background picuture or not
                 background = imread(obj.par.env_background_image_address);
                 smaller_background=imresize(background,Simulator.par.imageResizeRatio);
@@ -82,17 +78,10 @@ classdef Simulator < SimulatorInterface
         end
         % Refresh :
         function obj = refresh(obj)
-<<<<<<< HEAD
-%             obj.robot = obj.robot.delete_plot();
-%             obj.robot = obj.robot.draw();
-            obj.belief = obj.belief.delete_plot();
-            obj.belief = obj.belief.draw();
-=======
             obj.robot = obj.robot.delete_plot();
             obj.robot = obj.robot.draw();
 %             obj.belief = obj.belief.delete_plot();
 %             obj.belief = obj.belief.draw();
->>>>>>> 100c5c606bfbbfa221df7afe793186da77bad5d9
         end
         function b = getBelief(obj)
             b=obj.belief;
@@ -122,11 +111,7 @@ classdef Simulator < SimulatorInterface
             obj.robot.val = MotionModel_class.f_discrete(obj.robot.val,u,w);
         end
         
-<<<<<<< HEAD
         function z = getObservation(obj, noiseMode)
-=======
-        function z = getObservation(obj,noiseMode)
->>>>>>> 100c5c606bfbbfa221df7afe793186da77bad5d9
             % generating observation noise
             if noiseMode
                 v = ObservationModel_class.generate_observation_noise(obj.robot.val);

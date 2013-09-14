@@ -14,7 +14,7 @@ classdef stabilizer_class < Stabilizer_interface
         function obj = stabilizer_class(PRM_node_inp)
             if nargin>0
                 obj.PRM_node = PRM_node_inp;
-                obj.controller = LQG_stationary_class(PRM_node_inp.val); % Note that the node controller is an object of "LQG_stationary_class" NOT simple "LQG".
+                obj.controller = SLQG_class(PRM_node_inp.val); % Note that the node controller is an object of "LQG_stationary_class" NOT simple "LQG".
                 obj.par = user_data_class.par.stabilizer_parameters;
             end
         end

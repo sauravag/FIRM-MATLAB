@@ -8,21 +8,21 @@ if user_data_class.par.Cancel_Run ~= 1
     sim = Simulator();
     sim = sim.initialize();
     
-    robot_init = state.sample_a_valid_state();
-    robot_goal = state.sample_a_valid_state();
+%     robot_init = state.sample_a_valid_state();
+%     robot_goal = state.sample_a_valid_state();
+%     
+%     sim = sim.setRobot(robot_init);
+%        
+%     mm = MotionModel_class();
+%     traj = MotionModel_class.generate_open_loop_point2point_traj(robot_init,robot_goal);
+%     for k = 1:length(traj.u)
+%         
+%         sim = sim.evolve(traj.u(:,k),0);
+%         sim = sim.refresh();
+%         pause(0.02)
+%     end
     
-    sim = sim.setRobot(robot_init);
-       
-    mm = MotionModel_class();
-    traj = MotionModel_class.generate_open_loop_point2point_traj(robot_init,robot_goal);
-    for k = 1:length(traj.u)
-        
-        sim = sim.evolve(traj.u(:,k),0);
-        sim = sim.refresh();
-        pause(0.02)
-    end
-    
-    traj = MotionModel_class.generate_VALID_open_loop_point2point_traj(robot_init,robot_goal);
+    %traj = MotionModel_class.generate_VALID_open_loop_point2point_traj(robot_init,robot_goal);
     
     prob_inst = Planning_Problem(sim);
     prob_inst = prob_inst.solve();
