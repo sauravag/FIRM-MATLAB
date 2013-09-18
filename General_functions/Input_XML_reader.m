@@ -101,10 +101,13 @@ par_new.observation_model_parameters = gather_observation_model_parameters(old_p
 
 %=========== Planning Problem (Solver) Parameters
 if strcmpi(par_new.planning_problem_param.solver, 'Stationary LQG-based FIRM')
+    typeDef('Point_PRM_class', 'PRM_class')
     typeDef('Point_stabilizer_SLQG_class', 'stabilizer_class')
 elseif strcmpi(par_new.planning_problem_param.solver, 'Periodic LQG-based FIRM')
+    typeDef('Orbit_PRM_class', 'PRM_class')
     typeDef('Orbit_stabilizer_PLQG_class', 'stabilizer_class')
 elseif strcmpi(par_new.planning_problem_param.solver, 'DFL-and-SKF-based FIRM')
+    typeDef('Point_PRM_class', 'PRM_class')
     typeDef('Point_stabilizer_DFL_SKF', 'stabilizer_class')
 else
     error('not implemented yet')
@@ -194,6 +197,7 @@ par_new.No_history = 1;
 par_new.No_plot = 1; % this is for plots in construction phase. The execution phase plots are different.
 
 %=========== PRM parameters
+
 par_new.PRM_parameters.neighboring_distance_threshold = 15*1.5*10; %* 1.25 * 1000;% * 0.3;
 par_new.PRM_parameters.PRM_node_text = 1; % if this is one, the number of nodes will be written on the figure.
 par_new.PRM_parameters.PRM_node_plot_properties =  {'RobotShape','triangle','robotSize',2};% {'RobotShape','triangle','robotSize',2};

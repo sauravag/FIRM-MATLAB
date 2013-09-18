@@ -390,7 +390,7 @@ classdef Unicycle_robot < MotionModel_interface
                 
         end
         %% Generate open-loop Orbit-to-Orbit trajectory
-        function nominal_traj = generate_open_loop_orbit2orbit_traj(start_orbit, end_orbit) % generates open-loop trajectories between two start and end orbits
+        function nominal_traj = generate_VALID_open_loop_orbit2orbit_traj(start_orbit, end_orbit) % generates open-loop trajectories between two start and end orbits
             % check if the both orbits are turning in the same
             % direction or not.
             direction_start_orbit = sign(start_orbit.u(1,1))*sign(start_orbit.u(2,1));
@@ -403,29 +403,32 @@ classdef Unicycle_robot < MotionModel_interface
             else
                 error('different directions have not been implemented in PNPRM yet.')
             end
-            temp_traj.x(:,1) = temp_edge_start;  temp_traj.x(:,2) = temp_edge_end;  % we generate this trajectory (only composed of start and end points) to check the collision probabilities before generating the edges.
-            collision = Unicycle_robot.is_constraints_violated(temp_traj);  % checking intersection with obstacles
-            if collision == 1
-                nominal_traj = [];
-                return
-            else
-                % construction edge trajectory
-                tmp_traj_start = [temp_edge_start ; gamma ];
-                V_p = start_orbit.u(1,1);
-                step_length = V_p * Unicycle_robot.dt;
-                edge_length = norm ( end_orbit.center - start_orbit.center ) ;
-                edge_steps = floor(edge_length/step_length);
-                
-                omega_p = 0;
-                u_p = [V_p;omega_p];
-                w_zero = zeros(MotionModel_class.wDim , 1); % no noise
-                
-                nominal_traj.x(:,1) = tmp_traj_start;
-                for k =1:edge_steps
-                    nominal_traj.x(:,k+1) = MotionModel_class.f_discrete(nominal_traj.x(:,k), u_p, w_zero);
-                end
-                nominal_traj.u(:,1:edge_steps) = repmat(u_p,1,edge_steps);
+            %temp_traj.x(:,1) = temp_edge_start;  temp_traj.x(:,2) = temp_edge_end;  % we generate this trajectory (only composed of start and end points) to check the collision probabilities before generating the edges.
+            %collision = Unicycle_robot.is_constraints_violated(temp_traj);  % checking intersection with obstacles
+            %             if collision == 1
+            %                 nominal_traj = [];
+            %                 return
+            %             else
+            %                 % construction edge trajectory
+            tmp_traj_start = [temp_edge_start ; gamma ];
+            V_p = start_orbit.u(1,1);
+            step_length = V_p * Unicycle_robot.dt;
+            edge_length = norm ( end_orbit.center - start_orbit.center ) ;
+            edge_steps = floor(edge_length/step_length);
+            
+            omega_p = 0;
+            u_p_single = [V_p;omega_p];
+            u_p = repmat(u_p_single ,1,edge_steps);
+            w_zero = zeros(MotionModel_class.wDim , 1); % no noise
+            
+            x_p(:,1) = tmp_traj_start;
+            for k =1:edge_steps
+                x_p(:,k+1) = MotionModel_class.f_discrete(x_p(:,k),u_p(:,k),w_zero);
+                tmp = state(x_p(:,k+1)); if tmp.is_constraint_violated, nominal_traj =[]; return; end
+                %                 tmp.draw(); % FOR DEBUGGING
             end
+            nominal_traj.x = x_p;
+            nominal_traj.u = u_p;
         end
         %% check if the trajectory is collision-free or not
         function YesNo = is_constraints_violated(open_loop_traj) % this function checks if the "open_loop_traj" violates any constraints or not. For example it checks collision with obstacles.

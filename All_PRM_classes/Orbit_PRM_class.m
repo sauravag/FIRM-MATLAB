@@ -1,4 +1,4 @@
-classdef PNPRM_class < PRM_interface
+classdef Orbit_PRM_class < PRM_interface
     
     properties
         num_orbits = 0; % this variable needs to be initialized to zero here.
@@ -26,7 +26,7 @@ classdef PNPRM_class < PRM_interface
     end
     
     methods
-        function obj = PNPRM_class(~)
+        function obj = Orbit_PRM_class(~)
             % The constructor of the superclass, i.e., "PRM_interface" is
             % automatically called.
         end
@@ -87,6 +87,11 @@ classdef PNPRM_class < PRM_interface
             load(LoadFileName,'PNPRM')
             obj = PNPRM;
         end
+        function obj = request_nodes(obj)
+            obj = obj.request_orbits();  % This function reveives orbits from the user and draws them.
+            obj = obj.construct_nodes();
+            obj = obj.construct_orbit_edges();
+        end
         function obj = overwrite_nodes(obj)
         end
         function obj = save(obj)
@@ -94,14 +99,10 @@ classdef PNPRM_class < PRM_interface
             PNPRM = obj; %#ok<NASGU>
             save(SaveFileName,'PNPRM','-append')
         end
+        
         function obj = add_node(obj,new_node)
             error('This function has not been implemented for PNPRM yet')
         end        
-        function obj = request_nodes(obj)
-            obj = obj.request_orbits();  % This function reveives orbits from the user and draws them.
-            obj = obj.construct_nodes();
-            obj = obj.construct_orbit_edges();
-        end
         function obj = add_set_of_orbits(obj,new_orbits)
             for i = 1:length(new_orbits)
                 obj = obj.add_orbit(new_orbits(i));
@@ -315,7 +316,7 @@ classdef PNPRM_class < PRM_interface
             obj.orbit_edges_matrix = tmp;
         end
         function obj = add_orbit_edge(obj, start_orbit, end_orbit, start_orbit_ind, end_orbit_ind)
-            nominal_traj = MotionModel_class.generate_open_loop_orbit2orbit_traj(start_orbit, end_orbit); % generates open-loop trajectories between two start and end orbits
+            nominal_traj = MotionModel_class.generate_VALID_open_loop_orbit2orbit_traj(start_orbit, end_orbit); % generates open-loop trajectories between two start and end orbits
             if ~isempty(nominal_traj)
                 obj.orbit_edges_list = [obj.orbit_edges_list ; [start_orbit_ind , end_orbit_ind]]; % adding orbit_edge to the list of orbit_edges
                 if isempty(obj.orbit_edges_trajectory) % I put this "if statement" becuase if "obj.orbit_edges_trajectory" is empty, Matlab does not let you to save the "nominal_traj" in any of its entries.

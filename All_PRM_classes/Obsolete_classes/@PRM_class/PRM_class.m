@@ -133,6 +133,7 @@ classdef PRM_class < PRM_interface
                 end
             end
         end
+        
         function feedback_plot_handle = draw_feedback_pi(obj, feedback_pi, selected_node_indices)
             error('This function is obsolete. But it can be updated beautifully with the new was of looking to feedback!')
             % This function has not been updated after the latest changes.
