@@ -23,6 +23,8 @@ classdef Orbit_PRM_class < PRM_interface
         % subclasses.
         edges_plot_handle = [];
         orbit_text_handle = [];
+        orbit_edges_plot_handle = [];
+        orbit_edges_traj_handle = [];
     end
     
     methods
@@ -90,7 +92,7 @@ classdef Orbit_PRM_class < PRM_interface
         function obj = request_nodes(obj)
             obj = obj.request_orbits();  % This function reveives orbits from the user and draws them.
             obj = obj.construct_nodes();
-            obj = obj.construct_orbit_edges();
+%             obj = obj.construct_orbit_edges();
         end
         function obj = overwrite_nodes(obj)
         end
@@ -343,7 +345,7 @@ classdef Orbit_PRM_class < PRM_interface
             obj.num_nodes = n;
         end
         function obj = construct_edges(obj)
-            error('The name and inside of this function needs to be changes as we differentiate between orbit_edges and edges')
+            error('The name and inside of this function needs to be changed as we differentiate between orbit_edges and edges')
             obj.edges_matrix = obj.orbit_edges_matrix;
             obj.edges_list = obj.orbit_edges_list;
         end

@@ -9,14 +9,14 @@ classdef PLQG_based_FIRM_graph_class < FIRM_graph_interface
         function obj = PLQG_based_FIRM_graph_class(PRM_inp)
             obj = obj@FIRM_graph_interface(PRM_inp);
             obj.num_stabilizers = obj.PRM.num_orbits;
-            obj.num_edges = size(PRM_inp.edges_list,1) * obj.PRM.orbits(1).num_nodes;
+            obj.num_edges = size( obj.PRM.edges_list,1) * obj.PRM.orbits(1).num_nodes;
             
             obj.Stabilizers = Orbit_stabilizer_PLQG_class.empty;
             obj.Stabilizers(obj.num_stabilizers,1) = Orbit_stabilizer_PLQG_class; % Preallocate object array
             obj.Nodes = FIRM_node_class.empty;
             obj.Nodes(obj.num_nodes,1) = FIRM_node_class; % Preallocate object array
             obj.Edges = FIRM_edge_class.empty;
-            obj.Edges(obj.num_edges,1) = FIRM_edge_class; % Preallocate object array
+%             obj.Edges(obj.num_edges,1) = FIRM_edge_class; % Preallocate object array
         end
         function obj = construct_all_stabilizers_and_FIRM_nodes(obj)
             % This function constructs stabilizers used in PLQG-based FIRM framework and constructs reachable nodes under this stabilizers and assigns values to the "stabilizers" and "nodes" properties of the class.
