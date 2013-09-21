@@ -1,7 +1,7 @@
 %% Class Definition
 classdef Aircraft_Kinematic < MotionModel_interface
     properties (Constant = true)
-        stDim = 7;%state.dim; % state dimension
+        stDim = state.dim; % state dimension
         ctDim = 4;  % control vector dimension
         wDim = 6;   % Process noise (W) dimension  % For the generality we also consider the additive noise on kinematics equation (3 dimension), but it most probably will set to zero. The main noise is a 2 dimensional noise which is added to the controls.
         dt = 0.4;
