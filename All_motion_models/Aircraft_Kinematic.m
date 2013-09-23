@@ -1,7 +1,7 @@
 %% Class Definition
 classdef Aircraft_Kinematic < MotionModel_interface
     properties (Constant = true)
-        stDim = state.dim; % state dimension
+        stDim = 7;%state.dim; % state dimension
         ctDim = 4;  % control vector dimension
         wDim = 6;   % Process noise (W) dimension  % For the generality we also consider the additive noise on kinematics equation (3 dimension), but it most probably will set to zero. The main noise is a 2 dimensional noise which is added to the controls.
         dt = 0.1;
@@ -55,7 +55,7 @@ classdef Aircraft_Kinematic < MotionModel_interface
         %             linear_noise    = p * [w(1); 0 ; 0];
         %             w_linear = [linear_noise(1) linear_noise(2) linear_noise(3)];
         %             w_angular = [w(2) w(3) w(4)];
-        %             transition_quat = MotionModel_class.f_transquat(Aircraft_Kinematic.dt , u_angular ,w_angular);
+        %             transition_quat = Aircraft_Kinematic.f_transquat(Aircraft_Kinematic.dt , u_angular ,w_angular);
         %             x_next_q_rot = Quaternion();
         %             x_next_q_rot = unit(q_rot * transition_quat);% normalizing resultant quaternion)
         %             x_next_rot = double(x_next_q_rot);% converting to matrix form
@@ -97,7 +97,7 @@ classdef Aircraft_Kinematic < MotionModel_interface
             x_next_rot = rot + control + noise;
             q_next = unit(x_next_rot); % Make a unit quaternion
             
-            %             %transition_quat = MotionModel_class.f_transquat(Aircraft_Kinematic.dt , u_angular ,w_angular);
+            %             %transition_quat = Aircraft_Kinematic.f_transquat(Aircraft_Kinematic.dt , u_angular ,w_angular);
             %             x_next_q_rot = Quaternion();
             %             x_next_q_rot = unit(q_rot * transition_quat);% normalizing resultant quaternion)
             %             x_next_rot = double(x_next_q_rot);% converting to matrix f
@@ -109,7 +109,7 @@ classdef Aircraft_Kinematic < MotionModel_interface
 %             u_angular = [u(4) u(5) u(6)];
 %             w_linear = [w(1) w(2) w(3)];
 %             w_angular = [w(4) w(5) w(6)];
-%             transition_quat = MotionModel_class.f_transquat(Aircraft_Kinematic.dt , u_angular ,w_angular);
+%             transition_quat = Aircraft_Kinematic.f_transquat(Aircraft_Kinematic.dt , u_angular ,w_angular);
 %             transition_mat = double(transition_quat);
 %             a_11 = transition_mat(1);
 %             a_12 = -1 * transition_mat(2);
@@ -324,54 +324,60 @@ classdef Aircraft_Kinematic < MotionModel_interface
             
         end
         function w = generate_process_noise(x,u) % simulate (generate) process noise based on the current poistion and controls
-            [Un] =  MotionModel_class.generate_control_and_indep_process_noise(u);
+            [Un] =  Aircraft_Kinematic.generate_control_and_indep_process_noise(u);
             w = [Un];
         end
         function [Un] = generate_control_and_indep_process_noise(U)
             % generate Un
-            indep_part_of_Un = randn(MotionModel_class.ctDim,1);
-            P_Un =  MotionModel_class.control_noise_covariance(U);
+            indep_part_of_Un = randn(Aircraft_Kinematic.ctDim,1);
+            P_Un =  Aircraft_Kinematic.control_noise_covariance(U);
             Un = indep_part_of_Un.*diag(P_Un.^(1/2));
         end
         function P_Un = control_noise_covariance(U)
-            u_std=(MotionModel_class.eta_u).*U +(MotionModel_class.sigma_b_u);
+            u_std=(Aircraft_Kinematic.eta_u).*U +(Aircraft_Kinematic.sigma_b_u);
             P_Un=diag(u_std.^2);
         end
         function Q_process_noise = process_noise_cov(x,u) % compute the covariance of process noise based on the current poistion and controls
             error('not yet implemented');
         end
-        function [nominal_traj,rrt] = generate_open_loop_point2point_traj(start,goal) % generates open-loop trajectories between two start and goal states
+        function nominal_traj = generate_open_loop_point2point_traj(start,goal) % generates open-loop trajectories between two start and goal states
              % The MATLAB RVC ToolBox Must be loaded first
             veh = Aircraft_Kinematic();
-            rrt = RRT3D([], veh, 'start', start, 'range', 8,'npoints',1000,'speed',2,'time', Aircraft_Kinematic.dt);
+            rrt = RRT3D([], veh, 'start', start, 'range', 8,'npoints',10000,'speed',2,'time', Aircraft_Kinematic.dt);
             rrt.plan()             % create navigation tree
             nominal_traj = rrt.path(start, goal) ; % animate path from this start location
             
             %% Code for plotting
             controls = [];
+            nomXs = [];
             for i = 1:length(nominal_traj)
                 p = nominal_traj(i);
                 g  = rrt.graph;
                 data = g.data(p);
                 if ~isempty(data)
                     if i >= length(nominal_traj) || g.edgedir(p, nominal_traj(i+1)) > 0
-                        controls = [controls;data.steer];
+                        controls = [controls,data.steer'];
+                        nomXs = [nomXs,data.path];
                     else
-                        controls = [controls;data.steer(:,end:-1:1)];
+                        controls = [controls,(data.steer(:,end:-1:1))'];
+                        nomXs = [nomXs,data.path];
 
                     end
                 end
             end
-
+            
+            nominal_traj.u = controls;
+            nominal_traj.x = nomXs;
+            
             x = start;
             X = [];
-            X = [X;x];
-            w = [0,0,0,0];
-            for i=1:length(controls(:,1))
-                u = controls(i,:);
+            X = [X,x];
+            w = [0,0,0,0]';
+            for i=1:length(controls(1,:))
+                u = controls(:,i);
                 x = Aircraft_Kinematic.f_discrete(x,u,w);
-                X = [X;x];
-                plot3(X(:,1),X(:,2),X(:,3),'x');
+                X = [X,x];
+                plot3(X(1,:),X(2,:),X(3,:),'x');
                 pause(0.1);
             end
         end

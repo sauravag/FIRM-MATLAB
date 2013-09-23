@@ -12,22 +12,6 @@
 % display      Display the parameters in human readable form
 % char         Convert to string
 %
-% Example::
-%
-%        goal = [0,0,0];
-%        start = [0,2,0];
-%        veh = Vehicle([], 'stlim', 1.2);
-%        RRT3D = RRT3D([], veh, 'goal', goal, 'range', 5);
-%        RRT3D.plan()             % create navigation tree
-%        RRT3D.path(start, goal)  % animate path from this start location
-%
-%  Robotics, Vision & Control compatability mode:
-%        goal = [0,0,0];
-%        start = [0,2,0];
-%        RRT3D = RRT3D();           % create navigation object
-%        RRT3D.plan()             % create navigation tree
-%        RRT3D.path(start, goal)  % animate path from this start location
-%
 % References::
 % - Randomized kinodynamic planning,
 %   S. LaValle and J. Kuffner, 
@@ -39,8 +23,6 @@
 %   P. Corke, Springer 2011.
 %
 % See also Navigation, PRM, DXform, Dstar, PGraph.
-
-% Peter Corke 8/2009.
 
 %TODO
 %   more info to the display method
@@ -108,7 +90,7 @@ classdef RRT3D < Navigation
             % invoke the superclass constructor
             RRT3D = RRT3D@Navigation(varargin{:});
 
-            RRT3D.graph = PGraph(7);  % graph of points in SE(2)
+            RRT3D.graph = PGraph(7, 'distance', '6DOFQuaternion');  % graph of points in S0(3)
             if nargin == 0
                 RRT3D.vehicle = Aircraft_Kinematic();
             else
@@ -119,7 +101,7 @@ classdef RRT3D < Navigation
             opt.npoints = 1500;
             opt.time = 0.5;
             opt.range = 5;
-            opt.start = [0, 0, 0];
+            opt.start = [0, 0, 0,1,0,0,0]'; % State is a column vector
             opt.steermax = [];
             opt.speed = 1;
             
@@ -444,7 +426,7 @@ classdef RRT3D < Navigation
                 w = [0,0,0,0]; 
                 % simulate motion of vehicle for this speed and steer angle which 
                 % results in a path
-                x = RRT3D.vehicle.f_discrete(x0, u, w)';
+                x = RRT3D.vehicle.f_discrete(x0, u, w);
                 
                 %% find point on the path closest to xg
                 % distance of all path points from goal
