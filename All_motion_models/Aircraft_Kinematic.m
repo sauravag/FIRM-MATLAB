@@ -4,7 +4,7 @@ classdef Aircraft_Kinematic < MotionModel_interface
         stDim = state.dim; % state dimension
         ctDim = 4;  % control vector dimension
         wDim = 6;   % Process noise (W) dimension  % For the generality we also consider the additive noise on kinematics equation (3 dimension), but it most probably will set to zero. The main noise is a 2 dimensional noise which is added to the controls.
-        dt = 0.4;
+        dt = 0.1;
         % base_length = user_data_class.par.motion_model_parameters.base_length;  % distance between robot's rear wheels.
         sigma_b_u = [0.2  0.1 0.1 0.1]; %user_data_class.par.motion_model_parameters.sigma_b_u_unicycle;
         eta_u = [0.2 0.1 0.1 0.1]%user_data_class.par.motion_model_parameters.eta_u_unicycle;
@@ -66,7 +66,7 @@ classdef Aircraft_Kinematic < MotionModel_interface
             pos = [x(1) ; x(2) ; x(3)];% position state
             rot  = [x(4) ; x(5) ; x(6) ; x(7)];% rotation state
             q_rot = Quaternion(rot);
-            q_rot = unit(q_rot);% making a normalized quarternion
+            q_rot = unit(q_rot);% making a normalized quarternion, dont use quatnormalize
             p = q_rot.R;
             
             u_linear_ground  =  p *[u(1); 0; 0] ;
@@ -95,14 +95,14 @@ classdef Aircraft_Kinematic < MotionModel_interface
             control = a_con * u_angular_ground;
             noise = a_noi * w_angular_ground;
             x_next_rot = rot + control + noise;
-           
+            q_next = unit(x_next_rot); % Make a unit quaternion
             
             %             %transition_quat = MotionModel_class.f_transquat(Aircraft_Kinematic.dt , u_angular ,w_angular);
             %             x_next_q_rot = Quaternion();
             %             x_next_q_rot = unit(q_rot * transition_quat);% normalizing resultant quaternion)
             %             x_next_rot = double(x_next_q_rot);% converting to matrix f
           
-            x_next = [x_next_pos(1)  x_next_pos(2)  x_next_pos(3), x_next_rot(1)  x_next_rot(2)  x_next_rot(3)  x_next_rot(4)]; % augmenting state and rotational part
+            x_next = [x_next_pos(1)  x_next_pos(2)  x_next_pos(3) q_next(1) q_next(2) q_next(3) q_next(4)]'; % augmenting state and rotational part
         end
 %         function  A = df_dx_func(x,u,w) % state Jacobian
 %             u_linear =  [u(1) u(2) u(3)];
@@ -129,7 +129,7 @@ classdef Aircraft_Kinematic < MotionModel_interface
 %             a_44 = transition_mat(1);
 %             A = [a_11 a_12 a_13 a_14; a_21 a_22 a_23 a_24; a_31 a_32 a_33 a_34; a_41 a_42 a_43 a_44];
 %         end
-         function  A = df_dx_func(x,u,w) % state Jacobian
+         function  J = df_dx_func(x,u,w) % state Jacobian
             pos = [x(1) , x(2) , x(3)];% position state
             rot  = [x(4) , x(5) , x(6) , x(7)];% rotation state
             q_rot = Quaternion(rot);
@@ -158,6 +158,37 @@ classdef Aircraft_Kinematic < MotionModel_interface
             a_43 = 0 - 0.5 * t3(1) * Aircraft_Kinematic.dt - 0.5 * t4(1) * (Aircraft_Kinematic.dt)^0.5;
             a_44 = 1 + 0.5 * 0 * Aircraft_Kinematic.dt + 0.5 * 0 * (Aircraft_Kinematic.dt)^0.5;
             A = [a_11 a_12 a_13 a_14; a_21 a_22 a_23 a_24; a_31 a_32 a_33 a_34; a_41 a_42 a_43 a_44];
+            % Calculating the jacobian of the linear components B
+            qq = q_rot.double; % put it back in double form
+            Vsum = (u(1)*Aircraft_Kinematic.dt + w(1)*Aircraft_Kinematic.dt^0.5)
+            b_11 = 1;
+            b_12 = 0;
+            b_13 = 0;
+            b_14 = 2*qq(1)  * Vsum;
+            b_15 = 2*qq(2)  * Vsum;
+            b_16 = -2*qq(3) * Vsum;
+            b_17 = -2*qq(4) * Vsum;
+            b_21 = 0;
+            b_22 = 1;
+            b_23 = 0;
+            b_24 = qq(4)*Vsum;
+            b_25 = 2*qq(3)*Vsum;
+            b_26 = 2*qq(2)*Vsum;
+            b_27 = qq(1)*Vsum;
+            b_31 = 0;
+            b_32 = 0;
+            b_33 = 1;
+            b_34 = -qq(3)*Vsum;
+            b_35 = 2*qq(4)*Vsum;
+            b_36 = -qq(1)*Vsum;
+            b_37 = 2*qq(2)*Vsum;
+            
+            B = [b_11 b_12 b_13 b_14 b_15 b_16 b_17;b_21 b_22 b_23 b_24 b_25 b_26 b_27;b_31 b_32 b_33 b_34 b_35 b_36 b_37];
+            
+            J = zeros(7,7);
+            J(1:3,1:7) = B;
+            J(4:7,4:7) = A; 
+           
          end
 %         function a1 = j1(rot,p,p5,noisy)
 %             a1 = rot* p * p5 * noisy;
