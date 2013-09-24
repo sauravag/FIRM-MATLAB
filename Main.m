@@ -1,5 +1,5 @@
 clear classes;clear variables;close all;clc;
-addpath('./external/rvctools/');
+addpath('./external/rvctools/'); % We need rvctoolbox to run RRT
 startup_rvc;
 %load myfilebrkpnts;dbstop(s)
 

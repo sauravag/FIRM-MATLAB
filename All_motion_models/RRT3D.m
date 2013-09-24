@@ -47,7 +47,8 @@ classdef RRT3D < Navigation
         speed
         steermax
         vehicle
-        start                 
+        start       
+        %goal
     end
 
     methods
@@ -153,12 +154,13 @@ classdef RRT3D < Navigation
             opt.progress = true;
             opt.samples = false;
             opt.start = [];
+            opt.goal  = [];
             
             opt = tb_optparse(opt, varargin);
 
-%             if ~isempty(opt.goal)
-%                 RRT3D.goal = opt.goal;
-%             end
+             if ~isempty(opt.goal)
+                 RRT3D.goal = opt.goal;
+             end
 
             % build a graph over the free space
             RRT3D.message('create the graph');
@@ -241,7 +243,7 @@ classdef RRT3D < Navigation
                 % Step 5
                 % figure how to drive the robot from xnear to xrand
                 
-                ntrials = 50;
+                ntrials = 50;% Try 75 
                 
                 best = RRT3D.bestpath(xnear, xrand, ntrials);
                 
@@ -448,8 +450,15 @@ classdef RRT3D < Navigation
 
         % generate a random coordinate within the working region
         function xyz = randxyz(RRT3D)
-            xyz = RRT3D.rand(1,3) .* [RRT3D.xrange(2)-RRT3D.xrange(1) RRT3D.yrange(2)-RRT3D.yrange(1) RRT3D.zrange(2)-RRT3D.zrange(1)] + ...
-                [RRT3D.xrange(1) RRT3D.yrange(1) RRT3D.zrange(1)];
+            xstart = RRT3D.start;
+            xgoal = RRT3D.goal;
+            d = norm(xstart(1:3)-xgoal(1:3));
+            range = d*1.5;
+            xrange = [-range range];
+            yrange = [-range range];
+            zrange = [-range range];
+            xyz = RRT3D.rand(1,3) .* [xrange(2)-xrange(1) yrange(2)-yrange(1) zrange(2)-zrange(1)] + ...
+                [xstart(1)+RRT3D.xrange(1) xstart(2)+RRT3D.yrange(1) xstart(3)+RRT3D.zrange(1)];
         end
         
         function xy = randxy(RRT3D)
