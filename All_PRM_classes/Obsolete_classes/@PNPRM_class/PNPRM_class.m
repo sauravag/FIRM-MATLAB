@@ -5,6 +5,7 @@ classdef PNPRM_class < PRM_interface
         orbits;
         orbit_edges_trajectory;  % The edge trajectories that connect orbits to orbits
         corresponding_orbit; % i-th element of this property is the number of orbit on which the i-th node lies.
+        orbit_edges_traj_handle = [];
     end
     
     properties (Access = private)

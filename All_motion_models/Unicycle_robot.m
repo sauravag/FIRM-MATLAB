@@ -20,9 +20,9 @@ classdef Unicycle_robot < MotionModel_interface
     
     properties (Constant = true) % orbit-related properties
         turn_radius_min = 1.5*0.1; % indeed we need to define the minimum linear velocity in turnings (on orbits) and then find the minimum radius accordingly. But, we picked the more intuitive way.
-        angular_velocity_max = 17*pi/180; % degree per second (converted to radian per second)
+        angular_velocity_max = 90*pi/180; % degree per second (converted to radian per second)
         linear_velocity_min_on_orbit = Unicycle_robot.turn_radius_min*Unicycle_robot.angular_velocity_max; % note that on the straight line the minimum velocity can go to zero. But, in turnings (on orbit) the linear velocity cannot fall below this value.
-        linear_velocity_max = 0.5;
+        linear_velocity_max = 0.5*10;
     end
     
     %% Methods

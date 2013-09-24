@@ -1,4 +1,6 @@
 clear classes;clear variables;close all;clc;
+addpath('./external/rvctools/');
+startup_rvc;
 %load myfilebrkpnts;dbstop(s)
 
 % Parameters

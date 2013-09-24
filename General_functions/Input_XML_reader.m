@@ -160,11 +160,11 @@ par_new.FIRM_node_parameters.GHb_conv_Pest_thresh = GHb_conv_reg_thresh*GHb_conv
 par_new.FIRM_node_parameters.GHb_conv_BigCov_thresh = BigX_thresh*BigX_thresh'; % defines the convergence threshold for BigCov
 
 %=========== Stabilizer Parameters
-par_new.stabilizer_parameters.max_stopping_time = 1000;
+par_new.stabilizer_parameters.max_stopping_time = 250;
 par_new.stabilizer_parameters.draw_cov_centered_on_nominal = 1;
 
 %=========== MonteCarlo Simulation
-par_new.par_n = 5; % number of particles
+par_new.par_n = 2; % number of particles
 
 %=========== (LQR design) Node and Edge controller
 LQR_cost_coef=[0.03*0.1 , 0.03*0.1 , 0.1];  % first entry is the "final state cost coeff". The second is the "state cost coeff", and the third is the "control cost coeff".
