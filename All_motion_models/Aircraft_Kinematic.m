@@ -4,14 +4,14 @@ classdef Aircraft_Kinematic < MotionModel_interface
         stDim = 7;%state.dim; % state dimension
         ctDim = 4;  % control vector dimension
         wDim = 6;   % Process noise (W) dimension  % For the generality we also consider the additive noise on kinematics equation (3 dimension), but it most probably will set to zero. The main noise is a 2 dimensional noise which is added to the controls.
-        dt = 0.1;
+        dt = 0.2;
         % base_length = user_data_class.par.motion_model_parameters.base_length;  % distance between robot's rear wheels.
         sigma_b_u = [0.2  0.1 0.1 0.1]; %user_data_class.par.motion_model_parameters.sigma_b_u_unicycle;
         eta_u = [0.2 0.1 0.1 0.1]%user_data_class.par.motion_model_parameters.eta_u_unicycle;
         P_Wg = 0%user_data_class.par.motion_model_parameters.P_Wg;
         Max_Roll_Rate = deg2rad(45);
         Max_Pitch_Rate = deg2rad(45);
-        Max_Yaw_Rate = deg2rad(30);
+        Max_Yaw_Rate = deg2rad(45);
         Max_Velocity = 2; % m/s
         Min_Velocity = 1;% m/s
     end
