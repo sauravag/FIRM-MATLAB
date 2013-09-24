@@ -9,11 +9,11 @@ classdef Aircraft_Kinematic < MotionModel_interface
         sigma_b_u = [0.2  0.1 0.1 0.1]; %user_data_class.par.motion_model_parameters.sigma_b_u_unicycle;
         eta_u = [0.2 0.1 0.1 0.1]%user_data_class.par.motion_model_parameters.eta_u_unicycle;
         P_Wg = 0%user_data_class.par.motion_model_parameters.P_Wg;
-        Max_Roll_Rate = deg2rad(45);
-        Max_Pitch_Rate = deg2rad(45);
-        Max_Yaw_Rate = deg2rad(45);
-        Max_Velocity = 2; % m/s
-        Min_Velocity = 1;% m/s
+        Max_Roll_Rate = deg2rad(45); % try 45
+        Max_Pitch_Rate = deg2rad(45);% try 45
+        Max_Yaw_Rate = deg2rad(45);% try 45
+        Max_Velocity = 1.5; % m/s
+        Min_Velocity = 0.5;% m/s
     end
     
     %% Methods
@@ -343,8 +343,8 @@ classdef Aircraft_Kinematic < MotionModel_interface
         function nominal_traj = generate_open_loop_point2point_traj(start,goal) % generates open-loop trajectories between two start and goal states
              % The MATLAB RVC ToolBox Must be loaded first
             veh = Aircraft_Kinematic();
-            rrt = RRT3D([], veh, 'start', start, 'range', 8,'npoints',10000,'speed',2,'time', Aircraft_Kinematic.dt);
-            rrt.plan()             % create navigation tree
+            rrt = RRT3D([], veh, 'start', start, 'range', 5,'npoints',5000,'speed',2,'time', Aircraft_Kinematic.dt);
+            rrt.plan('goal',goal)   ;          % create navigation tree
             nominal_traj = rrt.path(start, goal) ; % animate path from this start location
             
             %% Code for plotting
