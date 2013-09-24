@@ -19,7 +19,7 @@ classdef stabilizer_class < Stabilizer_interface
                 obj.PRM_nodes_on_orbit = PRM_nodes_on_orbit_inp;
                 obj.PRM_orbit = PRM_orbit_inp;
                 %                 obj.PRM_orbit_number = stabilizer_number_inp;
-                obj.controller = PLQG_class(PRM_orbit_inp); % Note that the node controller is an object of "LQG_periodic_class" NOT simple "LQG".
+                obj.controller = LQG_periodic_class(PRM_orbit_inp); % Note that the node controller is an object of "LQG_periodic_class" NOT simple "LQG".
                 obj.par = user_data_class.par.stabilizer_parameters;
             end
         end
