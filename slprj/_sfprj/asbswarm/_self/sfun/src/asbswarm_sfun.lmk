@@ -1,0 +1,34 @@
+CC     = "C:\Program Files\MATLAB\R2012a\sys\lcc\bin\lcc.exe"
+LD     = "C:\Program Files\MATLAB\R2012a\sys\lcc\bin\lcclnk.exe"
+LIBCMD = "C:\Program Files\MATLAB\R2012a\sys\lcc\bin\lcclib.exe"
+CFLAGS = -c -Zp8 -DMATLAB_MEX_FILE -noregistrylookup
+LDFLAGS = -s -dll -L"C:\Program Files\MATLAB\R2012a\sys\lcc\lib"
+LIBFLAGS = 
+
+OBJECTS = \
+	"asbswarm_sfun.obj"\
+	"asbswarm_sfun_registry.obj"\
+	"lccstub.obj"\
+	"C:\Ali\Dropbox\FIRM_toolbox_GIThub\slprj\_sfprj\asbswarm\asbswarm_lib\sfun\src\asbswarm_lib_sfun.lib"\
+	"C:\Program Files\MATLAB\R2012a\sys\lcc\mex\lccdef.def"\
+	"C:\Program Files\MATLAB\R2012a\stateflow\c\debugger\lib\win32\sfc_debuglcc.lib"\
+	"C:\Program Files\MATLAB\R2012a\stateflow\c\mex\lib\win32\sfc_mexlcc.lib"\
+	"C:\Program Files\MATLAB\R2012a\extern\lib\win32\lcc\libmex.lib"\
+	"C:\Program Files\MATLAB\R2012a\extern\lib\win32\lcc\libmx.lib"\
+	"C:\Program Files\MATLAB\R2012a\extern\lib\win32\lcc\libfixedpoint.lib"\
+	"C:\Program Files\MATLAB\R2012a\extern\lib\win32\lcc\libut.lib"\
+	"C:\Program Files\MATLAB\R2012a\extern\lib\win32\lcc\libmwmathutil.lib"\
+	"C:\Program Files\MATLAB\R2012a\extern\lib\win32\lcc\libemlrt.lib"\
+	"C:\Program Files\MATLAB\R2012a\extern\lib\win32\lcc\libmwblascompat32.lib"\
+
+INCLUDE_PATH= -I"C:\Program Files\MATLAB\R2012a\sys\lcc\include"  -I"C:\Program Files\MATLAB\R2012a\extern\include"  -I"C:\Program Files\MATLAB\R2012a\simulink\include"  -I"C:\Program Files\MATLAB\R2012a\stateflow\c\mex\include"  -I"C:\Program Files\MATLAB\R2012a\stateflow\c\debugger\include" 
+ 
+
+asbswarm_sfun.mexw32 : $(MAKEFILE) $(OBJECTS)
+	$(LD) $(LDFLAGS) -o asbswarm_sfun.mexw32 @asbswarm_sfun.lmko
+asbswarm_sfun.obj :	"asbswarm_sfun.c"
+	$(CC) $(CFLAGS) $(INCLUDE_PATH) "asbswarm_sfun.c"
+asbswarm_sfun_registry.obj :	"asbswarm_sfun_registry.c"
+	$(CC) $(CFLAGS) $(INCLUDE_PATH) "asbswarm_sfun_registry.c"
+lccstub.obj :	"C:\Program Files\MATLAB\R2012a\sys\lcc\mex\lccstub.c"
+	$(CC) $(CFLAGS) $(INCLUDE_PATH) "C:\Program Files\MATLAB\R2012a\sys\lcc\mex\lccstub.c"

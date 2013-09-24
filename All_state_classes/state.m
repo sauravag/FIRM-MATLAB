@@ -1,7 +1,7 @@
 classdef state < state_interface
     % This class encapsulates the state of a planar robot, described by its 2D location and heading angle.
     properties (Constant)
-        dim = 3; % state dimension
+        dim = 7; % state dimension [X,Y,Z,q0,q1,q2,q3]
     end
     properties
         val; % value of the state
@@ -15,20 +15,16 @@ classdef state < state_interface
         function obj = state(varargin)
             obj = obj@state_interface(varargin{:});
         end
-        function signed_dist_vector = signed_element_wise_dist(obj,x2) % this function returns the "Signed element-wise distnace" between two states x1 and x2
+        function signed_dist_vector = signed_element_wise_dist(obj,x2) % this function returns the "Signed element-wise distance" between two states x1 and x2
              x1 = obj.val; % retrieve the value of the state vector
              if isa(x2,'state'), x2=x2.val; end % retrieve the value of the state vector
-             signed_dist_vector = x1 - x2;
-            % Following part takes care of periodicity in heading angle representation.
-            th_dist = signed_dist_vector(3);
-            if th_dist >= 0
-                th_dist_bounded = mod( th_dist , 2*pi );
-                if th_dist_bounded > pi, th_dist_bounded = th_dist_bounded - 2*pi; end
-            else
-                th_dist_bounded = - mod( -th_dist , 2*pi );
-                if th_dist_bounded < -pi, th_dist_bounded = th_dist_bounded + 2*pi; end
-            end
-            signed_dist_vector(3) = th_dist_bounded;   % updating the angle distance
+             linear_distance = x1(1:3,1) - x2(1:3,1) ; % [X1-X2, Y1-Y2, Z1-Z2]'
+             %The relative quaternion so to speak 
+             % q_rel = q_current * inv(q_nominal)
+             q_1 = [x1(4) x1(5) x1(6) x1(7)];
+             q_2 = [x2(4) x2(5) x2(6) x2(7)];
+             q21 = quatmultiply(q_1,quatinv(q_2)); % relative rotation quaternion from nominal to current
+             signed_dist_vector = [linear_distance;q12'];
         end
         function obj = draw(obj, varargin)
             % The full list of properties for this function is:
