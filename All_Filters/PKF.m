@@ -1,13 +1,20 @@
 classdef PKF < kalman_filter_interface
+    properties
+        periodicGain
+        periodicCov
+    end
     methods
-        function b_next = estimate(b,U,Zg,lnr_sys_for_prd,lnr_sys_for_update)
+        function obj = PKF(lnr_sys_periodic)
+            [obj.periodicGain,~,obj.periodicCov] = PKF.periodic_gain_and_covariances(lnr_sys_periodic);
+        end
+        function b_next = estimate(obj,b,U,Zg,lnr_sys_for_prd,lnr_sys_for_update)
             if nargin < 5
                 error('Ali: The linearized systems has to be provided for LKF.')
             end
-            b_prd = PKF.predict(b,U,lnr_sys_for_prd);
-            b_next = PKF.update(b_prd,Zg,lnr_sys_for_update);
+            b_prd = obj.predict(b,U,lnr_sys_for_prd);
+            b_next = obj.update(b_prd,Zg,lnr_sys_for_update);
         end
-        function b_next = PeriodicKF_estimate(b,U,Zg,lnr_sys_for_prd,lnr_sys_for_update,Periodic_Kalman_gain)
+        function b_next = PeriodicKF_estimate(obj,b,U,Zg,lnr_sys_for_prd,lnr_sys_for_update,Periodic_Kalman_gain)
             disp('There is no mathmatical basis for the periodic KF if your system is not linear. So, do not use this. Use LKF and provide the periodic linear system as its inputs. The problem with periodic KF is that the estimation covariance can become unsymmetric easily.')
             if nargin ~= 6
                 error('Ali: In Periodic_KF the linearized system for prediction and update and the Kalman Gain have to be provided as the function inputs.')
@@ -17,7 +24,7 @@ classdef PKF < kalman_filter_interface
             % update function in LKF and EKF.
             b_next = PKF.update_with_periodic_gain(b_prd,Zg,lnr_sys_for_update,Periodic_Kalman_gain);
         end
-        function b = update_with_periodic_gain(b_prd,Zg,lnr_sys,periodic_Kalman_gain)
+        function b = update_with_periodic_gain(obj,b_prd,Zg,lnr_sys,periodic_Kalman_gain)
             % lnr_sys is the linear or linearized system, Kalman filter is
             % designed for.
             H = lnr_sys.H;
@@ -50,6 +57,8 @@ classdef PKF < kalman_filter_interface
             
             b = belief(state(Xest_next),Pest_next);
         end
+    end
+    methods(Static)
         function [K_periodic_correct , Pprd_periodic, Pest_periodic] = periodic_gain_and_covariances(lnr_sys_periodic)
             % The "lnr_sys_periodic" is a "1 by T" array of "linear system"
             % objects.
@@ -80,7 +89,7 @@ classdef PKF < kalman_filter_interface
                 R_DPRE_KF(:,:,k) = LSS(new_k).M*LSS(new_k).R*LSS(new_k).M';
             end
             
-            [X_DPRE_KF,K_DPRE_KF_wrong] = dpre(A_DPRE_KF,B_DPRE_KF,Q_DPRE_KF,R_DPRE_KF,[],[],1e-6,1e3);  %#ok<NASGU>
+            [X_DPRE_KF,K_DPRE_KF_wrong] = PKF.dpre(A_DPRE_KF,B_DPRE_KF,Q_DPRE_KF,R_DPRE_KF,[],[],1e-6,1e3);  %#ok<NASGU>
             Pprd_periodic = flipdim(X_DPRE_KF,3);  % reverse the time  k = T - k_new
             
             Pest_periodic = nan(size(LSS(1).A,1)  , size(LSS(1).A,1)  , T);

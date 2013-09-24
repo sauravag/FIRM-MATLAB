@@ -19,13 +19,11 @@ classdef stabilizer_class < Stabilizer_interface
                 obj.PRM_nodes_on_orbit = PRM_nodes_on_orbit_inp;
                 obj.PRM_orbit = PRM_orbit_inp;
                 %                 obj.PRM_orbit_number = stabilizer_number_inp;
-                obj.controller = LQG_periodic_class(PRM_orbit_inp); % Note that the node controller is an object of "LQG_periodic_class" NOT simple "LQG".
+                obj.controller = PLQG_class(PRM_orbit_inp); % Note that the node controller is an object of "LQG_periodic_class" NOT simple "LQG".
                 obj.par = user_data_class.par.stabilizer_parameters;
             end
         end
         function obj = construct_reachable_FIRM_nodes(obj)
-            % periodic_GHb = obj.controller.Periodic_Gaussian_Hb;  % This function has not been written for the periodic case yet.
-            % obj.node = stGHb; % No Hblief is implemented in PLQG yet
             obj.belief_orbit =  obj.controller.periodic_belief;
             node_time_stages_on_orbit = obj.PRM_orbit.node_time_stages;
             for i = 1:length(node_time_stages_on_orbit)

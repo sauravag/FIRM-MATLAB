@@ -58,22 +58,20 @@ classdef SLQG_class < LQG_interface
                 stationGHb_val = obj.Stationary_Gaussian_Hb;
             end
         end
-         function [next_Hstate, reliable] = propagate_Hstate(obj,old_Hstate,noise_mode)
+        function [next_Hstate, reliable] = propagate_Hstate(obj,old_Hstate,noise_mode)
             % propagates the Hstate using Stationary Kalman Filter and
             % Stationary LQR.
             % "noise_mode" must be the last input argument.
             % output "reliable" is 1 if the current estimate is inside the
             % valid linearization region of LQG. It is 0, otherwise.
-            wDim = MotionModel_class.wDim;
-            VgDim = ObservationModel_class.obsNoiseDim;
             if exist('noise_mode','var') && strcmpi(noise_mode,'No-noise')
-                w = zeros(wDim,1);
-                Vg = zeros(VgDim,1);
+                w = MotionModel_class.zeroNoise;
+                Vg = ObservationModel_class.zeroNoise;
             end
             
             Xg = old_Hstate.Xg;
             b = old_Hstate.b; % belief
-
+            
             % generating feedback controls
             [u , reliable] = obj.separated_controller.generate_feedback_control(b);
             
@@ -82,7 +80,7 @@ classdef SLQG_class < LQG_interface
                 w = MotionModel_class.generate_process_noise(Xg.val,u);
             end
             
-            % Hstate propagation
+            % True state propagation
             next_Xg_val = MotionModel_class.f_discrete(Xg.val,u,w);
             
             % generating observation noise
@@ -100,7 +98,7 @@ classdef SLQG_class < LQG_interface
             % Note that if we use LKF in "Stationary_LQG" the linear system
             % used for "prediction" is the same as the linear system used
             % for "update".
-            b_next = Kalman_filter.LKF_estimate(b,u,Zg,obj.lnr_sys,obj.lnr_sys);
+            b_next = obj.estimator.estimate(b,u,Zg,obj.lnr_sys,obj.lnr_sys);
             
             next_Hstate = Hstate(state(next_Xg_val),b_next);
         end

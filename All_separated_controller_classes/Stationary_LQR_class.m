@@ -1,15 +1,15 @@
 classdef Stationary_LQR_class
-    %LQR_class encapsulates the LQR controller.
+    %Stationary_LQR_class encapsulates the LQR controller.
     
     properties
         Lss; % feedback gain
         lnr_pts;
-        valid_lnr_domain = user_data_class.par.valid_linearization_domain;
     end
     properties (Constant = true)
         state_cost = user_data_class.par.state_cost;
         control_cost = user_data_class.par.control_cost;
         Final_state_cost = user_data_class.par.Final_state_cost;
+        valid_lnr_domain = user_data_class.par.valid_linearization_domain;
     end
     methods
         function obj = Stationary_LQR_class(lnr_sys_inp, lnr_pts_inp)
@@ -27,8 +27,8 @@ classdef Stationary_LQR_class
     end
     methods (Access = private)
         function feedbak_gain = generate_feedback_gain(obj, lnr_sys_inp)
-            W_x=LQR_class.state_cost * user_data_class.par.state_cost_ratio_for_stationary_case; % note that "state_cost" is for the trajectory tracking. Usually in point stabilization, we need more force on state and less on control. So, we multiply the "state_cost" to an appropriate ratio. Note that this ratio has to be greater than 1.
-            W_u=LQR_class.control_cost * user_data_class.par.control_cost_ratio_for_stationary_case; % note that "control_cost" is for the trajectory tracking. Usually in point stabilization, we need more force on state and less on control. So, we multiply the "control_cost" to an appropriate ratio. Note that this ratio has to be LESS than 1.
+            W_x=Stationary_LQR_class.state_cost * user_data_class.par.state_cost_ratio_for_stationary_case; % note that "state_cost" is for the trajectory tracking. Usually in point stabilization, we need more force on state and less on control. So, we multiply the "state_cost" to an appropriate ratio. Note that this ratio has to be greater than 1.
+            W_u=Stationary_LQR_class.control_cost * user_data_class.par.control_cost_ratio_for_stationary_case; % note that "control_cost" is for the trajectory tracking. Usually in point stabilization, we need more force on state and less on control. So, we multiply the "control_cost" to an appropriate ratio. Note that this ratio has to be LESS than 1.
             
             Ass = lnr_sys_inp.A;
             Bss = lnr_sys_inp.B;
