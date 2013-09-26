@@ -5,13 +5,13 @@ classdef Orbit_PRM_class < PRM_interface
         orbits;
         orbit_edges_trajectory;  % The edge trajectories that connect orbits to orbits
         corresponding_orbit; % i-th element of this property is the number of orbit on which the i-th node lies.
+        orbit_edges_list = []; % This needs to go to the "private properties" section ASAP.
     end
     
     properties (Access = private)
         edges_traj_handle = []; % plot handle for edge trajectories (note that edge trajectory can be different from the edge itself, whose plot handle is "edges_plot_handle", due to the discretization errors)
         num_2Dnodes;
         nodes_2D;
-        orbit_edges_list = [];
         orbit_edges_matrix;
         max_number_of_orbits = 50;
     end
@@ -217,7 +217,7 @@ classdef Orbit_PRM_class < PRM_interface
             
             delta_theta_on_orbit = 2*pi/start_orbit.period;
             steps_till_start_of_orbit_edge = floor((gamma_start_of_orbit_edge - node_gamma)/delta_theta_on_orbit);  % This "floor" can make a lot of problems. You have to take it out ASAP.
-            error(' the above line is fixed in the unicycle class, correct it please')
+            %error(' the above line is fixed in the unicycle class, correct it please')
             steps_till_start_of_orbit_edge = mod(steps_till_start_of_orbit_edge,start_orbit.period);
             T = start_orbit.period;
             more_than_period = node_time_stage+steps_till_start_of_orbit_edge - T;

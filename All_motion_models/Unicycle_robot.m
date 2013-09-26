@@ -19,10 +19,10 @@ classdef Unicycle_robot < MotionModel_interface
     end
     
     properties (Constant = true) % orbit-related properties
-        turn_radius_min = 1.5; % indeed we need to define the minimum linear velocity in turnings (on orbits) and then find the minimum radius accordingly. But, we picked the more intuitive way.
-        angular_velocity_max = 17*pi/180; % degree per second (converted to radian per second)
+        turn_radius_min = 1.5*0.1; % indeed we need to define the minimum linear velocity in turnings (on orbits) and then find the minimum radius accordingly. But, we picked the more intuitive way.
+        angular_velocity_max = 90*pi/180; % degree per second (converted to radian per second)
         linear_velocity_min_on_orbit = Unicycle_robot.turn_radius_min*Unicycle_robot.angular_velocity_max; % note that on the straight line the minimum velocity can go to zero. But, in turnings (on orbit) the linear velocity cannot fall below this value.
-        linear_velocity_max = 0.5;
+        linear_velocity_max = 0.5*10;
     end
     
     %% Methods
@@ -139,7 +139,7 @@ classdef Unicycle_robot < MotionModel_interface
             gamma_end_of_tangent_line = gamma_tangent + pi/2; % the angle on which the ending point of the tangent line lies on orbit i.
             
             initial_robot_gamma =   x_initial(3) + pi/2; % Note that this is not robot's heading angle. This says that at which angle robot lies on the circle.
-            final_robot_gamma   =   x_final(3)    + pi/2; % Note that this is not robot's heading angle. This says that at which angle robot lies on the circle.
+            final_robot_gamma    =   x_final(3)   + pi/2; % Note that this is not robot's heading angle. This says that at which angle robot lies on the circle.
             
             % Turn part on the first circle
             entire_th_on_initial_circle = delta_theta_turn(initial_robot_gamma, gamma_start_of_tangent_line, 'cw'); % NOTE: this must be a negative number as we turn CLOCKWISE.

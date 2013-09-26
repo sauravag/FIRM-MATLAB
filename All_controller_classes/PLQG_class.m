@@ -1,42 +1,46 @@
 classdef PLQG_class < LQG_interface
     %   PLQG_class encapsulates the Periodic Linear Quadratic Gaussian Controller
-    properties (Constant = true)
-        valid_lnr_domain = user_data_class.par.valid_linearization_domain;
-    end
+%     properties (Constant = true)
+%         valid_lnr_domain = user_data_class.par.valid_linearization_domain;
+%     end
     properties
+        estimator
+        separated_controller
+        lnr_pts;    
+        lnr_sys;
+        
         T   % period
-        lnr_pts_periodic;  % This is called "orbit" in Ali's writings.
-        lnr_sys_periodic;
-        periodic_belief; % This is actually the "mean" of periodic belief. % This may be removed in future as it is a included already in "Periodic_Gaussian_Hb".
-        Periodic_Gaussian_Hb;
-        Periodic_Kalman_gain;
-        Periodic_Feedback_gain;
+%         periodic_belief; % This is actually the "mean" of periodic belief. % This may be removed in future as it is a included already in "Periodic_Gaussian_Hb".
         Periodic_Big_lnr_sys;
-        Periodic_Pest;
+        Periodic_Gaussian_Hb;
+        periodic_belief;
     end
     
     methods
         function obj = PLQG_class(orbit)
             % note that the orbit is a structure with two fields: periodic state trajectory and periodic control trajectory
             obj.T = size(orbit.x,2);  % retrieve the period % note tha the length of orbit is "T"
-            w_zero = zeros(MotionModel_class.wDim,1);
-            v_zero = zeros(ObservationModel_class.obsNoiseDim,1);
+            w_zero = MotionModel_class.zeroNoise;
+            v_zero = ObservationModel_class.zeroNoise;
            
             % memory preallocation
-            obj.lnr_sys_periodic = Linear_system_class.empty;
+            obj.lnr_sys = Linear_system_class.empty;
             for k = 1 : obj.T
-                 obj.lnr_pts_periodic(k).x = orbit.x(:,k);
-                 obj.lnr_pts_periodic(k).u = orbit.u(:,k);
-                 obj.lnr_pts_periodic(k).w = w_zero;
-                obj.lnr_pts_periodic(k).v = v_zero;
-                obj.lnr_sys_periodic(k) = Linear_system_class(obj.lnr_pts_periodic(k));
+                obj.lnr_pts(k).x = orbit.x(:,k);
+                obj.lnr_pts(k).u = orbit.u(:,k);
+                obj.lnr_pts(k).w = w_zero;
+                obj.lnr_pts(k).v = v_zero;
+                obj.lnr_sys(k) = Linear_system_class(obj.lnr_pts(k));
             end
             
-            [K_periodic,~,Pest_periodic] = Kalman_filter.periodic_gain_and_covariances(obj.lnr_sys_periodic); % K_periodic is the periodic Kalman filter gain.
-            obj.Periodic_Kalman_gain = K_periodic;
-            obj.Periodic_Pest = Pest_periodic;
-            L_periodic = LQR_class.periodic_gains(obj.lnr_sys_periodic); % Lss is the stationary feedback gain.
-            obj.Periodic_Feedback_gain = L_periodic;
+            obj.estimator = PKF(obj.lnr_sys);
+            obj.separated_controller = Periodic_LQR_class(obj.lnr_sys, obj.lnr_pts);
+            
+            %[K_periodic,~,Pest_periodic] = Kalman_filter.periodic_gain_and_covariances(obj.lnr_sys); % K_periodic is the periodic Kalman filter gain.
+            %obj.Periodic_Kalman_gain = K_periodic;
+            %obj.Periodic_Pest = Pest_periodic;
+            % L_periodic = LQR_class.periodic_gains(obj.lnr_sys); % Lss is the stationary feedback gain.
+            % obj.Periodic_Feedback_gain = L_periodic;
         end
         function Big_system_val = get.Periodic_Big_lnr_sys(obj)
             error('This function has not been changed from stationary to periodic yet')
@@ -77,56 +81,43 @@ classdef PLQG_class < LQG_interface
             end
         end
         function periodic_belief_val = get.periodic_belief(obj)
-            % The property "periodic_belief" is computed only once, the
+            % the property "periodic_belief" is computed only once, the
             % first time it is needed.
             if isempty(obj.periodic_belief)
                 periodic_belief_val = belief.empty;
+                periodic_pest = obj.estimator.periodicCov;
                 for k = 1 : obj.T
-                    periodic_belief_val(k) = belief( state(obj.lnr_pts_periodic(k).x) , obj.Periodic_Pest(:,:,k) );
+                    periodic_belief_val(k) = belief( state(obj.lnr_pts(k).x) , periodic_pest(:,:,k) );
                 end
-                obj.periodic_belief = periodic_belief_val; % This line works because the class is a subclass of the "handle" class. Otherwise, we had to output the "obj".
+                obj.periodic_belief = periodic_belief_val; % this line works because the class is a subclass of the "handle" class. otherwise, we had to output the "obj".
             else
                 periodic_belief_val = obj.periodic_belief;
             end
         end
         function [next_Hstate, reliable] = propagate_Hstate(obj,old_Hstate,k,noise_mode)
             % propagates the Hstate using Periodic Kalman Filter and
-            % Periodic LQR.
-            % "noise_mode" must be the last input argument.
+            % Periodic LQR. "noise_mode" must be the last input argument.
             % output "reliable" is 1 if the current estimate is inside the
             % valid linearization region of LQG. It is 0, otherwise.
             
-            k = mod(k,obj.T); % This line is a crucial line, and makes the time periodic by the period "T".
-            if k==0, k = obj.T; end
-            
-            wDim = MotionModel_class.wDim;
-            VgDim = ObservationModel_class.obsNoiseDim;
             if exist('noise_mode','var') && strcmpi(noise_mode,'No-noise')
-                w = zeros(wDim,1);
-                Vg = zeros(VgDim,1);
+                w = MotionModel_class.zeroNoise;
+                Vg = ObservationModel_class.zeroNoise;
             end
             
             Xg = old_Hstate.Xg;
             b = old_Hstate.b; % belief
-            xp = obj.lnr_pts_periodic(k).x; % planned x (or target point) or linearization point.
-            % generating feedback controls
-            est_OF_error = b.est_mean.signed_element_wise_dist(xp);  % this basically computes the "signed element-wise distance" between "b.est_mean" and "xp"
             
-            reliable = obj.is_in_valid_linearization_region(est_OF_error);
-            if ~reliable
-                warning('Ali: error is too much; the linearization is not reliable');
-            end
-            feedback_gain = obj.Periodic_Feedback_gain(:,:,k);
-            dU = - feedback_gain*est_OF_error;
-            up = obj.lnr_pts_periodic(k).u; % planned up, which usually (or maybe always) must be zero in stationary LQG setting.
+            % generating feedback controls
+            [u , reliable] = obj.separated_controller.generate_feedback_control(b,k);
             
             % generating process noises
             if ~exist('noise_mode','var')
-                w = MotionModel_class.generate_process_noise(Xg.val,up + dU);
+                w = MotionModel_class.generate_process_noise(Xg.val,u);
             end
             
-            % Hstate propagation
-            next_Xg_val = MotionModel_class.f_discrete(Xg.val,up+dU,w);
+            % True state propagation
+            next_Xg_val = MotionModel_class.f_discrete(Xg.val,u,w);
             
             % generating observation noise
             if ~exist('noise_mode','var')
@@ -138,14 +129,42 @@ classdef PLQG_class < LQG_interface
             
             % Since "PeriodicKF_estimate" leads to unsymmetric estimation
             % covariances, we use the LKF instead of
-            % b_next = Kalman_filter.PeriodicKF_estimate(b,up+dU,Zg,obj.lnr_sys_periodic(k),obj.lnr_sys_periodic(k+1),obj.Periodic_Kalman_gain(k+1));
+            % b_next = Kalman_filter.PeriodicKF_estimate(b,up+dU,Zg,obj.lnr_sys(k),obj.lnr_sys(k+1),obj.Periodic_Kalman_gain(k+1));
+            
+            k = mod(k,obj.T); % This line is a crucial line, and makes the time periodic by the period "T".
+            if k==0, k = obj.T; end
             
             next_k = k+1;
-            next_k = mod(next_k,obj.T); % This line is a crucial line, and makes the time periodic by the period "T".
-            if next_k==0, next_k = obj.T; end
-            b_next = Kalman_filter.LKF_estimate(b,up+dU,Zg,obj.lnr_sys_periodic(k),obj.lnr_sys_periodic(next_k)); 
+            next_k = mod(next_k, obj.T); % This line is a crucial line, and makes the time periodic by the period "T".
+            if next_k == 0, next_k = obj.T; end
+            
+            b_next = obj.estimator.estimate(b, u, Zg, obj.lnr_sys(k), obj.lnr_sys(next_k));
             
             next_Hstate = Hstate(state(next_Xg_val),b_next);
+        end
+        function [nextBelief, reliable,sim] = executeOneStep(obj,oldBelief,sim,noiseFlag)
+            % propagates the system and belief using Stationary Kalman Filter and
+            % Stationary LQR.
+            % "noise_mode" must be the last input argument.
+            % output "reliable" is 1 if the current estimate is inside the
+            % valid linearization region of LQG. It is 0, otherwise.
+
+            % generating feedback controls
+            [u , reliable] = obj.separated_controller.generate_feedback_control(oldBelief);
+            % Apply control
+            sim = sim.evolve(u, noiseFlag);
+            % sim = sim.refresh();
+            % Get observation from simulator
+            z = sim.getObservation(noiseFlag);
+            
+            % Note that since we are using SKF, we only need to pass one 
+            % linear system to the estimation procedure, becuase the linear system
+            % used for "prediction" is the same as the linear system used
+            % for "update".
+            nextBelief = obj.estimator.estimate(oldBelief, u, z, obj.lnr_sys, obj.lnr_sys);
+        end
+        function nextHb = propagateHyperBelief(obj,oldHb)
+            error('not yet implemented');
         end
         function next_Hb_particle = propagate_Hb_particle(obj,old_Hb_particle,time_step)
             Hparticles = old_Hb_particle.Hparticles;

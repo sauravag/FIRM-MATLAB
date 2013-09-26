@@ -1,9 +1,9 @@
 %% Class Definition
 classdef Aircraft_Kinematic < MotionModel_interface
     properties (Constant = true)
-        stDim = 7;%state.dim; % state dimension
+        stDim = state.dim; % state dimension
         ctDim = 4;  % control vector dimension
-        wDim = 6;   % Process noise (W) dimension  % For the generality we also consider the additive noise on kinematics equation (3 dimension), but it most probably will set to zero. The main noise is a 2 dimensional noise which is added to the controls.
+        wDim = 4;   % Process noise (W) dimension  % For the generality we also consider the additive noise on kinematics equation (3 dimension), but it most probably will set to zero. The main noise is a 2 dimensional noise which is added to the controls.
         dt = 0.2;
         % base_length = user_data_class.par.motion_model_parameters.base_length;  % distance between robot's rear wheels.
         sigma_b_u = [0.2  0.1 0.1 0.1]; %user_data_class.par.motion_model_parameters.sigma_b_u_unicycle;

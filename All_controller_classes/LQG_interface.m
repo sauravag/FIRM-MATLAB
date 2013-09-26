@@ -8,7 +8,7 @@ classdef LQG_interface < Controller_interface
     end
     
     methods (Abstract)
-        [nextBelief, reliable] = executeOneStep(obj,oldBelief,noise_mode)
+        [nextBelief, reliable, sim] = executeOneStep(obj, oldBelief, sim, noise_mode)
         nextHyperBelief = propagateHyperBelief(obj,oldHyperBelief)
     end
 

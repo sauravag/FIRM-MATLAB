@@ -67,8 +67,12 @@ elseif strcmpi(par_new.selected_motion_model,'Revolute joint 8arm manipulator')
     typeDef('Revolute_joint_manipulator' , 'MotionModel_class')
 elseif strcmpi(par_new.selected_motion_model,'Dynamical planar 8arm manipulator')
     typeDef('Planar_dyn_manipulator_state' , 'state')
-    typeDef('Planar_dyn_manipulator_state' , 'belief')
+    typeDef('Planar_dyn_manipulator_belief' , 'belief')
     typeDef('Dynamical_planar_manipulator' , 'MotionModel_class')
+elseif strcmpi(par_new.selected_motion_model,'FixedWing Aircraft')
+    typeDef('Six_DOF_robot_state' , 'state')
+    typeDef('Six_DOF_robot_belief' , 'belief')
+    typeDef('Aircraft_Kinematic' , 'MotionModel_class')
 end
 
 [par_new.motion_model_parameters , par_new.state_parameters] = gather_state_and_motion_model_parameters(old_par, par_new.selected_motion_model);
@@ -160,11 +164,11 @@ par_new.FIRM_node_parameters.GHb_conv_Pest_thresh = GHb_conv_reg_thresh*GHb_conv
 par_new.FIRM_node_parameters.GHb_conv_BigCov_thresh = BigX_thresh*BigX_thresh'; % defines the convergence threshold for BigCov
 
 %=========== Stabilizer Parameters
-par_new.stabilizer_parameters.max_stopping_time = 1000;
+par_new.stabilizer_parameters.max_stopping_time = 250;
 par_new.stabilizer_parameters.draw_cov_centered_on_nominal = 1;
 
 %=========== MonteCarlo Simulation
-par_new.par_n = 5; % number of particles
+par_new.par_n = 2; % number of particles
 
 %=========== (LQR design) Node and Edge controller
 LQR_cost_coef=[0.03*0.1 , 0.03*0.1 , 0.1];  % first entry is the "final state cost coeff". The second is the "state cost coeff", and the third is the "control cost coeff".
@@ -298,7 +302,12 @@ elseif strcmpi(selected_motion_model,'Dynamical planar 8arm manipulator')
     state_parameters.num_revolute_joints = n/2;
     state_parameters.stateDim = n;
     state_parameters.sup_norm_weights_nonNormalized = ones(n , 1); % You can think of the right-most vector (in the denominator) as the ractangular neighborhood used in finding neighbor nodes in constructing PRM graph. Note that this must be a column vector.
-    motion_model_parameters.controlDim=n/2;
+    motion_model_parameters.controlDim = n/2;
+elseif strcmpi(selected_motion_model,'FixedWing Aircraft')
+    state_parameters.stateDim = 7;
+    state_parameters.sup_norm_weights_nonNormalized = ones(state_parameters.stateDim , 1); 
+    disp('state norm for aircraft model needs to be fixed')
+    motion_model_parameters.controlDim = 4;
 else
     error('SFMP algorithm: The selected motion model does not match with the existing database');
 end
