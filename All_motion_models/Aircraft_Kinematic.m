@@ -381,6 +381,42 @@ classdef Aircraft_Kinematic < MotionModel_interface
                 pause(0.1);
             end
         end
+        %% Sample a valid orbit (periodic trajectory)
+        function orbit = sample_a_valid_orbit()
+            orbit_center = state.sample_a_valid_state();
+            orbit = Aircraft_Kinematic.generate_orbit(orbit_center);
+            orbit = Aircraft_Kinematic.draw_orbit(orbit);
+        end
+        %% Construct an orbit
+        function orbit = generate_orbit(orbit_center)
+            % minimum orbit radius resutls from dividing the minimum linear
+            % velocity to maximum angular velocity. However, here we assume
+            % that the linear velocity is constant.
+            orbit.radius = Aircraft_Kinematic.turn_radius_min;
+            orbit_length_meter = 2*pi*orbit.radius;
+            orbit_length_time_continuous = orbit_length_meter/Aircraft_Kinematic.linear_velocity_min_on_orbit;
+            T_rational = orbit_length_time_continuous/Aircraft_Kinematic.dt;
+            T = ceil(T_rational);
+            orbit.period = T;
+            orbit.center = orbit_center;
+            
+            % defining controls on the orbit
+            V_p = Aircraft_Kinematic.linear_velocity_min_on_orbit * [ones(1,T-1) , T_rational-floor(T_rational)]; % we traverse the orbit with minimum linear velocity
+            omega_p = Aircraft_Kinematic.angular_velocity_max * [ones(1,T-1) , T_rational-floor(T_rational)]; % we traverse the orbit with maximum angular velocity
+            u_p = [V_p;0;0;omega_p];
+            w_zero = Aircraft_Kinematic.zeroNoise; % no noise
+            
+            % defining state steps on the orbit
+            zero_quaternion = state.zero_quaternion; % The robot's angle in the start of orbit is zero
+            x_p(:,1) = [orbit_center - [0;orbit.radius;0] ; zero_quaternion]; % initial x
+            for k=1:T
+                x_p(:,k+1) = MotionModel_class.f_discrete(x_p(:,k),u_p(:,k),w_zero);
+            end
+            orbit.x = x_p(:,1:T);  % "x_p" is of length T+1, but "x_p(:,T+1)" is equal to "x_p(:,1)"
+            orbit.u = u_p;  % "u_p" is of length T.
+            orbit.plot_handle = [];
+        end
+        
         function YesNo = is_constraints_violated(open_loop_traj)
             error('not yet implemented');
         end
