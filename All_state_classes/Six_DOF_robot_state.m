@@ -181,7 +181,17 @@ classdef Six_DOF_robot_state < state_interface
                     sampled_state = user_samples_a_state();
                 end
             elseif strcmp(user_or_random , 'random')
-                error('not yet implemented')
+                xrange = [-5 5];
+                yrange = [-5 5];
+                zrange = [-5 5];
+                xyz = RRT3D.rand(1,3) .* [xrange(2)-xrange(1) yrange(2)-yrange(1) zrange(2)-zrange(1)] + ...
+                    [RRT3D.xrange(1) RRT3D.yrange(1) RRT3D.zrange(1)];
+                
+                yaw = rand*2*pi;
+                pitch = rand*2*pi;
+                roll =  rand*2*pi;
+                quat = angle2quat(yaw,pitch,roll);
+                sampled_state = [xyz, quat]';
             else
                 error('not correct!');
             end
