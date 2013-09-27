@@ -13,9 +13,8 @@ classdef Landmarks_3D_Range_bearing < ObservationModel_interface
         obsDim = 12; %Landmarks_3D_Range_bearing.tmp_prop.obsDim;
         obsNoiseDim = Landmarks_3D_Range_bearing.obsDim; % observation noise dimension. In some other observation models the noise dimension may be different from the observation dimension.
         zeroNoise = zeros(Landmarks_3D_Range_bearing.obsNoiseDim,1); % zero observation noise
-        %%  Uncomment the following 2 lines for real use 
-        %eta = user_data_class.par.observation_model_parameters.eta; 
-        %sigma_b = user_data_class.par.observation_model_parameters.sigma_b;
+        eta = user_data_class.par.observation_model_parameters.eta; 
+        sigma_b = user_data_class.par.observation_model_parameters.sigma_b;
     end
     properties
        plot_handle;
@@ -23,20 +22,19 @@ classdef Landmarks_3D_Range_bearing < ObservationModel_interface
     
     methods (Static = true)
         function temporary_props = costant_property_constructor()
-            temporary_props = []
-%             LoadFileName = user_data_class.par.LoadFileName;
-%             SaveFileName = user_data_class.par.SaveFileName;
-%             Man_L = user_data_class.par.observation_model_parameters.interactive_OM;
-%             if Man_L == 0
-%                 load(LoadFileName,'Landmarks')
-%                 temporary_props.landmarks = Landmarks; %#ok<NODEF>
-%                 temporary_props.landmarks(3,:) = 0; % Z coordinate is 0
-%                 temporary_props.obsDim =  3*size(Landmarks,2);
-%             else
-%                 temporary_props = Landmarks_3D_Range_bearing.request_landmarks();
-%             end
-%             Landmarks = temporary_props.landmarks; %#ok<NASGU>
-%             save(SaveFileName,'Landmarks','-append') % here, we save the landmarks for the future runs.
+            LoadFileName = user_data_class.par.LoadFileName;
+            SaveFileName = user_data_class.par.SaveFileName;
+            Man_L = user_data_class.par.observation_model_parameters.interactive_OM;
+            if Man_L == 0
+                load(LoadFileName,'Landmarks')
+                temporary_props.landmarks = Landmarks; %#ok<NODEF>
+                temporary_props.landmarks(3,:) = 0; % Z coordinate is 0
+                temporary_props.obsDim =  3*size(Landmarks,2);
+            else
+                temporary_props = Landmarks_3D_Range_bearing.request_landmarks();
+            end
+            Landmarks = temporary_props.landmarks; %#ok<NASGU>
+            save(SaveFileName,'Landmarks','-append') % here, we save the landmarks for the future runs.
         end
         function temporary_props = request_landmarks()
             old_prop = Landmarks_3D_Range_bearing.set_figure();
@@ -200,20 +198,20 @@ classdef Landmarks_3D_Range_bearing < ObservationModel_interface
             V = zeros(Landmarks_3D_Range_bearing.obsNoiseDim,1);
             Zprd = Landmarks_3D_Range_bearing.h_func(Xprd,V);
             innov = Zg - Zprd;
-%             wrong_innovs = find(innov>pi | innov<-pi);
-%             for jjj=1:length(wrong_innovs)
-%                 i=wrong_innovs(jjj);
-%                 if mod(i,2)==0 && innov(i)>pi
-%                     innov(i)=innov(i)-2*pi;
-%                 elseif mod(i,2)==0 && innov(i)<-pi
-%                     innov(i)=innov(i)+2*pi;
-%                 end
-%                 if mod(i,3)==0 && innov(i)>pi
-%                     innov(i)=innov(i)-2*pi;
-%                 elseif mod(i,3)==0 && innov(i)<-pi
-%                     innov(i)=innov(i)+2*pi;
-%                 end
-%             end
+            wrong_innovs = find(innov>pi | innov<-pi);
+            for jjj=1:length(wrong_innovs)
+                i=wrong_innovs(jjj);
+                if mod(i,2)==0 && innov(i)>pi
+                    innov(i)=innov(i)-2*pi;
+                elseif mod(i,2)==0 && innov(i)<-pi
+                    innov(i)=innov(i)+2*pi;
+                end
+                if mod(i,3)==0 && innov(i)>pi
+                    innov(i)=innov(i)-2*pi;
+                elseif mod(i,3)==0 && innov(i)<-pi
+                    innov(i)=innov(i)+2*pi;
+                end
+            end
         end
         function old_prop = set_figure() % This function sets the figure (size and other properties) to values that are needed for landmark selection or drawing.
             figure(gcf); 
