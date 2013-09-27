@@ -174,14 +174,33 @@ classdef state < state_interface
                     sampled_state = [];
                     return
                 else
-                    random_theta = rand*2*pi - pi; % generates a random orientation between -pi and pi
-                    sampled_state = state([x ; y ; random_theta]);
+                    xrange = [-5 5];
+                    yrange = [-5 5];
+                    zrange = [-5 5];
+                    xyz = rand(1,3) .* [xrange(2)-xrange(1) yrange(2)-yrange(1) zrange(2)-zrange(1)] + ...
+                        [xrange(1) yrange(1) zrange(1)];
+                    
+                    yaw = rand*2*pi;
+                    pitch = rand*2*pi;
+                    roll =  rand*2*pi;
+                    quat = angle2quat(yaw,pitch,roll);
+                    sampled_state = state([x , y , xyz(3), quat]');
                 end
                 if sampled_state.is_constraint_violated()
                     sampled_state = user_samples_a_state();
                 end
             elseif strcmp(user_or_random , 'random')
-                error('not yet implemented')
+                xrange = [-5 5];
+                yrange = [-5 5];
+                zrange = [-5 5];
+                xyz = rand(1,3) .* [xrange(2)-xrange(1) yrange(2)-yrange(1) zrange(2)-zrange(1)] + ...
+                    [xrange(1) yrange(1) zrange(1)];
+                
+                yaw = rand*2*pi;
+                pitch = rand*2*pi;
+                roll =  rand*2*pi;
+                quat = angle2quat(yaw,pitch,roll);
+                sampled_state = [xyz, quat]';
             else
                 error('not correct!');
             end

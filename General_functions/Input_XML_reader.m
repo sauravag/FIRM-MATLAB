@@ -98,6 +98,8 @@ elseif strcmpi(par_new.selected_observation_model,'n-arm Manipulator')
     typeDef('Planar_manipulator_wall_sensing_deadzone','ObservationModel_class');
 elseif strcmpi(par_new.selected_observation_model,'Dynamical n-arm Manipulator')
     typeDef('Dyn_manipulator_wall_sensing_deadzone','ObservationModel_class');
+elseif strcmpi(par_new.selected_observation_model,'3D Lanndmark (range and bearings)')
+    typeDef('Landmarks_3D_Range_bearing','ObservationModel_class');
 end
 
 par_new.observation_model_parameters = gather_observation_model_parameters(old_par, par_new.observation_model_parameters, par_new.selected_observation_model);

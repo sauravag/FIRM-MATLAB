@@ -16,6 +16,13 @@ classdef Aircraft_Kinematic < MotionModel_interface
         Min_Velocity = 0.5;% m/s
     end
     
+    properties (Constant = true) % orbit-related properties
+        turn_radius_min = 1.5*0.1; % indeed we need to define the minimum linear velocity in turnings (on orbits) and then find the minimum radius accordingly. But, we picked the more intuitive way.
+        angular_velocity_max = deg2rad(45); % degree per second (converted to radian per second)
+        linear_velocity_min_on_orbit = Unicycle_robot.turn_radius_min*Unicycle_robot.angular_velocity_max; % note that on the straight line the minimum velocity can go to zero. But, in turnings (on orbit) the linear velocity cannot fall below this value.
+        linear_velocity_max =1.5;
+    end
+    
     %% Methods
     %   methods (Access = private)  %used by this class only
     %         function transition_quat = f_transquat(dt , u ,w) % to calculate transition quaternion
@@ -403,7 +410,7 @@ classdef Aircraft_Kinematic < MotionModel_interface
             % defining controls on the orbit
             V_p = Aircraft_Kinematic.linear_velocity_min_on_orbit * [ones(1,T-1) , T_rational-floor(T_rational)]; % we traverse the orbit with minimum linear velocity
             omega_p = Aircraft_Kinematic.angular_velocity_max * [ones(1,T-1) , T_rational-floor(T_rational)]; % we traverse the orbit with maximum angular velocity
-            u_p = [V_p;0;0;omega_p];
+            u_p = [V_p;zeros(1,T);zeros(1,T);omega_p];
             w_zero = Aircraft_Kinematic.zeroNoise; % no noise
             
             % defining state steps on the orbit

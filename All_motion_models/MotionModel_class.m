@@ -16,6 +16,13 @@ classdef MotionModel_class < MotionModel_interface
         Min_Velocity = 0.5;% m/s
     end
     
+    properties (Constant = true) % orbit-related properties
+        turn_radius_min = 1.5*0.1; % indeed we need to define the minimum linear velocity in turnings (on orbits) and then find the minimum radius accordingly. But, we picked the more intuitive way.
+        angular_velocity_max = deg2rad(45); % degree per second (converted to radian per second)
+        linear_velocity_min_on_orbit = Unicycle_robot.turn_radius_min*Unicycle_robot.angular_velocity_max; % note that on the straight line the minimum velocity can go to zero. But, in turnings (on orbit) the linear velocity cannot fall below this value.
+        linear_velocity_max =1.5;
+    end
+    
     %% Methods
     %   methods (Access = private)  %used by this class only
     %         function transition_quat = f_transquat(dt , u ,w) % to calculate transition quaternion
@@ -381,6 +388,42 @@ classdef MotionModel_class < MotionModel_interface
                 pause(0.1);
             end
         end
+        %% Sample a valid orbit (periodic trajectory)
+        function orbit = sample_a_valid_orbit()
+            orbit_center = state.sample_a_valid_state();
+            orbit = MotionModel_class.generate_orbit(orbit_center);
+            orbit = MotionModel_class.draw_orbit(orbit);
+        end
+        %% Construct an orbit
+        function orbit = generate_orbit(orbit_center)
+            % minimum orbit radius resutls from dividing the minimum linear
+            % velocity to maximum angular velocity. However, here we assume
+            % that the linear velocity is constant.
+            orbit.radius = MotionModel_class.turn_radius_min;
+            orbit_length_meter = 2*pi*orbit.radius;
+            orbit_length_time_continuous = orbit_length_meter/MotionModel_class.linear_velocity_min_on_orbit;
+            T_rational = orbit_length_time_continuous/MotionModel_class.dt;
+            T = ceil(T_rational);
+            orbit.period = T;
+            orbit.center = orbit_center;
+            
+            % defining controls on the orbit
+            V_p = MotionModel_class.linear_velocity_min_on_orbit * [ones(1,T-1) , T_rational-floor(T_rational)]; % we traverse the orbit with minimum linear velocity
+            omega_p = MotionModel_class.angular_velocity_max * [ones(1,T-1) , T_rational-floor(T_rational)]; % we traverse the orbit with maximum angular velocity
+            u_p = [V_p;zeros(1,T);zeros(1,T);omega_p];
+            w_zero = MotionModel_class.zeroNoise; % no noise
+            
+            % defining state steps on the orbit
+            zero_quaternion = state.zero_quaternion; % The robot's angle in the start of orbit is zero
+            x_p(:,1) = [orbit_center - [0;orbit.radius;0] ; zero_quaternion]; % initial x
+            for k=1:T
+                x_p(:,k+1) = MotionModel_class.f_discrete(x_p(:,k),u_p(:,k),w_zero);
+            end
+            orbit.x = x_p(:,1:T);  % "x_p" is of length T+1, but "x_p(:,T+1)" is equal to "x_p(:,1)"
+            orbit.u = u_p;  % "u_p" is of length T.
+            orbit.plot_handle = [];
+        end
+        
         function YesNo = is_constraints_violated(open_loop_traj)
             error('not yet implemented');
         end

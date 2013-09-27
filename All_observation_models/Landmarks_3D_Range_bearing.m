@@ -9,8 +9,8 @@ classdef Landmarks_3D_Range_bearing < ObservationModel_interface
     properties (Constant = true) % Note that you cannot change the order of the definition of properties in this class due to its structure (due to dependency between properties.)
 
         tmp_prop = Landmarks_3D_Range_bearing.costant_property_constructor();  % I use this technique to initialize the costant properties in run-time. If I can find a better way to do it, I will update it, as it seems a little bit strange.
-        landmarks = [1,2,3,4;5,6,7,8;0,0,0,0];%Landmarks_3D_Range_bearing.tmp_prop.landmarks;
-        obsDim = 12; %Landmarks_3D_Range_bearing.tmp_prop.obsDim;
+        landmarks = Landmarks_3D_Range_bearing.tmp_prop.landmarks;
+        obsDim = Landmarks_3D_Range_bearing.tmp_prop.obsDim;
         obsNoiseDim = Landmarks_3D_Range_bearing.obsDim; % observation noise dimension. In some other observation models the noise dimension may be different from the observation dimension.
         zeroNoise = zeros(Landmarks_3D_Range_bearing.obsNoiseDim,1); % zero observation noise
         eta = user_data_class.par.observation_model_parameters.eta; 
