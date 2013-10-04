@@ -2,6 +2,7 @@ classdef Six_DOF_robot_state < state_interface
     % This class encapsulates the state of a planar robot, described by its 2D location and heading angle.
     properties (Constant)
         dim = 7; % state dimension [X,Y,Z,q0,q1,q2,q3]
+        zeroQuaternion = [1 0 0 0];
     end
     properties
         val; % value of the state
@@ -24,7 +25,7 @@ classdef Six_DOF_robot_state < state_interface
              q_1 = [x1(4) x1(5) x1(6) x1(7)];
              q_2 = [x2(4) x2(5) x2(6) x2(7)];
              q21 = quatmultiply(q_1,quatinv(q_2)); % relative rotation quaternion from nominal to current
-             signed_dist_vector = [linear_distance;q12'];
+             signed_dist_vector = [linear_distance;q21'];
         end
         function obj = draw(obj, varargin)
             % The full list of properties for this function is:

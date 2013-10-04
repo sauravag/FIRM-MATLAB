@@ -204,8 +204,8 @@ disp('uncomment the above line in Orbittt_PRM_class')
             alpha = node_ind_on_orbit; % the number of node on the starting orbit.
             node_time_stage = start_orbit.node_time_stages(alpha); % the time stage of alpha-th node on i-th orbit
             %initial_gamma = atan2(start_orbit.x(2,1) - start_orbit.center(2),start_orbit.x(1,1) - start_orbit.center(1));  % The anlge on which the start of orbit lies.
-            node_gamma   = atan2(start_orbit.x(2,node_time_stage) - start_orbit.center(2) , start_orbit.x(1,node_time_stage) - start_orbit.center(1));  % The anlge on which the "alpha"-th node on orbit lies.
-            angle_of_connecting_line = atan2( end_orbit.center(2) - start_orbit.center(2) , end_orbit.center(1) - start_orbit.center(1) ); % the angle of the orbit_edge connecting two orbit i to j
+            node_gamma   = atan2(start_orbit.x(2,node_time_stage) - start_orbit.center.val(2) , start_orbit.x(1,node_time_stage) - start_orbit.center.val(1));  % The anlge on which the "alpha"-th node on orbit lies.
+            angle_of_connecting_line = atan2( end_orbit.center.val(2) - start_orbit.center.val(2) , end_orbit.center.val(1) - start_orbit.center.val(1) ); % the angle of the orbit_edge connecting two orbit i to j
             gamma_start_of_orbit_edge = angle_of_connecting_line - pi/2; % the angle on which the starting point of orbit_edge lies on orbit i.
             
             % making "gamma" and "node_gamma" positive.
@@ -270,7 +270,8 @@ disp('uncomment the above line in Orbittt_PRM_class')
                     % depict the distance from the node that can connect to
                     % other nodes
                     delete(tmp_neighb_plot_handle)
-                    tmp_neighb_plot_handle = MotionModel_class.draw_orbit_neighborhood(new_orbit, scale);
+                    %tmp_neighb_plot_handle = MotionModel_class.draw_orbit_neighborhood(new_orbit, scale);
+                    disp('uncomment line 273 orbit_prm_class for the drawing');
                 end
             end
             obj.reset_figure(old_prop)
@@ -301,9 +302,10 @@ disp('uncomment the above line in Orbittt_PRM_class')
             end
             % drawing the new node
             orbit_prop_varargin = {}; %obj.par.PRM_orbit_plot_properties;
-            if ~isfield(new_orbit, 'plot_handle') || isempty(new_orbit.plot_handle)  % check if the orbit is already drawn
-                obj.orbits(new_orbit_ind) = MotionModel_class.draw_orbit(obj.orbits(new_orbit_ind), orbit_prop_varargin{:});
-            end
+%             if ~isfield(new_orbit, 'plot_handle') || isempty(new_orbit.plot_handle)  % check if the orbit is already drawn
+%                 obj.orbits(new_orbit_ind) = MotionModel_class.draw_orbit(obj.orbits(new_orbit_ind), orbit_prop_varargin{:});
+%             end
+           disp('Uncomment the above three lines for drawing Orbit_PRM_Class.m line 307');
             % we compute the neighbors of the newly added orbit.
             neighbors_of_new = obj.find_orbit_neighbors(new_orbit_ind);
             % we add the orbit_edges corresponding to this new orbit. 
@@ -327,8 +329,9 @@ disp('uncomment the above line in Orbittt_PRM_class')
                     obj.orbit_edges_trajectory.x = [];obj.orbit_edges_trajectory.u = [];
                 end
                 obj.orbit_edges_trajectory(start_orbit_ind , end_orbit_ind) = nominal_traj; % adding orbit itself to the set of orbits
-                traj_plot_handle = MotionModel_class.draw_nominal_traj(nominal_traj, obj.par.node_to_orbit_trajectories_flag); % plot the orbit
-                obj.orbit_edges_plot_handle = [obj.orbit_edges_plot_handle , traj_plot_handle];
+                %traj_plot_handle = MotionModel_class.draw_nominal_traj(nominal_traj, obj.par.node_to_orbit_trajectories_flag); % plot the orbit
+                %obj.orbit_edges_plot_handle = [obj.orbit_edges_plot_handle , traj_plot_handle];
+                disp('Uncomment line 332/3 Orbit_PRM_class for drawing');
                 obj.orbit_edges_matrix(start_orbit_ind , end_orbit_ind) = 1;
             end
         end
@@ -354,7 +357,8 @@ disp('uncomment the above line in Orbittt_PRM_class')
         function neighbors = find_orbit_neighbors(obj,i_orbit)
             neighbors = [];
             for j_orbit = [1:i_orbit - 1 , i_orbit+1:obj.num_orbits]
-                if norm(obj.orbits(i_orbit).center - obj.orbits( j_orbit ).center) < ...
+                dist = norm(obj.orbits(i_orbit).center.signed_element_wise_dist(obj.orbits(j_orbit).center));
+                if dist < ...
                         obj.par.neighboring_distance_threshold
                     neighbors = [ neighbors,j_orbit ]; %#ok<AGROW>
                 end

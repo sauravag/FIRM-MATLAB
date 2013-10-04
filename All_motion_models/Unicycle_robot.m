@@ -291,12 +291,11 @@ classdef Unicycle_robot < MotionModel_interface
         end
         %% Sample a valid orbit (periodic trajectory)
         function orbit = sample_a_valid_orbit()
-            [x_temp,y_temp]=ginput(1);
-            if isempty(x_temp)
+            orbit_center = state.sample_a_valid_state();
+            if isempty( orbit_center)
                 orbit = [];
                 return
             else
-                orbit_center = [x_temp;y_temp];
                 orbit = Unicycle_robot.generate_orbit(orbit_center);
                 orbit = Unicycle_robot.draw_orbit(orbit);
             end
@@ -323,7 +322,7 @@ classdef Unicycle_robot < MotionModel_interface
             w_zero = zeros(Unicycle_robot.wDim,1); % no noise
             
             % defining state steps on the orbit
-            x_p(:,1) = [orbit_center - [0;orbit.radius] ; 0*pi/180]; % initial x
+            x_p(:,1) = [orbit_center.val(1:2) - [0;orbit.radius] ; 0*pi/180]; % initial x
             for k=1:T
                 x_p(:,k+1) = MotionModel_class.f_discrete(x_p(:,k),u_p(:,k),w_zero);
             end
@@ -373,8 +372,8 @@ classdef Unicycle_robot < MotionModel_interface
             else
                 orbit.plot_handle = [];
                 th_orbit_draw = [0:0.1:2*pi , 2*pi];
-                x_orbit_draw = orbit.center(1) + orbit.radius*cos(th_orbit_draw);
-                y_orbit_draw = orbit.center(2) + orbit.radius*sin(th_orbit_draw);
+                x_orbit_draw = orbit.center.val(1) + orbit.radius*cos(th_orbit_draw);
+                y_orbit_draw = orbit.center.val(2) + orbit.radius*sin(th_orbit_draw);
                 tmp_h = plot(x_orbit_draw,y_orbit_draw,'lineWidth',orbit_width);
                 Xstate = state(orbit.x(:,1));
                 Xstate = Xstate.draw('RobotShape',robot_shape,'robotsize',robot_size);
@@ -382,7 +381,7 @@ classdef Unicycle_robot < MotionModel_interface
             end
             
             if ~isempty(orbit_text)
-                text_pos = orbit.center;
+                text_pos = orbit.center.val;
                 text_pos(1) = text_pos(1) - text_shift; % for some reason MATLAB shifts the starting point of the text a little bit to the right. So, here we return it back.
                 tmp_handle = text( text_pos(1), text_pos(2), orbit_text, 'fontsize', text_size, 'color', text_color);
                 orbit.plot_handle = [orbit.plot_handle,tmp_handle];
@@ -397,9 +396,9 @@ classdef Unicycle_robot < MotionModel_interface
             direction_end_orbit = sign(end_orbit.u(1,1))*sign(end_orbit.u(2,1));
             % finding the connecting edge between orbits.
             if direction_start_orbit == direction_end_orbit % both orbits turn in a same direction
-                gamma = atan2( end_orbit.center(2) - start_orbit.center(2) , end_orbit.center(1) - start_orbit.center(1) );
-                temp_edge_start = start_orbit.radius * [ cos(gamma-pi/2) ; sin(gamma-pi/2) ] + start_orbit.center;
-                temp_edge_end = end_orbit.radius* [ cos(gamma-pi/2) ; sin(gamma-pi/2) ] + end_orbit.center;
+                gamma = atan2( end_orbit.center.val(2) - start_orbit.center.val(2) , end_orbit.center.val(1) - start_orbit.center.val(1) );
+                temp_edge_start = start_orbit.radius * [ cos(gamma-pi/2) ; sin(gamma-pi/2) ] + start_orbit.center.val(1:2);
+                temp_edge_end = end_orbit.radius* [ cos(gamma-pi/2) ; sin(gamma-pi/2) ] + end_orbit.center.val(1:2);
             else
                 error('different directions have not been implemented in PNPRM yet.')
             end
@@ -413,7 +412,7 @@ classdef Unicycle_robot < MotionModel_interface
             tmp_traj_start = [temp_edge_start ; gamma ];
             V_p = start_orbit.u(1,1);
             step_length = V_p * Unicycle_robot.dt;
-            edge_length = norm ( end_orbit.center - start_orbit.center ) ;
+            edge_length = norm ( end_orbit.center.val - start_orbit.center.val ) ;
             edge_steps = floor(edge_length/step_length);
             
             omega_p = 0;
@@ -478,8 +477,8 @@ classdef Unicycle_robot < MotionModel_interface
         %% Draw orbit neighborhood
         function plot_handle = draw_orbit_neighborhood(orbit, scale)
             tmp_th = 0:0.1:2*pi;
-            x = orbit.center(1);
-            y = orbit.center(2);
+            x = orbit.center.val(1);
+            y = orbit.center.val(2);
             plot_handle = plot(scale*cos(tmp_th) + x , scale*sin(tmp_th) + y, '--');
         end
     end

@@ -1,8 +1,8 @@
 classdef PLQG_class < LQG_interface
     %   PLQG_class encapsulates the Periodic Linear Quadratic Gaussian Controller
-%     properties (Constant = true)
-%         valid_lnr_domain = user_data_class.par.valid_linearization_domain;
-%     end
+    properties (Constant = true)
+        valid_lnr_domain = user_data_class.par.valid_linearization_domain;
+    end
     properties
         estimator
         separated_controller

@@ -81,27 +81,27 @@ end
 warning('off', 'MATLAB:rmpath:DirNotFound'); % In the next line when we remove the paths, some warning may occur, if those path does not exist. So, we supress that warning here.
 rmpath( genpath('All_observation_models')); % This line remove all paths below the "All_observation_models" directory, which have been possibly added in the last run of the program.
 addpath('All_observation_models'); % However, we still want the "All_observation_models" folder path to be on the Matlab path (Not its subdirectories though).
-if strcmpi(par_new.selected_observation_model,'Three robot good-poor GPS no comm')
-        typeDef('Three_robot_good_poor_GPS_no_comm','ObservationModel_class')
-elseif strcmpi(par_new.selected_observation_model,'Three robot good-poor GPS with comm')
-        typeDef('Three_robot_good_poor_GPS_with_comm','ObservationModel_class')
-elseif strcmpi(par_new.selected_observation_model,'Landmark (range and bearing) sensing')
-    typeDef('Landmarks_Range_bearing' , 'ObservationModel_class')
-elseif strcmpi(par_new.selected_observation_model,'Multi Robot Sensing')
-    addpath(genpath('All_observation_models/Multi_robot_sensing')); % In this line we import everything inside the "All_observation_models/multi_robot_sensing" directory.
-elseif strcmpi(par_new.selected_observation_model,'Two robots with no communication')
-    typeDef('Two_robots_no_communication','ObservationModel_class')
-    %addpath(genpath('All_observation_models/Two_robots_no_communication')); % In this line we import everything inside the "All_observation_models/multi_robot_sensing" directory.
-elseif strcmpi(par_new.selected_observation_model,'Two robots with communication')
-    addpath(genpath('All_observation_models/Two_robots_with_communication')); % In this line we import everything inside the "All_observation_models/multi_robot_sensing" directory.
-elseif strcmpi(par_new.selected_observation_model,'n-arm Manipulator')
-    typeDef('Planar_manipulator_wall_sensing_deadzone','ObservationModel_class');
-elseif strcmpi(par_new.selected_observation_model,'Dynamical n-arm Manipulator')
-    typeDef('Dyn_manipulator_wall_sensing_deadzone','ObservationModel_class');
-elseif strcmpi(par_new.selected_observation_model,'3D Lanndmark (range and bearings)')
-    typeDef('Landmarks_3D_Range_bearing','ObservationModel_class');
-end
-
+% if strcmpi(par_new.selected_observation_model,'Three robot good-poor GPS no comm')
+%         typeDef('Three_robot_good_poor_GPS_no_comm','ObservationModel_class')
+% elseif strcmpi(par_new.selected_observation_model,'Three robot good-poor GPS with comm')
+%         typeDef('Three_robot_good_poor_GPS_with_comm','ObservationModel_class')
+% elseif strcmpi(par_new.selected_observation_model,'Landmark (range and bearing) sensing')
+%     typeDef('Landmarks_Range_bearing' , 'ObservationModel_class')
+% elseif strcmpi(par_new.selected_observation_model,'Multi Robot Sensing')
+%     addpath(genpath('All_observation_models/Multi_robot_sensing')); % In this line we import everything inside the "All_observation_models/multi_robot_sensing" directory.
+% elseif strcmpi(par_new.selected_observation_model,'Two robots with no communication')
+%     typeDef('Two_robots_no_communication','ObservationModel_class')
+%     %addpath(genpath('All_observation_models/Two_robots_no_communication')); % In this line we import everything inside the "All_observation_models/multi_robot_sensing" directory.
+% elseif strcmpi(par_new.selected_observation_model,'Two robots with communication')
+%     addpath(genpath('All_observation_models/Two_robots_with_communication')); % In this line we import everything inside the "All_observation_models/multi_robot_sensing" directory.
+% elseif strcmpi(par_new.selected_observation_model,'n-arm Manipulator')
+%     typeDef('Planar_manipulator_wall_sensing_deadzone','ObservationModel_class');
+% elseif strcmpi(par_new.selected_observation_model,'Dynamical n-arm Manipulator')
+%     typeDef('Dyn_manipulator_wall_sensing_deadzone','ObservationModel_class');
+% elseif strcmpi(par_new.selected_observation_model,'3D Landmark (range and bearing)')
+%     typeDef('Landmarks_3D_Range_bearing','ObservationModel_class');
+% end
+typeDef('Landmarks_3D_Range_bearing','ObservationModel_class');
 par_new.observation_model_parameters = gather_observation_model_parameters(old_par, par_new.observation_model_parameters, par_new.selected_observation_model);
 
 
@@ -154,12 +154,19 @@ elseif strcmpi(par_new.selected_motion_model,'Dynamical planar 8arm manipulator'
     par_new.FIRM_node_parameters.cov_neighborhood_size = tmp_vector*tmp_vector'*cov_neighb_magnifying_coeff ; % note that the last entry, ie theta's neighborhood, has to be in radian. % This is a matrix.
     % Hbliefe convergece-related parameters:
     GHb_conv_reg_thresh = tmp_vector*35; % distance threshold for either Xg_mean or Xest_mean_mean; Xdist has to be a column vector
+elseif strcmpi(par_new.selected_motion_model,'FixedWing Aircraft')
+    tmp_vector = repmat( [0.08 ; 0.08 ; 0.08; 1 ; 1 ; 1 ; 1] , 1 , 1);
+    par_new.FIRM_node_parameters.mean_neighborhood_size = tmp_vector*mean_neighb_magnifying_coeff ; % note that the last entry, ie theta's neighborhood, has to be in radian.
+    par_new.FIRM_node_parameters.cov_neighborhood_size = tmp_vector*tmp_vector'*cov_neighb_magnifying_coeff ; % note that the last entry, ie theta's neighborhood, has to be in radian. % This is a matrix.
+    % Hbliefe convergece-related parameters:
+    GHb_conv_reg_thresh = tmp_vector*35; % distance threshold for either Xg_mean or Xest_mean_mean; Xdist has to be a column vector
 else
     par_new.FIRM_node_parameters.mean_neighborhood_size = [0.08 ; 0.08 ; 3 *pi/180 ]*mean_neighb_magnifying_coeff ; % this only works for 3D state spaces % note that the last entry, ie theta's neighborhood, has to be in radian.
     par_new.FIRM_node_parameters.cov_neighborhood_size = [0.08 ; 0.08 ; 3 *pi/180 ]*[0.08 ; 0.08 ; 3 *pi/180 ]'*cov_neighb_magnifying_coeff ; % this only works for 3D state spaces % note that the last entry, ie theta's neighborhood, has to be in radian. % This is a matrix.
     % Hbliefe convergece-related parameters:
     GHb_conv_reg_thresh = [0.08 ; 0.08 ; 1.5*pi/180]*35; % distance threshold for either Xg_mean or Xest_mean_mean; Xdist has to be a column vector
 end
+
 BigX_thresh = [GHb_conv_reg_thresh;GHb_conv_reg_thresh];
 par_new.FIRM_node_parameters.GHb_conv_BigX_thresh = BigX_thresh; % distance threshold for both Xg_mean and Xest_mean_mean in the single vector
 par_new.FIRM_node_parameters.GHb_conv_Pest_thresh = GHb_conv_reg_thresh*GHb_conv_reg_thresh'; % defines the convergence threshold for Pest
@@ -187,6 +194,8 @@ elseif strcmpi(par_new.selected_motion_model,'Revolute joint 8arm manipulator')
     par_new.valid_linearization_domain = ones(par_new.state_parameters.stateDim , 1)*75*pi/180;
 elseif strcmpi(par_new.selected_motion_model,'Dynamical planar 8arm manipulator')
     par_new.valid_linearization_domain = [ones(par_new.state_parameters.stateDim/2 , 1)*75*pi/180; ones(par_new.state_parameters.stateDim/2 , 1)*1000*pi/180];
+elseif strcmpi(par_new.selected_motion_model, 'FixedWing Aircraft')
+    par_new.valid_linearization_domain = repmat([3;3;3;1;1;1;1]*3 , 1 , 1);
 else
     par_new.valid_linearization_domain = [3;3;75*pi/180]*3;
 end
@@ -310,6 +319,10 @@ elseif strcmpi(selected_motion_model,'FixedWing Aircraft')
     state_parameters.sup_norm_weights_nonNormalized = ones(state_parameters.stateDim , 1); 
     disp('state norm for aircraft model needs to be fixed')
     motion_model_parameters.controlDim = 4;
+    motion_model_parameters.eta_u_aircraft = [0.02 ; 0.01 ; 0.01 ; 0.01];  
+    motion_model_parameters.sigma_b_u_aircraft = [0.02 ; 0.01 ; 0.01 ; 0.01];  
+    P_rootsqaure_Wg_diags = [0.2 ; 0.2 ; 0.2 ; 0.001 ; 0.001 ; 0.001 ; 0.001];
+    motion_model_parameters.P_Wg = diag(P_rootsqaure_Wg_diags.^2);
 else
     error('SFMP algorithm: The selected motion model does not match with the existing database');
 end

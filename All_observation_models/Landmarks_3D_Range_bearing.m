@@ -13,8 +13,8 @@ classdef Landmarks_3D_Range_bearing < ObservationModel_interface
         obsDim = Landmarks_3D_Range_bearing.tmp_prop.obsDim;
         obsNoiseDim = Landmarks_3D_Range_bearing.obsDim; % observation noise dimension. In some other observation models the noise dimension may be different from the observation dimension.
         zeroNoise = zeros(Landmarks_3D_Range_bearing.obsNoiseDim,1); % zero observation noise
-        eta = user_data_class.par.observation_model_parameters.eta; 
-        sigma_b = user_data_class.par.observation_model_parameters.sigma_b;
+        eta = [0.001;0.001;0.001];%user_data_class.par.observation_model_parameters.eta; 
+        sigma_b = [0.001;0.001;0.001];%user_data_class.par.observation_model_parameters.sigma_b;
     end
     properties
        plot_handle;
@@ -55,7 +55,7 @@ classdef Landmarks_3D_Range_bearing < ObservationModel_interface
                     temporary_props.plot_handle(i)=plot(Lx(i),Ly(i),'kp','markerfacecolor','k','markersize',12);
                 end
             end
-            Landmarks=[Lx;Ly;0];
+            Landmarks=[Lx;Ly;zeros(1,size(Lx,2))];
             temporary_props.landmarks = Landmarks;
             temporary_props.obsDim = 3*size(Landmarks,2);
             Landmarks_3D_Range_bearing.reset_figure(old_prop);

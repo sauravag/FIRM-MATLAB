@@ -4,16 +4,17 @@ classdef MotionModel_class < MotionModel_interface
         stDim = state.dim; % state dimension
         ctDim = 4;  % control vector dimension
         wDim = 4;   % Process noise (W) dimension  % For the generality we also consider the additive noise on kinematics equation (3 dimension), but it most probably will set to zero. The main noise is a 2 dimensional noise which is added to the controls.
-        dt = 0.2;
+        dt = 0.3;
         % base_length = user_data_class.par.motion_model_parameters.base_length;  % distance between robot's rear wheels.
-        sigma_b_u = [0.2  0.1 0.1 0.1]; %user_data_class.par.motion_model_parameters.sigma_b_u_unicycle;
-        eta_u = [0.2 0.1 0.1 0.1]%user_data_class.par.motion_model_parameters.eta_u_unicycle;
-        P_Wg = 0%user_data_class.par.motion_model_parameters.P_Wg;
+        sigma_b_u = user_data_class.par.motion_model_parameters.sigma_b_u_aircraft ;
+        eta_u = user_data_class.par.motion_model_parameters.eta_u_aircraft ;
+        P_Wg = user_data_class.par.motion_model_parameters.P_Wg;
         Max_Roll_Rate = deg2rad(45); % try 45
         Max_Pitch_Rate = deg2rad(45);% try 45
         Max_Yaw_Rate = deg2rad(45);% try 45
         Max_Velocity = 1.5; % m/s
         Min_Velocity = 0.5;% m/s
+        zeroNoise = zeros(MotionModel_class.wDim,1);
     end
     
     properties (Constant = true) % orbit-related properties
@@ -167,7 +168,7 @@ classdef MotionModel_class < MotionModel_interface
             A = [a_11 a_12 a_13 a_14; a_21 a_22 a_23 a_24; a_31 a_32 a_33 a_34; a_41 a_42 a_43 a_44];
             % Calculating the jacobian of the linear components B
             qq = q_rot.double; % put it back in double form
-            Vsum = (u(1)*MotionModel_class.dt + w(1)*MotionModel_class.dt^0.5)
+            Vsum = (u(1)*MotionModel_class.dt + w(1)*MotionModel_class.dt^0.5);
             b_11 = 1;
             b_12 = 0;
             b_13 = 0;
@@ -345,13 +346,19 @@ classdef MotionModel_class < MotionModel_interface
             P_Un=diag(u_std.^2);
         end
         function Q_process_noise = process_noise_cov(x,u) % compute the covariance of process noise based on the current poistion and controls
-            error('not yet implemented');
+            Q_process_noise = control_noise_covariance(u);
         end
         function nominal_traj = generate_open_loop_point2point_traj(start,goal) % generates open-loop trajectories between two start and goal states
              % The MATLAB RVC ToolBox Must be loaded first
+            disp('Using RRT3D to connect points on two orbits');
+            disp('Start point is:');start
+            disp('Goal point is:');goal
+            disp('Solving...');
             veh = MotionModel_class();
-            rrt = RRT3D([], veh, 'start', start, 'range', 5,'npoints',5000,'speed',2,'time', MotionModel_class.dt);
+            rrt = RRT3D([], veh, 'start', start, 'range', 5,'npoints',100,'speed',2,'time', MotionModel_class.dt);
             rrt.plan('goal',goal)   ;          % create navigation tree
+            nominal_traj.x = [];
+            nominal_traj.u = [];
             nominal_traj = rrt.path(start, goal) ; % animate path from this start location
             
             %% Code for plotting
@@ -373,26 +380,66 @@ classdef MotionModel_class < MotionModel_interface
                 end
             end
             
-            nominal_traj.u = controls;
-            nominal_traj.x = nomXs;
-            
-            x = start;
-            X = [];
-            X = [X,x];
-            w = [0,0,0,0]';
-            for i=1:length(controls(1,:))
-                u = controls(:,i);
-                x = MotionModel_class.f_discrete(x,u,w);
-                X = [X,x];
-                plot3(X(1,:),X(2,:),X(3,:),'x');
-                pause(0.1);
+            if ~isempty(nomXs)
+                nominal_traj.x = nomXs;
+                nominal_traj.u = controls;
             end
+            
+            disp('Done with RRT...');
+%             
+%             x = start;
+%             X = [];
+%             X = [X,x];
+%             w = [0,0,0,0]';
+%             for i=1:length(controls(1,:))
+%                 u = controls(:,i);
+%                 x = MotionModel_class.f_discrete(x,u,w);
+%                 X = [X,x];
+%                 plot3(X(1,:),X(2,:),X(3,:),'x');
+%                 pause(0.1);
+%             end
+        end
+          %% Generate open-loop Orbit-to-Orbit trajectory
+        function nominal_traj = generate_VALID_open_loop_orbit2orbit_traj(start_orbit, end_orbit) % generates open-loop trajectories between two start and end orbits
+            % check if both the orbits are turning in the same
+            % direction or not.
+            direction_start_orbit = sign(start_orbit.u(1,1))*sign(start_orbit.u(2,1));
+            direction_end_orbit = sign(end_orbit.u(1,1))*sign(end_orbit.u(2,1));
+            % finding the connecting edge between orbits.
+            if direction_start_orbit == direction_end_orbit % both orbits turn in a same direction
+                gamma = atan2( end_orbit.center.val(2) - start_orbit.center.val(2) , end_orbit.center.val(1) - start_orbit.center.val(1) );
+                temp_edge_start = start_orbit.radius * [ cos(gamma-pi/2) ; sin(gamma-pi/2);0 ] + start_orbit.center.val(1:3);
+                temp_edge_end = end_orbit.radius* [ cos(gamma-pi/2) ; sin(gamma-pi/2);0 ] + end_orbit.center.val(1:3);
+            else
+                error('different directions have not been implemented in PNPRM yet.')
+            end
+            %temp_traj.x(:,1) = temp_edge_start;  temp_traj.x(:,2) = temp_edge_end;  % we generate this trajectory (only composed of start and end points) to check the collision probabilities before generating the edges.
+            %collision = Unicycle_robot.is_constraints_violated(temp_traj);  % checking intersection with obstacles
+            %             if collision == 1
+            %                 nominal_traj = [];
+            %                 return
+            %             else
+            %                 % construction edge trajectory
+            roll_tmp_traj_start = 0;
+            pitch_tmp_traj_start = 0;
+            yaw_tmp_traj_start = gamma;
+            q_tmp_traj_start = angle2quat(yaw_tmp_traj_start,pitch_tmp_traj_start,roll_tmp_traj_start);
+    
+            tmp_traj_start = [temp_edge_start ; q_tmp_traj_start' ];
+            tmp_traj_goal = [temp_edge_end; q_tmp_traj_start'];
+            nominal_traj = MotionModel_class.generate_open_loop_point2point_traj(tmp_traj_start,tmp_traj_goal);
         end
         %% Sample a valid orbit (periodic trajectory)
         function orbit = sample_a_valid_orbit()
             orbit_center = state.sample_a_valid_state();
-            orbit = MotionModel_class.generate_orbit(orbit_center);
-            orbit = MotionModel_class.draw_orbit(orbit);
+            if isempty( orbit_center)
+                orbit = [];
+                return
+            else
+                orbit = MotionModel_class.generate_orbit(orbit_center);
+                %orbit = MotionModel_class.draw_orbit(orbit);
+            end
+            disp('fix the orbit drawing above in aircraft_kinematic.m Line 440')
         end
         %% Construct an orbit
         function orbit = generate_orbit(orbit_center)
@@ -414,8 +461,8 @@ classdef MotionModel_class < MotionModel_interface
             w_zero = MotionModel_class.zeroNoise; % no noise
             
             % defining state steps on the orbit
-            zero_quaternion = state.zero_quaternion; % The robot's angle in the start of orbit is zero
-            x_p(:,1) = [orbit_center - [0;orbit.radius;0] ; zero_quaternion]; % initial x
+            zeroQuaternion = state.zeroQuaternion; % The robot's angle in the start of orbit is zero
+            x_p(:,1) = [orbit_center.val(1:3) - [0;orbit.radius;0] ; zeroQuaternion']; % initial x
             for k=1:T
                 x_p(:,k+1) = MotionModel_class.f_discrete(x_p(:,k),u_p(:,k),w_zero);
             end
@@ -431,4 +478,21 @@ classdef MotionModel_class < MotionModel_interface
             error('not yet implemented');
         end
     end
+end
+
+
+%% Generating Control-dependent Noise Covariance
+%
+% $$ P^{U_n} = \left(
+%   \begin{array}{cc}
+%     (\eta_V V + \sigma_{b_V})^2 & 0\\
+%     0 & (\eta_{\omega} \omega + \sigma_{b_{\omega}})^2\\
+%   \end{array}\right) $$,
+%
+% where, $\eta_u=(\eta_V,\eta_{\omega})^T$ and
+% $\sigma_{b_u}=(\sigma_{b_V},\sigma_{b_{\omega}})^T$.
+
+function P_Un = control_noise_covariance(U)
+u_std = (MotionModel_class.eta_u).*U+(MotionModel_class.sigma_b_u);
+P_Un  = diag(u_std.^2);
 end
