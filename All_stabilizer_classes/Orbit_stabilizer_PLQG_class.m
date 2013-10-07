@@ -124,8 +124,9 @@ classdef Orbit_stabilizer_PLQG_class < Stabilizer_interface
             % terminates if replanning is needed (if the user has turned "on" the replanning flag).
             
             % Zoom in to the node area in the figure
-            center_state = state( [obj.PRM_orbit.center ; 0 ]); % This is a very poor code line, as it only works for 3D state. I need to fix it ASAP.
-            old_zoom = center_state.zoom_in(5); % the input argument is the zoom ratio (wrt the axis size)
+%             center_state = state( [obj.PRM_orbit.center ; 0 ]); % This is a very poor code line, as it only works for 3D state. I need to fix it ASAP.
+            
+            old_zoom = obj.PRM_orbit.center.zoom_in(5); % the input argument is the zoom ratio (wrt the axis size)
             xlabel(['Orbit stabilizer number ',num2str(obj.stabilizer_number),' is working ...']);
             
             show_just_once = 1;
@@ -138,7 +139,9 @@ classdef Orbit_stabilizer_PLQG_class < Stabilizer_interface
                 if obj.par.draw_cov_centered_on_nominal == 1 % in this case, we do NOT draw estimation covariance centered at estimation mean. BUT we draw estimation covariance centered at nominal state locations, to illustrate the covariance convergence.
                     T = obj.PRM_orbit.period;
                     cyclic_kPlus1 = mod(k+1,T)+(T*(mod(k+1,T)==0));
-                    nominal_x = state(obj.controller.lnr_pts_periodic(cyclic_kPlus1).x);
+                    %nominal_x = state(obj.controller.lnr_pts_periodic(cyclic_kPlus1).x);
+                    disp('Attention Ali line 143 Orbit_stabilizer_PLQG_class.m / lnr_pts vs lnr_pts_periodic')
+                    nominal_x = state(obj.controller.lnr_pts(cyclic_kPlus1).x);
                     next_Hstate = next_Hstate.draw_CovOnNominal(nominal_x,'robotshape','triangle','XgtriaColor','g','XestTriaColor','r','XgColor','g','XestColor','r');
                     current_Hstate = current_Hstate.delete_plot(); %#ok<NASGU>
                 else  % This is the normal case, where we draw the estimation covariance centered at estimation mean.

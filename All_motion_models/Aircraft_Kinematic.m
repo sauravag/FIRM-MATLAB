@@ -179,16 +179,16 @@ classdef Aircraft_Kinematic < MotionModel_interface
             b_21 = 0;
             b_22 = 1;
             b_23 = 0;
-            b_24 = qq(4)*Vsum;
+            b_24 = 2*qq(4)*Vsum;
             b_25 = 2*qq(3)*Vsum;
             b_26 = 2*qq(2)*Vsum;
-            b_27 = qq(1)*Vsum;
+            b_27 = 2*qq(1)*Vsum;
             b_31 = 0;
             b_32 = 0;
             b_33 = 1;
-            b_34 = -qq(3)*Vsum;
+            b_34 = -2*qq(3)*Vsum;
             b_35 = 2*qq(4)*Vsum;
-            b_36 = -qq(1)*Vsum;
+            b_36 = -2*qq(1)*Vsum;
             b_37 = 2*qq(2)*Vsum;
             
             B = [b_11 b_12 b_13 b_14 b_15 b_16 b_17;b_21 b_22 b_23 b_24 b_25 b_26 b_27;b_31 b_32 b_33 b_34 b_35 b_36 b_37];
