@@ -275,11 +275,11 @@ classdef Aircraft_Kinematic < MotionModel_interface
             a_12 = 0;
             a_13 = 0;
             a_14 = 0;
-            a_21 = (2*qq(2)*qq(3)+qq(1)*qq(4))* Aircraft_Kinematic.dt;
+            a_21 = 2*(qq(2)*qq(3)+qq(1)*qq(4))* Aircraft_Kinematic.dt;
             a_22 = 0;
             a_23 = 0;
             a_24 = 0;
-            a_31 = (2*qq(2)*qq(4)-qq(1)*qq(3)) * Aircraft_Kinematic.dt; 
+            a_31 = 2*(qq(2)*qq(4)-qq(1)*qq(3)) * Aircraft_Kinematic.dt; 
             a_32 = 0;
             a_33 = 0;
             a_34 = 0;
@@ -317,11 +317,11 @@ classdef Aircraft_Kinematic < MotionModel_interface
             a_12 = 0;
             a_13 = 0;
             a_14 = 0;
-            a_21 = (2*qq(2)*qq(3)+qq(1)*qq(4))* (Aircraft_Kinematic.dt)^0.5;
+            a_21 = 2*(qq(2)*qq(3)+qq(1)*qq(4))* (Aircraft_Kinematic.dt)^0.5;
             a_22 = 0;
             a_23 = 0;
             a_24 = 0;
-            a_31 = (2*qq(2)*qq(4)-qq(1)*qq(3)) * (Aircraft_Kinematic.dt)^0.5; 
+            a_31 = 2*(qq(2)*qq(4)-qq(1)*qq(3)) * (Aircraft_Kinematic.dt)^0.5; 
             a_32 = 0;
             a_33 = 0;
             a_34 = 0;
