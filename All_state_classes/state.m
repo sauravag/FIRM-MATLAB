@@ -34,7 +34,7 @@ classdef state < state_interface
             
             % default values
             robot_shape = 'point';
-            robot_size = 0.5;
+            robot_size = 0.1;
             tria_color = 'b';
             head_color = 'b';
             head_shape = '*';
@@ -67,33 +67,36 @@ classdef state < state_interface
                 end
             end
             x=obj.val;
-            obj.head_handle = plot(x(1),x(2),'Marker',head_shape,'MarkerSize',head_size,'MarkerEdgeColor',head_color,'MarkerFaceColor',head_color);
-            th=x(3);
+            obj.head_handle = plot3(x(1),x(2),x(3),'Marker',head_shape,'MarkerSize',head_size,'MarkerEdgeColor',head_color,'MarkerFaceColor',head_color);
             vertices_x=[0,-robot_size,-robot_size,0];
             vertices_y=[0,-robot_size/5,robot_size/5,0];
-            R=[cos(th),-sin(th);sin(th),cos(th)];
-            vert=R*[vertices_x;vertices_y];
+            vertices_z=[0,0,0,0];
+            
+            q_rot = Quaternion(x(4:7)); % rotation quaternion
+            q_rot = unit(q_rot);% making a normalized quarternion, dont use quatnormalize
+            R = q_rot.R;
+            vert=R*[vertices_x;vertices_y;vertices_z];
             % plot the triangle body
             if strcmpi(robot_shape,'triangle')  % strcmpi is not sensitive to letter scase.
                 tmp=get(gca,'NextPlot');
                 hold on
-                obj.tria_handle = plot(vert(1,:)+x(1),vert(2,:)+x(2),'color',tria_color);
+                obj.tria_handle = plot3(vert(1,:)+x(1),vert(2,:)+x(2),vert(3,:)+x(3),'color',tria_color);
                 set(gca,'NextPlot',tmp);
             end
             % write the text next to the robot
-            if ~isempty(robot_text)
-                robot_size_for_text=robot_size*1.5; % we need a slightly bigger robot so that the text does not interfere with actual robot.
-                vertices_x=[0,-robot_size_for_text,-robot_size_for_text,0];
-                vertices_y=[0,-robot_size_for_text/5,robot_size_for_text/5,0];
-                R=[cos(th),-sin(th);sin(th),cos(th)];
-                vert=R*[vertices_x;vertices_y];
-                
-                text_pos=(vert(:,2)+vert(:,3))/2  + x(1:2); % we add the mid-point of the base of this bigger robot to its heading position to find the text position, right behind the robot.
-                text_pos(1) = text_pos(1) - 0.45; % for some reason MATLAB shifts the starting point of the text a little bit to the right. So, here we return it back.
-                obj.text_handle = text(text_pos(1),text_pos(2),robot_text,'fontsize',font_size,'color',text_color);
-            end
+%             if ~isempty(robot_text)
+%                 robot_size_for_text=robot_size*1.5; % we need a slightly bigger robot so that the text does not interfere with actual robot.
+%                 vertices_x=[0,-robot_size_for_text,-robot_size_for_text,0];
+%                 vertices_y=[0,-robot_size_for_text/5,robot_size_for_text/5,0];
+%                 R=[cos(th),-sin(th);sin(th),cos(th)];
+%                 vert=R*[vertices_x;vertices_y];
+%                 
+%                 text_pos=(vert(:,2)+vert(:,3))/2  + x(1:2); % we add the mid-point of the base of this bigger robot to its heading position to find the text position, right behind the robot.
+%                 text_pos(1) = text_pos(1) - 0.45; % for some reason MATLAB shifts the starting point of the text a little bit to the right. So, here we return it back.
+%                 obj.text_handle = text(text_pos(1),text_pos(2),robot_text,'fontsize',font_size,'color',text_color);
+%             end
             
-            obj.tria_handle = [obj.tria_handle,plot_3D_cone_in_2D(x(1),x(2),th,tria_color)];
+%             obj.tria_handle = [obj.tria_handle,plot_3D_cone_in_2D(x,tria_color)];
             
         end
         function obj = delete_plot(obj,varargin)
@@ -140,7 +143,7 @@ classdef state < state_interface
             tmp_th = 0:0.1:2*pi;
             x = obj.val(1);
             y = obj.val(2);
-            neighb_plot_handle = plot(scale*cos(tmp_th) + x , scale*sin(tmp_th) + y);
+            neighb_plot_handle = plot3(scale*cos(tmp_th) + x , scale*sin(tmp_th) + y, obj.val(3));
         end
         function YesNo = is_constraint_violated(obj)
             x = obj.val;
@@ -169,15 +172,15 @@ classdef state < state_interface
     methods (Static)
         function sampled_state = sample_a_valid_state()
             user_or_random = 'user';
+            xrange = [0.5 4];
+            yrange = [0.5 4];
+            zrange = [0.5 4];
             if strcmp(user_or_random , 'user')
                 [x,y]=ginput(1);
                 if isempty(x)
                     sampled_state = [];
                     return
                 else
-                    xrange = [-5 5];
-                    yrange = [-5 5];
-                    zrange = [-5 5];
                     xyz = rand(1,3) .* [xrange(2)-xrange(1) yrange(2)-yrange(1) zrange(2)-zrange(1)] + ...
                         [xrange(1) yrange(1) zrange(1)];
                     
@@ -191,9 +194,6 @@ classdef state < state_interface
                     sampled_state = user_samples_a_state();
                 end
             elseif strcmp(user_or_random , 'random')
-                xrange = [-5 5];
-                yrange = [-5 5];
-                zrange = [-5 5];
                 xyz = rand(1,3) .* [xrange(2)-xrange(1) yrange(2)-yrange(1) zrange(2)-zrange(1)] + ...
                     [xrange(1) yrange(1) zrange(1)];
                 
@@ -209,7 +209,7 @@ classdef state < state_interface
     end
 end
 
-function plot_handle = plot_3D_cone_in_2D(x_robot,y_robot,theta_robot,color)
+function plot_handle = plot_3D_cone_in_2D(x,color)
 
 size_ratio = 0.75;
 r = 1*size_ratio;
@@ -241,10 +241,13 @@ Z1 = X*sin(phi) + Z*cos(phi);
 %mesh(X1,Y1,Z1)
 % h_cone = surf(X1,Y1,Z1);
 % set(h_cone,'edgecolor','none','facecolor',color,'facelighting','gouraud');
-
-X2 = X1*cos(theta_robot) - Y1*sin(theta_robot) + x_robot;
-Y2 = X1*sin(theta_robot) + Y1*cos(theta_robot) + y_robot;
-Z2 = Z1;
+rot  = [x(4) ; x(5) ; x(6) ; x(7)];% rotation state
+q_rot = Quaternion(rot);
+q_rot = unit(q_rot);% making a normalized quarternion, dont use quatnormalize
+Pos = q_rot.R*[X1;Y1;Z1] + repmat(x(1:3),1,size(X1));
+X2 = Pos(1,:);
+Y2 = Pos(2,:);
+Z2 = Pos(3,:);
 % Second cone rotated by angle theta about the z-axis
 plot_handle = mesh(X2,Y2,Z2);
 % axis equal

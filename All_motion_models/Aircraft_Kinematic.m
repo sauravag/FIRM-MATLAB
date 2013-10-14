@@ -363,7 +363,7 @@ classdef Aircraft_Kinematic < MotionModel_interface
             disp('Goal point is:');goal
             disp('Solving...');
             veh = Aircraft_Kinematic();
-            rrt = RRT3D([], veh, 'start', start, 'range', 5,'npoints',100,'speed',2,'time', Aircraft_Kinematic.dt);
+            rrt = RRT3D([], veh, 'start', start, 'range', 5,'npoints',2000,'speed',2,'time', Aircraft_Kinematic.dt);
             rrt.plan('goal',goal)   ;          % create navigation tree
             nominal_traj.x = [];
             nominal_traj.u = [];
@@ -445,7 +445,7 @@ classdef Aircraft_Kinematic < MotionModel_interface
                 return
             else
                 orbit = Aircraft_Kinematic.generate_orbit(orbit_center);
-                %orbit = Aircraft_Kinematic.draw_orbit(orbit);
+                orbit = Aircraft_Kinematic.draw_orbit(orbit);
             end
             disp('fix the orbit drawing above in aircraft_kinematic.m Line 440')
         end
@@ -479,11 +479,90 @@ classdef Aircraft_Kinematic < MotionModel_interface
             orbit.plot_handle = [];
         end
         
+                %% Draw an orbit
+        function orbit = draw_orbit(orbit,varargin)
+            % This function draws the orbit.
+            % default values
+            orbit_color = 'b'; % Default value for "OrbitTextColor" property. % User-provided value for "OrbitTextColor" property.
+            orbit_width = 2; % User-provided value for "orbit_width" property. % User-provided value for shifting the text a little bit to the left. % for some reason MATLAB shifts the starting point of the text a little bit to the right. So, here we return it back.
+            robot_shape = 'triangle'; % The shape of robot (to draw trajectories and to show direction of edges and orbits)
+            robot_size = 1; % Robot size on orbits (to draw trajectories and to show direction of edges and orbits)
+            orbit_trajectory_flag = 0; % Make it one if you want to see the orbit trajectories. Zero, otherwise.
+            text_size = 12;
+            text_color = 'b';
+            text_shift = 0.8;
+            orbit_text = [];
+            
+            % parsing the varargin
+            if ~isempty(varargin)
+                for i = 1 : 2 : length(varargin)
+                    switch lower(varargin{i})
+                        case lower('RobotSize')
+                            robot_size = varargin{i+1};
+                        case lower('OrbitWidth')
+                            orbit_width = varargin{i+1};
+                        case lower('OrbitColor')
+                            orbit_color = varargin{i+1};
+                        case lower('OrbitText')
+                            orbit_text = varargin{i+1};
+                    end
+                end
+            end
+            % start drawing
+            if orbit_trajectory_flag == 1
+                orbit.plot_handle = [];
+                for k=1:orbit.period
+                    Xstate = state(orbit.x(:,k));
+                    Xstate = Xstate.draw('RobotShape',robot_shape,'robotsize',robot_size);
+                    orbit.plot_handle = [orbit.plot_handle,Xstate.head_handle,Xstate.text_handle,Xstate.tria_handle];
+                end
+                tmp = plot(orbit.x(1,:) , orbit.x(2,:),orbit_color);
+                orbit.plot_handle = [orbit.plot_handle,tmp];
+            else
+                orbit.plot_handle = [];
+                th_orbit_draw = [0:0.1:2*pi , 2*pi];
+                x_orbit_draw = orbit.center.val(1) + orbit.radius*cos(th_orbit_draw);
+                y_orbit_draw = orbit.center.val(2) + orbit.radius*sin(th_orbit_draw);
+                z_orbit_draw = orbit.center.val(3)*ones(1,size(x_orbit_draw,2));
+                tmp_h = plot3(x_orbit_draw,y_orbit_draw,z_orbit_draw,'lineWidth',orbit_width);
+                Xstate = state(orbit.x(:,1));
+                Xstate = Xstate.draw('RobotShape',robot_shape,'robotsize',robot_size);
+                orbit.plot_handle = [orbit.plot_handle,tmp_h,Xstate.head_handle,Xstate.text_handle,Xstate.tria_handle];
+            end
+            
+            if ~isempty(orbit_text)
+                text_pos = orbit.center.val;
+                text_pos(1) = text_pos(1) - text_shift; % for some reason MATLAB shifts the starting point of the text a little bit to the right. So, here we return it back.
+                tmp_handle = text( text_pos(1), text_pos(2), orbit_text, 'fontsize', text_size, 'color', text_color);
+                orbit.plot_handle = [orbit.plot_handle,tmp_handle];
+            end
+                
+        end
         function YesNo = is_constraints_violated(open_loop_traj)
             error('not yet implemented');
         end
-        function traj_plot_handle = draw_nominal_traj(nominal_traj, varargin)
-            error('not yet implemented');
+        function traj_plot_handle = draw_nominal_traj(nominal_traj, traj_flag, varargin)
+            traj_plot_handle = [];
+            if traj_flag == 1
+                for k = 1 : size(nominal_traj.x , 2)
+                    tmp_Xstate = state (nominal_traj.x(:,k) );
+                    tmp_Xstate.draw('RobotShape','triangle','robotsize',1);%,'TriaColor',color(cycles));
+                    %traj_plot_handle(k:k+2) =
+                    %[tmp_Xstate.head_handle,tmp_Xstate.text_handle,tmp_Xstate.tria_handle];
+                end
+            else
+                tmp_handle = plot3(nominal_traj.x(1,:) , nominal_traj.x(2,:) , nominal_traj.x(3,:));
+                traj_plot_handle = [traj_plot_handle , tmp_handle];
+                len = size( nominal_traj.x , 2);
+                tmp_Xstate = state( nominal_traj.x(:,floor(len/2)) ); % to plot the direction of the line.
+%                 tmp_Xstate = tmp_Xstate.draw('RobotShape','triangle','robotsize',2);
+%                 traj_plot_handle = [traj_plot_handle , tmp_Xstate.plot_handle , tmp_Xstate.head_handle , tmp_Xstate.tria_handle , tmp_Xstate.text_handle ];
+                drawnow
+            end
+        end
+        function plot_handle = draw_orbit_neighborhood(orbit, scale)
+            % not implemented yet
+            plot_handle = [];
         end
     end
 end

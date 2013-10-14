@@ -452,13 +452,15 @@ classdef RRT3D < Navigation
         function xyz = randxyz(RRT3D)
             xstart = RRT3D.start;
             xgoal = RRT3D.goal;
+            midpoint = (xstart(1:3)+xgoal(1:3))/2;
+            
             d = norm(xstart(1:3)-xgoal(1:3));
-            range = d*1.5;
+            range = d;
             xrange = [-range range];
             yrange = [-range range];
             zrange = [-range range];
             xyz = RRT3D.rand(1,3) .* [xrange(2)-xrange(1) yrange(2)-yrange(1) zrange(2)-zrange(1)] + ...
-                [xstart(1)+RRT3D.xrange(1) xstart(2)+RRT3D.yrange(1) xstart(3)+RRT3D.zrange(1)];
+                [midpoint(1)+RRT3D.xrange(1) midpoint(2)+RRT3D.yrange(1) midpoint(3)+RRT3D.zrange(1)];
         end
         
         function xy = randxy(RRT3D)

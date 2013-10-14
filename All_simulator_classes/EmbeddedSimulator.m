@@ -50,14 +50,14 @@ classdef EmbeddedSimulator < SimulatorInterface
             %obj = Environment_construction(obj); % Construct the environment (obstacles, landmarks, PRM)
             if ~strcmpi(obj.par.env_background_image_address,'none') % check to see if the environment has any background picuture or not
                 background = imread(obj.par.env_background_image_address);
-                smaller_background=imresize(background,EmbeddedSimulator.par.imageResizeRatio);
+                smaller_background=imresize(background,obj.par.imageResizeRatio);
                 smaller_background = flipdim(smaller_background,1);
                 warp(smaller_background); axis on; set(gca,'Ydir','normal');view(0,90)
             end
             if obj.par.Lighting_and_3D_plots == 1
-                view(EmbeddedSimulator.par.viewAngle);
+                view(obj.par.viewAngle);
                 camlight('right')
-                camzoom(EmbeddedSimulator.par.initialZoomRatio)
+                camzoom(obj.par.initialZoomRatio)
             end
             obj.robot = state();
             obj.belief = belief();
@@ -130,7 +130,7 @@ classdef EmbeddedSimulator < SimulatorInterface
             figure(gcf);
             if ~strcmpi(obj.par.env_background_image_address,'none') % check to see if the environment has any background picuture or not
                 background = imread(obj.par.env_background_image_address);
-                smaller_background=imresize(background,EmbeddedSimulator.par.imageResizeRatio);
+                smaller_background=imresize(background,obj.par.imageResizeRatio);
                 smaller_background = flipdim(smaller_background,1);
                 imshow(smaller_background); axis on; set(gca,'Ydir','normal');view(0,90)
             end

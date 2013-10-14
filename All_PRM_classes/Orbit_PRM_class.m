@@ -329,8 +329,8 @@ disp('uncomment the above line in Orbittt_PRM_class')
                     obj.orbit_edges_trajectory.x = [];obj.orbit_edges_trajectory.u = [];
                 end
                 obj.orbit_edges_trajectory(start_orbit_ind , end_orbit_ind) = nominal_traj; % adding orbit itself to the set of orbits
-                %traj_plot_handle = MotionModel_class.draw_nominal_traj(nominal_traj, obj.par.node_to_orbit_trajectories_flag); % plot the orbit
-                %obj.orbit_edges_plot_handle = [obj.orbit_edges_plot_handle , traj_plot_handle];
+                traj_plot_handle = MotionModel_class.draw_nominal_traj(nominal_traj, obj.par.node_to_orbit_trajectories_flag); % plot the orbit
+                obj.orbit_edges_plot_handle = [obj.orbit_edges_plot_handle , traj_plot_handle];
                 disp('Uncomment line 332/3 Orbit_PRM_class for drawing');
                 obj.orbit_edges_matrix(start_orbit_ind , end_orbit_ind) = 1;
             end

@@ -179,16 +179,16 @@ classdef MotionModel_class < MotionModel_interface
             b_21 = 0;
             b_22 = 1;
             b_23 = 0;
-            b_24 = qq(4)*Vsum;
+            b_24 = 2*qq(4)*Vsum;
             b_25 = 2*qq(3)*Vsum;
             b_26 = 2*qq(2)*Vsum;
-            b_27 = qq(1)*Vsum;
+            b_27 = 2*qq(1)*Vsum;
             b_31 = 0;
             b_32 = 0;
             b_33 = 1;
-            b_34 = -qq(3)*Vsum;
+            b_34 = -2*qq(3)*Vsum;
             b_35 = 2*qq(4)*Vsum;
-            b_36 = -qq(1)*Vsum;
+            b_36 = -2*qq(1)*Vsum;
             b_37 = 2*qq(2)*Vsum;
             
             B = [b_11 b_12 b_13 b_14 b_15 b_16 b_17;b_21 b_22 b_23 b_24 b_25 b_26 b_27;b_31 b_32 b_33 b_34 b_35 b_36 b_37];
@@ -241,45 +241,43 @@ classdef MotionModel_class < MotionModel_interface
 %             B  = [b_11 b_12 b_13 ; b_21 b_22 b_23 ; b_31 b_32 b_33; b_41 b_42 b_43];
 %         end
         function J = df_du_func(x,u,w)
-            pos = [x(1) , x(2) , x(3)];% position state
             rot  = [x(4) , x(5) , x(6) , x(7)];% rotation state
             q_rot = Quaternion(rot);
             q_rot = unit(q_rot);% making a normalized quarternion
-%             p = q_rot.R;
-%             u_angular = [u(2); u(3); u(4)];
-%             t3 = p * u_angular;
-%             u_angular_ground = [0 ;t3(1); t3(2); t3(3)];
-%             w_angular = [w(2); w(3); w(4)];
-%             t4 = p * w_angular;
-%             w_angular_ground = [0 ; t4(1); t4(2); t4(3)];
+            qq = q_rot.double; % put it back in double form
+            R_gb = q_rot.R;
+            q0 = qq(1);
+            q1 = qq(2);
+            q2 = qq(3);
+            q3 = qq(4);
+            
             b_11 = 0;
-            b_12 = -1 * 0.5 * x(5) * MotionModel_class.dt ;
-            b_13 = -1 * 0.5 * x(6) * MotionModel_class.dt ;
-            b_14 = -1 * 0.5 * x(7) * MotionModel_class.dt ;
+            b_12 = 0.5 *(-q1*R_gb(1,1) - q2*R_gb(2,1) + q3*R_gb(3,1))* MotionModel_class.dt ;
+            b_13 = 0.5 *(-q1*R_gb(1,2) - q2*R_gb(2,2) + q3*R_gb(3,2))* MotionModel_class.dt ;
+            b_14 = 0.5 *(-q1*R_gb(1,3) - q2*R_gb(2,3) + q3*R_gb(3,3))* MotionModel_class.dt ;
             b_21 = 0 ;
-            b_22 = 0.5 * x(4) * MotionModel_class.dt;
-            b_23 = -1 * 0.5 * x(7) * MotionModel_class.dt ;
-            b_24 = 0.5 * x(6) * MotionModel_class.dt ;
+            b_22 = 0.5 *(q0*R_gb(1,1) - q3*R_gb(2,1) + q2*R_gb(3,1))* MotionModel_class.dt ;
+            b_23 = 0.5 *(q0*R_gb(1,2) - q3*R_gb(2,2) + q2*R_gb(3,2))* MotionModel_class.dt ;
+            b_24 = 0.5 *(q0*R_gb(1,3) - q3*R_gb(2,3) + q2*R_gb(3,3))* MotionModel_class.dt ;
             b_31 = 0 ;
-            b_32 = 0.5 * x(7) * MotionModel_class.dt;
-            b_33 = 0.5 * x(4) * MotionModel_class.dt ;
-            b_34 = -1 * 0.5 * x(5) * MotionModel_class.dt ;
+            b_32 = 0.5 *(q3*R_gb(1,1) + q0*R_gb(2,1) - q1*R_gb(3,1))* MotionModel_class.dt ;
+            b_33 = 0.5 *(q3*R_gb(1,2) + q0*R_gb(2,2) - q1*R_gb(3,2))* MotionModel_class.dt ;
+            b_34 = 0.5 *(q3*R_gb(1,3) + q0*R_gb(2,3) - q1*R_gb(3,3))* MotionModel_class.dt ;
             b_41 = 0;
-            b_42 = -1 * 0.5 * x(6) * MotionModel_class.dt;
-            b_43 = 0.5 * x(5) * MotionModel_class.dt ;
-            b_44 = 0.5 * x(4) * MotionModel_class.dt;
+            b_42 = 0.5 *(-q2*R_gb(1,1) + q1*R_gb(2,1) + q0*R_gb(3,1))* MotionModel_class.dt ;
+            b_43 = 0.5 *(-q2*R_gb(1,2) + q1*R_gb(2,2) + q0*R_gb(3,2))* MotionModel_class.dt ;
+            b_44 = 0.5 *(-q2*R_gb(1,3) + q1*R_gb(2,3) + q0*R_gb(3,3))* MotionModel_class.dt ;
             B = [b_11 b_12 b_13 b_14; b_21 b_22 b_23 b_24; b_31 b_32 b_33 b_34; b_41 b_42 b_43 b_44];
             % Jacobian calc for linear part
-            qq = q_rot.double; % put it back in double form
             a_11 = (qq(1)^2+qq(2)^2-qq(3)^2-qq(4)^2) * MotionModel_class.dt ;
             a_12 = 0;
             a_13 = 0;
             a_14 = 0;
-            a_21 = (2*qq(2)*qq(3)+qq(1)*qq(4))* MotionModel_class.dt;
+            a_21 = 2*(qq(2)*qq(3)+qq(1)*qq(4))* MotionModel_class.dt;
             a_22 = 0;
             a_23 = 0;
             a_24 = 0;
-            a_31 = (2*qq(2)*qq(4)-qq(1)*qq(3)) * MotionModel_class.dt; 
+            a_31 = 2*(qq(2)*qq(4)-qq(1)*qq(3)) * MotionModel_class.dt; 
             a_32 = 0;
             a_33 = 0;
             a_34 = 0;
@@ -291,22 +289,32 @@ classdef MotionModel_class < MotionModel_interface
             
         end
         function J = df_dw_func(x,u,w) % noise Jacobian
+            rot  = [x(4) , x(5) , x(6) , x(7)];% rotation state
+            q_rot = Quaternion(rot);
+            q_rot = unit(q_rot);% making a normalized quarternion
+            qq = q_rot.double; % put it back in double form
+            R_gb = q_rot.R;
+            q0 = qq(1);
+            q1 = qq(2);
+            q2 = qq(3);
+            q3 = qq(4);
+            
             g_11 = 0;
-            g_12 = -1 * 0.5 * x(5) * (MotionModel_class.dt^0.5) ;
-            g_13 = -1 * 0.5 * x(6) * (MotionModel_class.dt^0.5) ;
-            g_14 = -1 * 0.5 * x(7) * (MotionModel_class.dt^0.5);
+            g_12 = 0.5 *(-q1*R_gb(1,1) - q2*R_gb(2,1) + q3*R_gb(3,1))* sqrt(MotionModel_class.dt) ;
+            g_13 = 0.5 *(-q1*R_gb(1,2) - q2*R_gb(2,2) + q3*R_gb(3,2))* sqrt(MotionModel_class.dt) ;
+            g_14 = 0.5 *(-q1*R_gb(1,3) - q2*R_gb(2,3) + q3*R_gb(3,3))* sqrt(MotionModel_class.dt) ;
             g_21 = 0 ;
-            g_22 = 0.5 * x(4) * (MotionModel_class.dt^0.5);
-            g_23 = -1 * 0.5 * x(7) * (MotionModel_class.dt^0.5) ;
-            g_24 = 0.5 * x(6) * (MotionModel_class.dt^0.5) ;
+            g_22 = 0.5 *(q0*R_gb(1,1) - q3*R_gb(2,1) + q2*R_gb(3,1))* sqrt(MotionModel_class.dt);
+            g_23 = 0.5 *(q0*R_gb(1,2) - q3*R_gb(2,2) + q2*R_gb(3,2))* sqrt(MotionModel_class.dt);
+            g_24 = 0.5 *(q0*R_gb(1,3) - q3*R_gb(2,3) + q2*R_gb(3,3))* sqrt(MotionModel_class.dt) ;
             g_31 = 0 ;
-            g_32 = 0.5 * x(7) * (MotionModel_class.dt^0.5);
-            g_33 = 0.5 * x(4) * (MotionModel_class.dt^0.5) ;
-            g_34 = -1 * 0.5 * x(5) * (MotionModel_class.dt^0.5) ;
+            g_32 = 0.5 *(q3*R_gb(1,1) + q0*R_gb(2,1) - q1*R_gb(3,1))* sqrt(MotionModel_class.dt) ;
+            g_33 = 0.5 *(q3*R_gb(1,2) + q0*R_gb(2,2) - q1*R_gb(3,2))* sqrt(MotionModel_class.dt) ;
+            g_34 = 0.5 *(q3*R_gb(1,3) + q0*R_gb(2,3) - q1*R_gb(3,3))* sqrt(MotionModel_class.dt) ;
             g_41 = 0;
-            g_42 = -1 * 0.5 * x(6) * (MotionModel_class.dt^0.5);
-            g_43 = 0.5 * x(5) * (MotionModel_class.dt^0.5) ;
-            g_44 = 0.5 * x(4) * (MotionModel_class.dt^0.5);
+            g_42 = 0.5 *(-q2*R_gb(1,1) + q1*R_gb(2,1) + q0*R_gb(3,1))* sqrt(MotionModel_class.dt) ;
+            g_43 = 0.5 *(-q2*R_gb(1,2) + q1*R_gb(2,2) + q0*R_gb(3,2))* sqrt(MotionModel_class.dt) ;
+            g_44 = 0.5 *(-q2*R_gb(1,3) + q1*R_gb(2,3) + q0*R_gb(3,3))* sqrt(MotionModel_class.dt) ;
             G = [g_11 g_12 g_13 g_14; g_21 g_22 g_23 g_24; g_31 g_32 g_33 g_34; g_41 g_42 g_43 g_44];
             % Jacobian for linear part
             rot  = [x(4) , x(5) , x(6) , x(7)];% rotation state
@@ -317,11 +325,11 @@ classdef MotionModel_class < MotionModel_interface
             a_12 = 0;
             a_13 = 0;
             a_14 = 0;
-            a_21 = (2*qq(2)*qq(3)+qq(1)*qq(4))* (MotionModel_class.dt)^0.5;
+            a_21 = 2*(qq(2)*qq(3)+qq(1)*qq(4))* (MotionModel_class.dt)^0.5;
             a_22 = 0;
             a_23 = 0;
             a_24 = 0;
-            a_31 = (2*qq(2)*qq(4)-qq(1)*qq(3)) * (MotionModel_class.dt)^0.5; 
+            a_31 = 2*(qq(2)*qq(4)-qq(1)*qq(3)) * (MotionModel_class.dt)^0.5; 
             a_32 = 0;
             a_33 = 0;
             a_34 = 0;
@@ -355,7 +363,7 @@ classdef MotionModel_class < MotionModel_interface
             disp('Goal point is:');goal
             disp('Solving...');
             veh = MotionModel_class();
-            rrt = RRT3D([], veh, 'start', start, 'range', 5,'npoints',100,'speed',2,'time', MotionModel_class.dt);
+            rrt = RRT3D([], veh, 'start', start, 'range', 5,'npoints',2000,'speed',2,'time', MotionModel_class.dt);
             rrt.plan('goal',goal)   ;          % create navigation tree
             nominal_traj.x = [];
             nominal_traj.u = [];
@@ -437,7 +445,7 @@ classdef MotionModel_class < MotionModel_interface
                 return
             else
                 orbit = MotionModel_class.generate_orbit(orbit_center);
-                %orbit = MotionModel_class.draw_orbit(orbit);
+                orbit = MotionModel_class.draw_orbit(orbit);
             end
             disp('fix the orbit drawing above in aircraft_kinematic.m Line 440')
         end
@@ -471,11 +479,90 @@ classdef MotionModel_class < MotionModel_interface
             orbit.plot_handle = [];
         end
         
+                %% Draw an orbit
+        function orbit = draw_orbit(orbit,varargin)
+            % This function draws the orbit.
+            % default values
+            orbit_color = 'b'; % Default value for "OrbitTextColor" property. % User-provided value for "OrbitTextColor" property.
+            orbit_width = 2; % User-provided value for "orbit_width" property. % User-provided value for shifting the text a little bit to the left. % for some reason MATLAB shifts the starting point of the text a little bit to the right. So, here we return it back.
+            robot_shape = 'triangle'; % The shape of robot (to draw trajectories and to show direction of edges and orbits)
+            robot_size = 1; % Robot size on orbits (to draw trajectories and to show direction of edges and orbits)
+            orbit_trajectory_flag = 0; % Make it one if you want to see the orbit trajectories. Zero, otherwise.
+            text_size = 12;
+            text_color = 'b';
+            text_shift = 0.8;
+            orbit_text = [];
+            
+            % parsing the varargin
+            if ~isempty(varargin)
+                for i = 1 : 2 : length(varargin)
+                    switch lower(varargin{i})
+                        case lower('RobotSize')
+                            robot_size = varargin{i+1};
+                        case lower('OrbitWidth')
+                            orbit_width = varargin{i+1};
+                        case lower('OrbitColor')
+                            orbit_color = varargin{i+1};
+                        case lower('OrbitText')
+                            orbit_text = varargin{i+1};
+                    end
+                end
+            end
+            % start drawing
+            if orbit_trajectory_flag == 1
+                orbit.plot_handle = [];
+                for k=1:orbit.period
+                    Xstate = state(orbit.x(:,k));
+                    Xstate = Xstate.draw('RobotShape',robot_shape,'robotsize',robot_size);
+                    orbit.plot_handle = [orbit.plot_handle,Xstate.head_handle,Xstate.text_handle,Xstate.tria_handle];
+                end
+                tmp = plot(orbit.x(1,:) , orbit.x(2,:),orbit_color);
+                orbit.plot_handle = [orbit.plot_handle,tmp];
+            else
+                orbit.plot_handle = [];
+                th_orbit_draw = [0:0.1:2*pi , 2*pi];
+                x_orbit_draw = orbit.center.val(1) + orbit.radius*cos(th_orbit_draw);
+                y_orbit_draw = orbit.center.val(2) + orbit.radius*sin(th_orbit_draw);
+                z_orbit_draw = orbit.center.val(3)*ones(1,size(x_orbit_draw,2));
+                tmp_h = plot3(x_orbit_draw,y_orbit_draw,z_orbit_draw,'lineWidth',orbit_width);
+                Xstate = state(orbit.x(:,1));
+                Xstate = Xstate.draw('RobotShape',robot_shape,'robotsize',robot_size);
+                orbit.plot_handle = [orbit.plot_handle,tmp_h,Xstate.head_handle,Xstate.text_handle,Xstate.tria_handle];
+            end
+            
+            if ~isempty(orbit_text)
+                text_pos = orbit.center.val;
+                text_pos(1) = text_pos(1) - text_shift; % for some reason MATLAB shifts the starting point of the text a little bit to the right. So, here we return it back.
+                tmp_handle = text( text_pos(1), text_pos(2), orbit_text, 'fontsize', text_size, 'color', text_color);
+                orbit.plot_handle = [orbit.plot_handle,tmp_handle];
+            end
+                
+        end
         function YesNo = is_constraints_violated(open_loop_traj)
             error('not yet implemented');
         end
-        function traj_plot_handle = draw_nominal_traj(nominal_traj, varargin)
-            error('not yet implemented');
+        function traj_plot_handle = draw_nominal_traj(nominal_traj, traj_flag, varargin)
+            traj_plot_handle = [];
+            if traj_flag == 1
+                for k = 1 : size(nominal_traj.x , 2)
+                    tmp_Xstate = state (nominal_traj.x(:,k) );
+                    tmp_Xstate.draw('RobotShape','triangle','robotsize',1);%,'TriaColor',color(cycles));
+                    %traj_plot_handle(k:k+2) =
+                    %[tmp_Xstate.head_handle,tmp_Xstate.text_handle,tmp_Xstate.tria_handle];
+                end
+            else
+                tmp_handle = plot3(nominal_traj.x(1,:) , nominal_traj.x(2,:) , nominal_traj.x(3,:));
+                traj_plot_handle = [traj_plot_handle , tmp_handle];
+                len = size( nominal_traj.x , 2);
+                tmp_Xstate = state( nominal_traj.x(:,floor(len/2)) ); % to plot the direction of the line.
+%                 tmp_Xstate = tmp_Xstate.draw('RobotShape','triangle','robotsize',2);
+%                 traj_plot_handle = [traj_plot_handle , tmp_Xstate.plot_handle , tmp_Xstate.head_handle , tmp_Xstate.tria_handle , tmp_Xstate.text_handle ];
+                drawnow
+            end
+        end
+        function plot_handle = draw_orbit_neighborhood(orbit, scale)
+            % not implemented yet
+            plot_handle = [];
         end
     end
 end
