@@ -215,7 +215,7 @@ par_new.No_plot = 1; % this is for plots in construction phase. The execution ph
 
 par_new.PRM_parameters.neighboring_distance_threshold = 15*1.5*10; %* 1.25 * 1000;% * 0.3;
 par_new.PRM_parameters.PRM_node_text = 1; % if this is one, the number of nodes will be written on the figure.
-par_new.PRM_parameters.PRM_node_plot_properties =  {'RobotShape','triangle','robotSize',2};% {'RobotShape','triangle','robotSize',2};
+par_new.PRM_parameters.PRM_node_plot_properties =  {'RobotShape','triangle','robotSize',0.2};% {'RobotShape','triangle','robotSize',2};
 par_new.PRM_parameters.draw_edges_flag = 1;
 
 % =========== Orbit parameters

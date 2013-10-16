@@ -68,9 +68,13 @@ classdef state < state_interface
             end
             x=obj.val;
             obj.head_handle = plot3(x(1),x(2),x(3),'Marker',head_shape,'MarkerSize',head_size,'MarkerEdgeColor',head_color,'MarkerFaceColor',head_color);
-            vertices_x=[0,-robot_size,-robot_size,0];
-            vertices_y=[0,-robot_size/5,robot_size/5,0];
-            vertices_z=[0,0,0,0];
+            robot_size = 0.4;
+%             vertices_x=[0,-robot_size,-robot_size,0];
+%             vertices_y=[0,-robot_size/5,robot_size/5,0];
+%             vertices_z=[0,0,0,0];
+            vertices_x=[0,-robot_size,-robot_size,-robot_size,-robot_size/2,-robot_size,-robot_size,0];
+            vertices_y=[0,-robot_size/5,0,0,0,0,robot_size/5,0];
+            vertices_z=[0,0,0,robot_size/10,0,0,0,0];
             
             q_rot = Quaternion(x(4:7)); % rotation quaternion
             q_rot = unit(q_rot);% making a normalized quarternion, dont use quatnormalize

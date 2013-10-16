@@ -1,17 +1,17 @@
 %% Class Definition
 classdef MotionModel_class < MotionModel_interface
     properties (Constant = true)
-        stDim = state.dim; % state dimension
+        stDim = 7;%state.dim; % state dimension
         ctDim = 4;  % control vector dimension
         wDim = 4;   % Process noise (W) dimension  % For the generality we also consider the additive noise on kinematics equation (3 dimension), but it most probably will set to zero. The main noise is a 2 dimensional noise which is added to the controls.
-        dt = 0.3;
+        dt = 0.1;
         % base_length = user_data_class.par.motion_model_parameters.base_length;  % distance between robot's rear wheels.
-        sigma_b_u = user_data_class.par.motion_model_parameters.sigma_b_u_aircraft ;
-        eta_u = user_data_class.par.motion_model_parameters.eta_u_aircraft ;
+        sigma_b_u = [0.02 ; 0.01 ; 0.01 ; 0.01];%user_data_class.par.motion_model_parameters.sigma_b_u_aircraft ;
+        eta_u = [0.02 ; 0.01 ; 0.01 ; 0.01];%user_data_class.par.motion_model_parameters.eta_u_aircraft ;
         P_Wg = user_data_class.par.motion_model_parameters.P_Wg;
-        Max_Roll_Rate = deg2rad(45); % try 45
+        Max_Roll_Rate = deg2rad(20); % try 45
         Max_Pitch_Rate = deg2rad(45);% try 45
-        Max_Yaw_Rate = deg2rad(45);% try 45
+        Max_Yaw_Rate = deg2rad(20);% try 45
         Max_Velocity = 1.5; % m/s
         Min_Velocity = 0.5;% m/s
         zeroNoise = zeros(MotionModel_class.wDim,1);
@@ -363,7 +363,7 @@ classdef MotionModel_class < MotionModel_interface
             disp('Goal point is:');goal
             disp('Solving...');
             veh = MotionModel_class();
-            rrt = RRT3D([], veh, 'start', start, 'range', 5,'npoints',2000,'speed',2,'time', MotionModel_class.dt);
+            rrt = RRT3D([], veh, 'start', start, 'range', 5,'npoints',500,'speed',2,'time', MotionModel_class.dt);
             rrt.plan('goal',goal)   ;          % create navigation tree
             nominal_traj.x = [];
             nominal_traj.u = [];
