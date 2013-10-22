@@ -6,8 +6,8 @@ classdef MotionModel_class < MotionModel_interface
         wDim = 4;   % Process noise (W) dimension  % For the generality we also consider the additive noise on kinematics equation (3 dimension), but it most probably will set to zero. The main noise is a 2 dimensional noise which is added to the controls.
         dt = 0.1;
         % base_length = user_data_class.par.motion_model_parameters.base_length;  % distance between robot's rear wheels.
-        sigma_b_u = [0.02 ; 0.01 ; 0.01 ; 0.01];%user_data_class.par.motion_model_parameters.sigma_b_u_aircraft ;
-        eta_u = [0.02 ; 0.01 ; 0.01 ; 0.01];%user_data_class.par.motion_model_parameters.eta_u_aircraft ;
+        sigma_b_u = [0.01 ; 0.001 ; 0.001 ; 0.001];%user_data_class.par.motion_model_parameters.sigma_b_u_aircraft ;
+        eta_u = [0.01 ; 0.001 ; 0.001 ; 0.001];%user_data_class.par.motion_model_parameters.eta_u_aircraft ;
         P_Wg = user_data_class.par.motion_model_parameters.P_Wg;
         Max_Roll_Rate = deg2rad(20); % try 45
         Max_Pitch_Rate = deg2rad(90);% try 45
@@ -76,27 +76,24 @@ classdef MotionModel_class < MotionModel_interface
             w_linear_ground = p * [w(1); 0 ; 0];
             x_next_pos = pos + MotionModel_class.dt * (u_linear_ground) + ((MotionModel_class.dt^0.5) * w_linear_ground);
 
-            u_angular_ground = p * [u(2); u(3); u(4)];
-            u_angular_ground = [0 ;u_angular_ground(1); u_angular_ground(2); u_angular_ground(3)];
-            w_angular_ground = p * [w(2); w(3); w(4)];
-            w_angular_ground = [0 ; w_angular_ground(1); w_angular_ground(2); w_angular_ground(3)];
-            dq_dt = [x(4), -x(5),  -x(6), -x(7);
-                 x(5),  x(4)  , -x(7), x(6);
-                 x(6) , x(7)  , x(4),  -x(5);
-                 x(7) , -x(6),  x(5) ,  x(4)];
-            
-            time_control = [0.5* MotionModel_class.dt 0 0 0;
-                   0  0.5* MotionModel_class.dt 0 0 ;
-                   0 0 0.5* MotionModel_class.dt 0 ;
-                   0 0 0 0.5* MotionModel_class.dt];
-            time_noise = [ 0.5 * (MotionModel_class.dt^ 0.5) 0 0 0;
-                     0 0.5 * (MotionModel_class.dt^ 0.5) 0 0 ;
-                     0 0 0.5 * (MotionModel_class.dt^ 0.5) 0;
-                     0 0 0 0.5 * (MotionModel_class.dt^ 0.5)];
-            a_con = time_control * dq_dt;
-            a_noi = time_noise * dq_dt;
-            control = a_con * u_angular_ground;
-            noise = a_noi * w_angular_ground;
+            u_angular_ground = [u(2); u(3); u(4)];%p * [u(2); u(3); u(4)];
+            u_angular_ground = [u_angular_ground(1); u_angular_ground(2); u_angular_ground(3)];
+            w_angular_ground = [w(2); w(3); w(4)]; % p * [w(2); w(3); w(4)]
+            w_angular_ground = [w_angular_ground(1); w_angular_ground(2); w_angular_ground(3)];
+%             q0 = x(4);
+%             q1 = x(5);
+%             q2 = x(6);
+%             q3 = x(7);
+            Amat = [-x(5),  -x(6), -x(7);
+                      x(4)  , -x(7), x(6);
+                     x(7)  , x(4),  -x(5);
+                     -x(6),  x(5) ,  x(4)];
+                 
+            dq_dt_u = 0.5*Amat*u_angular_ground;
+            dq_dt_w = 0.5*Amat*w_angular_ground;
+             
+            control = dq_dt_u * MotionModel_class.dt;
+            noise = dq_dt_w * MotionModel_class.dt^0.5;
             x_next_rot = rot + control + noise;
             q_next = unit(x_next_rot); % Make a unit quaternion
             
@@ -139,10 +136,10 @@ classdef MotionModel_class < MotionModel_interface
             q_rot = unit(q_rot);% making a normalized quarternion
             p = q_rot.R;
             u_angular = [u(2); u(3); u(4)];
-            t3 = p * u_angular;
+            t3 = u_angular; % p * u_angular;
             u_angular_ground = [0 ;t3(1); t3(2); t3(3)];
             w_angular = [w(2); w(3); w(4)];
-            t4 = p * w_angular;
+            t4 = w_angular; % p * w_angular;
             w_angular_ground = [0 ; t4(1); t4(2); t4(3)];
             a_11 = 1 + 0.5 * 0 * MotionModel_class.dt + 0.5 * 0 * (MotionModel_class.dt)^0.5;
             a_12 = 0 - 0.5 * t3(1) * MotionModel_class.dt - 0.5 * t4(1) * (MotionModel_class.dt)^0.5;
@@ -247,21 +244,21 @@ classdef MotionModel_class < MotionModel_interface
             q3 = qq(4);
             
             b_11 = 0;
-            b_12 = 0.5 *(-q1*R_gb(1,1) - q2*R_gb(2,1) - q3*R_gb(3,1))* MotionModel_class.dt ;
-            b_13 = 0.5 *(-q1*R_gb(1,2) - q2*R_gb(2,2) - q3*R_gb(3,2))* MotionModel_class.dt ;
-            b_14 = 0.5 *(-q1*R_gb(1,3) - q2*R_gb(2,3) - q3*R_gb(3,3))* MotionModel_class.dt ;
+            b_12 = 0.5 *(-q1)* MotionModel_class.dt ;
+            b_13 = 0.5 *(-q2)* MotionModel_class.dt ;
+            b_14 = 0.5 *(-q3)* MotionModel_class.dt ;
             b_21 = 0 ;
-            b_22 = 0.5 *(q0*R_gb(1,1) - q3*R_gb(2,1) + q2*R_gb(3,1))* MotionModel_class.dt ;
-            b_23 = 0.5 *(q0*R_gb(1,2) - q3*R_gb(2,2) + q2*R_gb(3,2))* MotionModel_class.dt ;
-            b_24 = 0.5 *(q0*R_gb(1,3) - q3*R_gb(2,3) + q2*R_gb(3,3))* MotionModel_class.dt ;
+            b_22 = 0.5 *(q0)* MotionModel_class.dt ;
+            b_23 = 0.5 *(-q3)* MotionModel_class.dt ;
+            b_24 = 0.5 *(q2)* MotionModel_class.dt ;
             b_31 = 0 ;
-            b_32 = 0.5 *(q3*R_gb(1,1) + q0*R_gb(2,1) - q1*R_gb(3,1))* MotionModel_class.dt ;
-            b_33 = 0.5 *(q3*R_gb(1,2) + q0*R_gb(2,2) - q1*R_gb(3,2))* MotionModel_class.dt ;
-            b_34 = 0.5 *(q3*R_gb(1,3) + q0*R_gb(2,3) - q1*R_gb(3,3))* MotionModel_class.dt ;
+            b_32 = 0.5 *(q3)* MotionModel_class.dt ;
+            b_33 = 0.5 *(q0)* MotionModel_class.dt ;
+            b_34 = 0.5 *(-q1)* MotionModel_class.dt ;
             b_41 = 0;
-            b_42 = 0.5 *(-q2*R_gb(1,1) + q1*R_gb(2,1) + q0*R_gb(3,1))* MotionModel_class.dt ;
-            b_43 = 0.5 *(-q2*R_gb(1,2) + q1*R_gb(2,2) + q0*R_gb(3,2))* MotionModel_class.dt ;
-            b_44 = 0.5 *(-q2*R_gb(1,3) + q1*R_gb(2,3) + q0*R_gb(3,3))* MotionModel_class.dt ;
+            b_42 = 0.5 *(-q2)* MotionModel_class.dt ;
+            b_43 = 0.5 *(q1)* MotionModel_class.dt ;
+            b_44 = 0.5 *(q0)* MotionModel_class.dt ;
             B = [b_11 b_12 b_13 b_14; b_21 b_22 b_23 b_24; b_31 b_32 b_33 b_34; b_41 b_42 b_43 b_44];
             % Jacobian calc for linear part
             a_11 = (qq(1)^2+qq(2)^2-qq(3)^2-qq(4)^2) * MotionModel_class.dt ;
@@ -295,21 +292,21 @@ classdef MotionModel_class < MotionModel_interface
             q3 = qq(4);
             
             g_11 = 0;
-            g_12 = 0.5 *(-q1*R_gb(1,1) - q2*R_gb(2,1) - q3*R_gb(3,1))* sqrt(MotionModel_class.dt) ;
-            g_13 = 0.5 *(-q1*R_gb(1,2) - q2*R_gb(2,2) - q3*R_gb(3,2))* sqrt(MotionModel_class.dt) ;
-            g_14 = 0.5 *(-q1*R_gb(1,3) - q2*R_gb(2,3) - q3*R_gb(3,3))* sqrt(MotionModel_class.dt) ;
+            g_12 = 0.5 *(-q1)* sqrt(MotionModel_class.dt) ;
+            g_13 = 0.5 *(-q2)* sqrt(MotionModel_class.dt) ;
+            g_14 = 0.5 *(-q3)* sqrt(MotionModel_class.dt) ;
             g_21 = 0 ;
-            g_22 = 0.5 *(q0*R_gb(1,1) - q3*R_gb(2,1) + q2*R_gb(3,1))* sqrt(MotionModel_class.dt);
-            g_23 = 0.5 *(q0*R_gb(1,2) - q3*R_gb(2,2) + q2*R_gb(3,2))* sqrt(MotionModel_class.dt);
-            g_24 = 0.5 *(q0*R_gb(1,3) - q3*R_gb(2,3) + q2*R_gb(3,3))* sqrt(MotionModel_class.dt) ;
+            g_22 = 0.5 *(q0)* sqrt(MotionModel_class.dt);
+            g_23 = 0.5 *(-q3)* sqrt(MotionModel_class.dt);
+            g_24 = 0.5 *(q2)* sqrt(MotionModel_class.dt) ;
             g_31 = 0 ;
-            g_32 = 0.5 *(q3*R_gb(1,1) + q0*R_gb(2,1) - q1*R_gb(3,1))* sqrt(MotionModel_class.dt) ;
-            g_33 = 0.5 *(q3*R_gb(1,2) + q0*R_gb(2,2) - q1*R_gb(3,2))* sqrt(MotionModel_class.dt) ;
-            g_34 = 0.5 *(q3*R_gb(1,3) + q0*R_gb(2,3) - q1*R_gb(3,3))* sqrt(MotionModel_class.dt) ;
+            g_32 = 0.5 *(q3)* sqrt(MotionModel_class.dt) ;
+            g_33 = 0.5 *(q0)* sqrt(MotionModel_class.dt) ;
+            g_34 = 0.5 *(-q1)* sqrt(MotionModel_class.dt) ;
             g_41 = 0;
-            g_42 = 0.5 *(-q2*R_gb(1,1) + q1*R_gb(2,1) + q0*R_gb(3,1))* sqrt(MotionModel_class.dt) ;
-            g_43 = 0.5 *(-q2*R_gb(1,2) + q1*R_gb(2,2) + q0*R_gb(3,2))* sqrt(MotionModel_class.dt) ;
-            g_44 = 0.5 *(-q2*R_gb(1,3) + q1*R_gb(2,3) + q0*R_gb(3,3))* sqrt(MotionModel_class.dt) ;
+            g_42 = 0.5 *(-q2)* sqrt(MotionModel_class.dt) ;
+            g_43 = 0.5 *(q1)* sqrt(MotionModel_class.dt) ;
+            g_44 = 0.5 *(q0)* sqrt(MotionModel_class.dt) ;
             G = [g_11 g_12 g_13 g_14; g_21 g_22 g_23 g_24; g_31 g_32 g_33 g_34; g_41 g_42 g_43 g_44];
             % Jacobian for linear part
             rot  = [x(4) , x(5) , x(6) , x(7)];% rotation state
