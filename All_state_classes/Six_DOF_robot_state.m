@@ -189,8 +189,8 @@ classdef Six_DOF_robot_state < state_interface
                         [xrange(1) yrange(1) zrange(1)];
                     
                     yaw = rand*2*pi;
-                    pitch = rand*2*pi;
-                    roll =  rand*2*pi;
+                    pitch = -pi/2 + rand*pi;
+                    roll =  -pi/2 + rand*pi;
                     quat = angle2quat(yaw,pitch,roll);
                     sampled_state = state([x , y , xyz(3), quat]');
                 end

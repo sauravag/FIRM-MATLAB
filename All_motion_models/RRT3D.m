@@ -250,7 +250,7 @@ classdef RRT3D < Navigation
                 % Step 5
                 % figure how to drive the robot from xnear to xrand
                 
-                ntrials = 50;% Try 75
+                ntrials = 75;% Try 75
                 
                 best = RRT3D.bestpath(xnear, xrand, ntrials);
                 
@@ -427,9 +427,9 @@ classdef RRT3D < Navigation
                 %                     vel = -RRT3D.speed;
                 %                 end
                 vel = RRT3D.vehicle.Min_Velocity + abs((2*RRT3D.rand - 1)*(RRT3D.vehicle.Max_Velocity - RRT3D.vehicle.Min_Velocity));
-                roll_rate = 0;%(2*RRT3D.rand - 1) * RRT3D.vehicle.Max_Roll_Rate;
+                roll_rate = (2*RRT3D.rand - 1) * RRT3D.vehicle.Max_Roll_Rate;
                 pitch_rate = (2*RRT3D.rand - 1) * RRT3D.vehicle.Max_Pitch_Rate;
-                yaw_rate = 0;%(2*RRT3D.rand - 1) * RRT3D.vehicle.Max_Yaw_Rate;
+                yaw_rate = (2*RRT3D.rand - 1) * RRT3D.vehicle.Max_Yaw_Rate;
                 
                 u = [vel,roll_rate, pitch_rate, yaw_rate];
                 w = [0,0,0,0];

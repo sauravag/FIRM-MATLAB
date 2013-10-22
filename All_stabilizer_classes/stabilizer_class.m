@@ -35,7 +35,7 @@ classdef stabilizer_class < Stabilizer_interface
         function [seq_of_PHb, seq_of_GHb, target_reaching_probabilities] = construct_seq_of_Hb(obj,initial_PHb, initial_GHb) %#ok<INUSD>
             if ~user_data_class.par.No_plot
                 % Zoom in to the node area in the figure
-                old_zoom = obj.zoom_in();
+%                 old_zoom = obj.zoom_in();
                 xlabel(['Orbit stabilizer',num2str(obj.stabilizer_number),' is working ...']);
             end
             disp(['Orbit stabilizer',num2str(obj.stabilizer_number),' is working ...'])

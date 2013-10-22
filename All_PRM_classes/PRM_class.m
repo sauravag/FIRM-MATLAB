@@ -51,16 +51,14 @@ classdef PRM_class < PRM_interface
             % drawing orbits and orbit numbers
             for i = 1:obj.num_orbits
                 orbit_plot_varargin = {'OrbitText', num2str(i)};
-%                 obj.orbits(i) = MotionModel_class.draw_orbit(obj.orbits(i), orbit_plot_varargin{:});  % the plot_handle of the orbit is saved as a filed of orbit itself.
-disp('uncomment the above line in Orbittt_PRM_class')                
+                obj.orbits(i) = MotionModel_class.draw_orbit(obj.orbits(i), orbit_plot_varargin{:});  % the plot_handle of the orbit is saved as a filed of orbit itself.
             end
             
             % drawing orbit_edges
             for i = 1 : size(obj.orbit_edges_trajectory,1)
                 for j = 1 : size(obj.orbit_edges_trajectory,2)
                     if ~isempty(obj.orbit_edges_trajectory(i,j).x)
-%                         traj_plot_handle = MotionModel_class. draw_nominal_traj(obj.orbit_edges_trajectory(i,j), node_to_orbit_trajectories_flag);
-disp('uncomment the above line in Orbittt_PRM_class')
+                        traj_plot_handle = MotionModel_class.draw_nominal_traj(obj.orbit_edges_trajectory(i,j), node_to_orbit_trajectories_flag);
                     end
                 end
             end

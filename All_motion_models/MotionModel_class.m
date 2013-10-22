@@ -10,18 +10,13 @@ classdef MotionModel_class < MotionModel_interface
         eta_u = [0.02 ; 0.01 ; 0.01 ; 0.01];%user_data_class.par.motion_model_parameters.eta_u_aircraft ;
         P_Wg = user_data_class.par.motion_model_parameters.P_Wg;
         Max_Roll_Rate = deg2rad(20); % try 45
-        Max_Pitch_Rate = deg2rad(45);% try 45
-        Max_Yaw_Rate = deg2rad(20);% try 45
-        Max_Velocity = 1.5; % m/s
-        Min_Velocity = 0.5;% m/s
+        Max_Pitch_Rate = deg2rad(90);% try 45
+        Max_Yaw_Rate = deg2rad(45);% try 45
+        Max_Velocity = 1.2; % m/s
+        Min_Velocity = 0.3;% m/s
         zeroNoise = zeros(MotionModel_class.wDim,1);
-    end
-    
-    properties (Constant = true) % orbit-related properties
-        turn_radius_min = 1.5*0.1; % indeed we need to define the minimum linear velocity in turnings (on orbits) and then find the minimum radius accordingly. But, we picked the more intuitive way.
-        angular_velocity_max = deg2rad(45); % degree per second (converted to radian per second)
-        linear_velocity_min_on_orbit = Unicycle_robot.turn_radius_min*Unicycle_robot.angular_velocity_max; % note that on the straight line the minimum velocity can go to zero. But, in turnings (on orbit) the linear velocity cannot fall below this value.
-        linear_velocity_max =1.5;
+       turn_radius_min = MotionModel_class.Min_Velocity/MotionModel_class.Max_Yaw_Rate; % indeed we need to define the minimum linear velocity in turnings (on orbits) and then find the minimum radius accordingly. But, we picked the more intuitive way.
+
     end
     
     %% Methods
@@ -252,9 +247,9 @@ classdef MotionModel_class < MotionModel_interface
             q3 = qq(4);
             
             b_11 = 0;
-            b_12 = 0.5 *(-q1*R_gb(1,1) - q2*R_gb(2,1) + q3*R_gb(3,1))* MotionModel_class.dt ;
-            b_13 = 0.5 *(-q1*R_gb(1,2) - q2*R_gb(2,2) + q3*R_gb(3,2))* MotionModel_class.dt ;
-            b_14 = 0.5 *(-q1*R_gb(1,3) - q2*R_gb(2,3) + q3*R_gb(3,3))* MotionModel_class.dt ;
+            b_12 = 0.5 *(-q1*R_gb(1,1) - q2*R_gb(2,1) - q3*R_gb(3,1))* MotionModel_class.dt ;
+            b_13 = 0.5 *(-q1*R_gb(1,2) - q2*R_gb(2,2) - q3*R_gb(3,2))* MotionModel_class.dt ;
+            b_14 = 0.5 *(-q1*R_gb(1,3) - q2*R_gb(2,3) - q3*R_gb(3,3))* MotionModel_class.dt ;
             b_21 = 0 ;
             b_22 = 0.5 *(q0*R_gb(1,1) - q3*R_gb(2,1) + q2*R_gb(3,1))* MotionModel_class.dt ;
             b_23 = 0.5 *(q0*R_gb(1,2) - q3*R_gb(2,2) + q2*R_gb(3,2))* MotionModel_class.dt ;
@@ -300,9 +295,9 @@ classdef MotionModel_class < MotionModel_interface
             q3 = qq(4);
             
             g_11 = 0;
-            g_12 = 0.5 *(-q1*R_gb(1,1) - q2*R_gb(2,1) + q3*R_gb(3,1))* sqrt(MotionModel_class.dt) ;
-            g_13 = 0.5 *(-q1*R_gb(1,2) - q2*R_gb(2,2) + q3*R_gb(3,2))* sqrt(MotionModel_class.dt) ;
-            g_14 = 0.5 *(-q1*R_gb(1,3) - q2*R_gb(2,3) + q3*R_gb(3,3))* sqrt(MotionModel_class.dt) ;
+            g_12 = 0.5 *(-q1*R_gb(1,1) - q2*R_gb(2,1) - q3*R_gb(3,1))* sqrt(MotionModel_class.dt) ;
+            g_13 = 0.5 *(-q1*R_gb(1,2) - q2*R_gb(2,2) - q3*R_gb(3,2))* sqrt(MotionModel_class.dt) ;
+            g_14 = 0.5 *(-q1*R_gb(1,3) - q2*R_gb(2,3) - q3*R_gb(3,3))* sqrt(MotionModel_class.dt) ;
             g_21 = 0 ;
             g_22 = 0.5 *(q0*R_gb(1,1) - q3*R_gb(2,1) + q2*R_gb(3,1))* sqrt(MotionModel_class.dt);
             g_23 = 0.5 *(q0*R_gb(1,2) - q3*R_gb(2,2) + q2*R_gb(3,2))* sqrt(MotionModel_class.dt);
@@ -456,15 +451,15 @@ classdef MotionModel_class < MotionModel_interface
             % that the linear velocity is constant.
             orbit.radius = MotionModel_class.turn_radius_min;
             orbit_length_meter = 2*pi*orbit.radius;
-            orbit_length_time_continuous = orbit_length_meter/MotionModel_class.linear_velocity_min_on_orbit;
+            orbit_length_time_continuous = orbit_length_meter/MotionModel_class.Min_Velocity;
             T_rational = orbit_length_time_continuous/MotionModel_class.dt;
             T = ceil(T_rational);
             orbit.period = T;
             orbit.center = orbit_center;
             
             % defining controls on the orbit
-            V_p = MotionModel_class.linear_velocity_min_on_orbit * [ones(1,T-1) , T_rational-floor(T_rational)]; % we traverse the orbit with minimum linear velocity
-            omega_p = MotionModel_class.angular_velocity_max * [ones(1,T-1) , T_rational-floor(T_rational)]; % we traverse the orbit with maximum angular velocity
+            V_p = MotionModel_class.Min_Velocity * [ones(1,T-1) , T_rational-floor(T_rational)]; % we traverse the orbit with minimum linear velocity
+            omega_p = MotionModel_class.Max_Yaw_Rate * [ones(1,T-1) , T_rational-floor(T_rational)]; % we traverse the orbit with maximum angular velocity
             u_p = [V_p;zeros(1,T);zeros(1,T);omega_p];
             w_zero = MotionModel_class.zeroNoise; % no noise
             

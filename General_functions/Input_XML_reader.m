@@ -209,7 +209,7 @@ par_new.alpha_for_HBRM_cost = [0.01,0.1,1]; % respectively, corresponding to "st
 %=========== Roadmap Type and Construction
 par_new.RoadMap = 'FIRM'; % This parameter can be HBRM or FIRM
 par_new.No_history = 1;
-par_new.No_plot = 1; % this is for plots in construction phase. The execution phase plots are different.
+par_new.No_plot = 0; % this is for plots in construction phase. The execution phase plots are different.
 
 %=========== PRM parameters
 
@@ -319,9 +319,9 @@ elseif strcmpi(selected_motion_model,'FixedWing Aircraft')
     state_parameters.sup_norm_weights_nonNormalized = ones(state_parameters.stateDim , 1); 
     disp('state norm for aircraft model needs to be fixed')
     motion_model_parameters.controlDim = 4;
-    motion_model_parameters.eta_u_aircraft = [0.02 ; 0.01 ; 0.01 ; 0.01];  
-    motion_model_parameters.sigma_b_u_aircraft = [0.02 ; 0.01 ; 0.01 ; 0.01];  
-    P_rootsqaure_Wg_diags = [0.2 ; 0.2 ; 0.2 ; 0.001 ; 0.001 ; 0.001 ; 0.001];
+    motion_model_parameters.eta_u_aircraft = [0.0002 ; 0.0001 ; 0.0001 ; 0.0001];  
+    motion_model_parameters.sigma_b_u_aircraft = [0.0002 ; 0.0001 ; 0.0001 ; 0.0001];  
+    P_rootsqaure_Wg_diags = [0.0002 ; 0.0002 ; 0.0002 ; 0.0001 ; 0.0001 ; 0.0001 ; 0.0001];
     motion_model_parameters.P_Wg = diag(P_rootsqaure_Wg_diags.^2);
 else
     error('SFMP algorithm: The selected motion model does not match with the existing database');
