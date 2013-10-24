@@ -67,7 +67,7 @@ classdef stabilizer_class < Stabilizer_interface
                     if obj.par.draw_cov_centered_on_nominal == 1 % in this case, we do NOT draw estimation covariance centered at estimation mean. BUT we draw estimation covariance centered at nominal state locations, to illustrate the covariance convergence.
                         T = obj.PRM_orbit.period;
                         cyclic_kPlus1 = mod(k+1,T)+(T*(mod(k+1,T)==0));
-                        nominal_x = state(obj.controller.lnr_pts_periodic(cyclic_kPlus1).x);
+                        nominal_x = state(obj.controller.lnr_pts(cyclic_kPlus1).x);
                         seq_of_PHb(k+1) = seq_of_PHb(k+1).draw_CovOnNominal(nominal_x , 'robotshape','triangle','XgtriaColor','g','XestTriaColor','r','XgColor','g','XestColor','r');
                         seq_of_PHb(k) = seq_of_PHb(k).delete_plot();
                     else  % This is the normal case, where we draw the estimation covariance centered at estimation mean.

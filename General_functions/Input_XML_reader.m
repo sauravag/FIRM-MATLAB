@@ -177,7 +177,7 @@ par_new.stabilizer_parameters.max_stopping_time = 250;
 par_new.stabilizer_parameters.draw_cov_centered_on_nominal = 1;
 
 %=========== MonteCarlo Simulation
-par_new.par_n = 2; % number of particles
+par_new.par_n = 1; % number of particles
 
 %=========== (LQR design) Node and Edge controller
 LQR_cost_coef=[0.03*0.1 , 0.03*0.1 , 0.1];  % first entry is the "final state cost coeff". The second is the "state cost coeff", and the third is the "control cost coeff".
@@ -319,6 +319,7 @@ elseif strcmpi(selected_motion_model,'FixedWing Aircraft')
     state_parameters.sup_norm_weights_nonNormalized = ones(state_parameters.stateDim , 1); 
     disp('state norm for aircraft model needs to be fixed')
     motion_model_parameters.controlDim = 4;
+    motion_model_parameters.dt = 0.1;
     motion_model_parameters.eta_u_aircraft = [0.0002 ; 0.0001 ; 0.0001 ; 0.0001];  
     motion_model_parameters.sigma_b_u_aircraft = [0.0002 ; 0.0001 ; 0.0001 ; 0.0001];  
     P_rootsqaure_Wg_diags = [0.0002 ; 0.0002 ; 0.0002 ; 0.0001 ; 0.0001 ; 0.0001 ; 0.0001];

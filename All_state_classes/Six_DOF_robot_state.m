@@ -19,13 +19,17 @@ classdef Six_DOF_robot_state < state_interface
         function signed_dist_vector = signed_element_wise_dist(obj,x2) % this function returns the "Signed element-wise distance" between two states x1 and x2
              x1 = obj.val; % retrieve the value of the state vector
              if isa(x2,'state'), x2=x2.val; end % retrieve the value of the state vector
-             linear_distance = x1(1:3,1) - x2(1:3,1) ; % [X1-X2, Y1-Y2, Z1-Z2]'
-             %The relative quaternion so to speak 
-             % q_rel = q_current * inv(q_nominal)
-             q_1 = [x1(4) x1(5) x1(6) x1(7)];
-             q_2 = [x2(4) x2(5) x2(6) x2(7)];
-             q21 = quatmultiply(q_1,quatinv(q_2)); % relative rotation quaternion from nominal to current
-             signed_dist_vector = [linear_distance;q21'];
+             signed_dist_vector = x1 - x2; % [X1-X2, Y1-Y2, Z1-Z2]'
+             qnorm = norm(signed_dist_vector(4:7));
+             signed_dist_vector = [signed_dist_vector(1:3);signed_dist_vector(4:7)/qnorm];
+             
+%              linear_distance = x1(1:3,1) - x2(1:3,1) ; % [X1-X2, Y1-Y2, Z1-Z2]'
+%              %The relative quaternion so to speak 
+%              % q_rel = q_current * inv(q_nominal)
+%              q_1 = [x1(4) x1(5) x1(6) x1(7)];
+%              q_2 = [x2(4) x2(5) x2(6) x2(7)];
+%              q21 = quatmultiply(q_1,quatinv(q_2)); % relative rotation quaternion from nominal to current
+%              signed_dist_vector = [linear_distance;q21'];
         end
         function obj = draw(obj, varargin)
             % The full list of properties for this function is:
