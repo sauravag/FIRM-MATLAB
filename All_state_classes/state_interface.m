@@ -27,6 +27,17 @@ classdef state_interface
                 error('The state dimension is not correct')
             end
         end
+        function obj = apply_differentiable_constraints(obj)
+            % normally this function is empty. If the state has any
+            % differentiable constraints (e.g., quaternion norm is one),
+            % this function needs to be written specifically in the child class.
+        end
+        function J = get_differentiable_constraints_jacobian(obj)
+            % normally this function is empty. If the state has any
+            % differentiable constraints (e.g., quaternion norm is one),
+            % this function needs to be written specifically in the child class.
+            J = nan;
+        end
     end
     
     methods (Abstract)

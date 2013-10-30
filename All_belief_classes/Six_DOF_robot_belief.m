@@ -59,5 +59,10 @@ classdef Six_DOF_robot_belief < belief_interface
 %                 set(gca,'NextPlot',tmp);
             end
         end
+        function obj = apply_differentiable_constraints(obj)
+            obj.est_mean = obj.est_mean.apply_differentiable_constraints();
+            constraint_Jacobian = obj.est_mean.get_differentiable_constraints_jacobian();
+            obj.est_cov = constraint_Jacobian*obj.est_cov*constraint_Jacobian';
+        end
     end
 end

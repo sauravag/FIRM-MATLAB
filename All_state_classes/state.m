@@ -175,6 +175,15 @@ classdef state < state_interface
             new_ylim = new_center(2) + [-new_y_length,new_y_length]/2;
             axis([new_xlim,new_ylim])
         end
+        function obj = apply_differentiable_constraints(obj)
+            obj.val(4:7) = obj.val(4:7)/norm(obj.val(4:7));
+        end
+        function J = get_differentiable_constraints_jacobian(obj)
+            q = obj.val(4:7);
+            nq = norm(q);
+            Jq = -nq^(-3)*(q*q')+nq^(-1)*eye(4);
+            J = blkdiag(eye(3),Jq);
+        end
     end
     
     methods (Static)
