@@ -21,7 +21,9 @@ classdef state < state_interface
              if isa(x2,'state'), x2=x2.val; end % retrieve the value of the state vector
              signed_dist_vector = x1 - x2; % [X1-X2, Y1-Y2, Z1-Z2]'
              qnorm = norm(signed_dist_vector(4:7));
-             signed_dist_vector = [signed_dist_vector(1:3);signed_dist_vector(4:7)/qnorm];
+             if qnorm ~= 0
+                 signed_dist_vector = [signed_dist_vector(1:3);signed_dist_vector(4:7)/qnorm];
+             end
              
 %              linear_distance = x1(1:3,1) - x2(1:3,1) ; % [X1-X2, Y1-Y2, Z1-Z2]'
 %              %The relative quaternion so to speak 
@@ -176,7 +178,10 @@ classdef state < state_interface
             axis([new_xlim,new_ylim])
         end
         function obj = apply_differentiable_constraints(obj)
-            obj.val(4:7) = obj.val(4:7)/norm(obj.val(4:7));
+            qnorm = norm(obj.val(4:7));
+            if qnorm ~=0
+                obj.val(4:7) = obj.val(4:7)/qnorm;
+            end
         end
         function J = get_differentiable_constraints_jacobian(obj)
             q = obj.val(4:7);
