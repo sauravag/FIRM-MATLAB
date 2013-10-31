@@ -1,6 +1,20 @@
 classdef PRM_class < PRM_interface
-    %Point_PRM_class encapsulates the Probabilistic RoadMap class
-  
+    
+    properties
+        num_orbits = 0; % this variable needs to be initialized to zero here.
+        orbits;
+        orbit_edges_trajectory;  % The edge trajectories that connect orbits to orbits
+        corresponding_orbit; % i-th element of this property is the number of orbit on which the i-th node lies.
+        orbit_edges_list = []; % This needs to go to the "private properties" section ASAP.
+    end
+    
+    properties (Access = private)
+        edges_traj_handle = []; % plot handle for edge trajectories (note that edge trajectory can be different from the edge itself, whose plot handle is "edges_plot_handle", due to the discretization errors)
+        num_2Dnodes;
+        nodes_2D;
+        orbit_edges_matrix;
+        max_number_of_orbits = 50;
+    end
     
     properties (Access = private)
         % following properties are defined as the abstract properties in the
@@ -8,38 +22,19 @@ classdef PRM_class < PRM_interface
         % inherited, we have have to rewrite them consistently in all
         % subclasses.
         edges_plot_handle = [];
-        max_number_of_nodes = 30;
+        orbit_text_handle = [];
+        orbit_edges_plot_handle = [];
+        orbit_edges_traj_handle = [];
     end
     
     methods
         function obj = PRM_class(~)
-            % See the superclass; The constructor of the superclass, i.e., "PRM_interface" is
+            % The constructor of the superclass, i.e., "PRM_interface" is
             % automatically called.
         end
         function obj = draw(obj)
-            % This function draws the PRM graph. If no "plot properties"
-            % are specified by the user, the default "PRM plot properties"
-            % will be used.
             old_prop = obj.set_figure();
             % The following initializations are necessary. Because the initialization in the "property definition" is not enough, when we loading an existing object of this class, that initialization does not happen.
-<<<<<<< HEAD
-            obj.edges_plot_handle = [];
-            % retrieve PRM parameters provided by the user
-            node_text_flag = obj.par.PRM_node_text;
-            varargin_node_props = obj.par.PRM_node_plot_properties;
-            % some variable definitions
-            N_nodes=obj.num_nodes;
-            % draw edges
-            for i = 1:size(obj.edges_list , 1)
-                %obj = obj.draw_edge(i);
-            end
-            % Draw Nodes
-            for p=1:N_nodes
-                if  node_text_flag == 1
-                    obj.nodes(p) = obj.nodes(p).draw(varargin_node_props{:},'text',num2str(p));
-                else
-                    obj.nodes(p) = obj.nodes(p).draw(varargin_node_props{:});
-=======
             obj.orbit_edges_traj_handle = [];
             obj.orbit_edges_plot_handle = [];
             obj.orbit_text_handle = [];
@@ -65,107 +60,68 @@ classdef PRM_class < PRM_interface
                     if ~isempty(obj.orbit_edges_trajectory(i,j).x)
                         traj_plot_handle = MotionModel_class.draw_nominal_traj(obj.orbit_edges_trajectory(i,j), node_to_orbit_trajectories_flag);
                     end
->>>>>>> ba6fc21e4458b0b1914888aaba4114631ed30a9f
                 end
             end
+            
             obj.reset_figure(old_prop);
         end
         function obj = delete_plot(obj)
-            for p = 1:length(obj.nodes)
-                obj.nodes(p) = obj.nodes(p).delete_plot();
+            error('Ali:')
+            delete(obj.orbit_edges_traj_handle)
+            obj.orbit_edges_traj_handle = [];
+            for i = 1:obj.num_orbits
+                delete(obj.orbits(i).plot_handle)
+                obj.orbits(i).plot_handle = [];
             end
-            delete(obj.edges_plot_handle);
-            obj.edges_plot_handle = [];
+            delete(obj.orbit_text_handle);
+            obj.orbit_text_handle = [];
+            for p = 1:length(obj.nodes)
+                obj.nodes(p) = obj.nodes(p).delete();
+            end
+            delete(obj.orbit_edges_plot_handle);
+            obj.orbit_edges_plot_handle = [];
         end
         function obj = load(obj) %#ok<MANU>
             % This function loads the existing PNPRM from the
             % "LoadFileName". If there is no PNPRM present in the
             % "LoadFileName", an error will occur.
             LoadFileName = user_data_class.par.LoadFileName;
-            load(LoadFileName,'PRM')
-            obj = PRM;
+            load(LoadFileName,'PNPRM')
+            obj = PNPRM;
         end
         function obj = request_nodes(obj)
-            old_prop = obj.set_figure();
-            title({'Please select PRM nodes'},'fontsize',14)
-            obj.nodes = state.empty; % class type initialization
-            tmp_neighb_plot_handle = [];
-            for i = 1:obj.max_number_of_nodes
-                new_node = state.sample_a_valid_state;
-                if isempty(new_node)
-                    delete(tmp_neighb_plot_handle)
-                    break
-                else
-                    obj = obj.add_set_of_nodes(new_node);
-                    drawnow
-                    % depict the distance from the node that can connect to
-                    % other nodes
-                    delete(tmp_neighb_plot_handle)
-                    scale = obj.par.neighboring_distance_threshold;
-                    tmp_neighb_plot_handle = new_node.draw_neighborhood(scale);
-                end
-            end
-            obj.reset_figure(old_prop);
-            title([]);
+            obj = obj.request_orbits();  % This function reveives orbits from the user and draws them.
+            obj = obj.construct_nodes();
+%             obj = obj.construct_orbit_edges();
         end
         function obj = overwrite_nodes(obj)
         end
         function obj = save(obj)
             SaveFileName = user_data_class.par.SaveFileName;
-            PRM = obj; %#ok<NASGU>
-            save(SaveFileName,'PRM','-append')
+            PNPRM = obj; %#ok<NASGU>
+            save(SaveFileName,'PNPRM','-append')
         end
         
         function obj = add_node(obj,new_node)
-            % first we increase the number of nodes by one
-            obj.num_nodes = obj.num_nodes + 1;
-            % assign an index to the new node
-            new_node_ind = obj.num_nodes;
-            disp(['Adding PRM node ',num2str(new_node_ind), ' to the PRM']);
-            % add it to the list of nodes
-            obj.nodes(new_node_ind) = new_node;
-             % drawing the new node
-            node_prop_varargin = obj.par.PRM_node_plot_properties;
-            obj.nodes(new_node_ind) = obj.nodes(new_node_ind).draw(node_prop_varargin{:});
-            % we compute the neighbors of the newly added node.
-            neighbors_of_new = obj.find_neighbors(new_node_ind);
-            % we add the edges corresponding to this new node. 
-            for j = neighbors_of_new % "neighbors_of_new" must be a row vector for this loop to work.
-                % We first consider the edges that goes out of this node
-                obj = add_edge(obj, new_node, obj.nodes(j), new_node_ind, j);
-                % Then, we consider the edges that comes into this node.
-                obj = add_edge(obj, obj.nodes(j), new_node, j, new_node_ind);
-            end
-            % since "obj.edges_matrix" may not be square after above
-            % opertations (if the reverse edges are not collision-free), we make it square here.
-            tmp = zeros(obj.num_nodes,obj.num_nodes);
-            tmp(1:size(obj.edges_matrix,1),1:size(obj.edges_matrix,2)) = obj.edges_matrix;
-            obj.edges_matrix = tmp;
-            
-            obj.num_stabilizers = obj.num_nodes;
-        end
-        function obj = add_edge(obj, start_node, end_node, start_node_ind, end_node_ind)
-            open_loop_traj = MotionModel_class.generate_VALID_open_loop_point2point_traj(start_node, end_node); % generates open-loop trajectories from "new_node" to j-th PRM node. If the "open_loop_traj" violates constraints (for example collides with obstacles) it returns empty matrix.
-            constraint_violation = isempty(open_loop_traj); % this lines check if the "open_loop_traj" violates any constraints or not. For example it checks collision with obstacles.
-            if ~constraint_violation
-                obj.edges_list = [obj.edges_list; [start_node_ind , end_node_ind] ];
-                obj.edges_matrix(start_node_ind , end_node_ind) = 1;
-                edge_number = size(obj.edges_list , 1);
-                obj.edges(edge_number).x = open_loop_traj.x; obj.edges(edge_number).u = open_loop_traj.u;
-                if obj.par.draw_edges_flag, obj = obj.draw_edge(edge_number); end % drawing the newly added node and corresponding edges
-                % setting the outgoing edge numbers fromt the "start_node_ind"
-                if size(obj.outgoing_edges , 2) < start_node_ind  % This codition basically is this "if ismepty(obj.outgoing_edges{new_node_ind})".
-                    obj.outgoing_edges{start_node_ind} = edge_number ;
-                else
-                    obj.outgoing_edges{start_node_ind} = [obj.outgoing_edges{start_node_ind} , edge_number ];
-                end
+            error('This function has not been implemented for PNPRM yet')
+        end        
+        function obj = add_set_of_orbits(obj,new_orbits)
+            for i = 1:length(new_orbits)
+                obj = obj.add_orbit(new_orbits(i));
             end
         end
-        
+        function YesNo = has_same_orbit(obj,i,j)
+            error('Ali:')
+            % this function returns 1 if the corresponding orbit of the nodes
+            % "i" and "j" are same. And it returns 0 otherwise.
+            if (obj.corresponding_orbit(i) == obj.corresponding_orbit(j))
+                YesNo = 1;
+            else
+                YesNo = 0;
+            end
+        end
         function feedback_plot_handle = draw_feedback_pi(obj, feedback_pi, selected_node_indices)
-            error('This function is obsolete. But it can be updated beautifully with the new was of looking to feedback!')
-            % This function has not been updated after the latest changes.
-            
+            error('This function has not been updated from PRM to PNPRM, yet.')
             % the selected nodes are a set of nodes that the feedback pi is
             % only drawn for them. This is for uncluttering the figure.
             if ~exist('selected_node_indices', 'var') % if there is no "selected nodes", we draw the "feedback pi" for all nodes.
@@ -174,17 +130,17 @@ classdef PRM_class < PRM_interface
                 selected_node_indices = reshape(selected_node_indices,1,length(selected_node_indices));
             end
             feedback_plot_handle = [];
-            num_edges = length(obj.edges_list);
-            feedback_text_handle = zeros(1,num_edges);
+            num_2Dorbit_edges = length(obj.orbit_edges_2D_list);
+            feedback_text_handle = zeros(1,num_2Dorbit_edges);
             for i = selected_node_indices
                 start = obj.nodes(i).val(1:2); % from now on, in this function, we only consider 2D position of the nodes.
                 j = feedback_pi(i); % j is the next node for node i, based on "feedback pi".
                 if isnan(j) % the feedback_pi on the goal node return "nan"
                     continue
                 end
-                [~,edge_num] = intersect(obj.edges_list,[i,j],'rows'); % this function returns the number of PRM edge, whose start and end nodes are i and j, respectively.
-                edge_num =obj.corresponding_2D_edges(edge_num); % this line returns the number of corresponding 2D edge.
-                % in the following we draw a paraller line to the edge,
+                [~,orbit_edge_num] = intersect(obj.orbit_edges_list,[i,j],'rows'); % this function returns the number of orbit_edge, whose start and end nodes are i and j, respectively.
+                orbit_edge_num =obj.corresponding_2D_orbit_edges(orbit_edge_num); % this line returns the number of corresponding 2D orbit_edge.
+                % in the following we draw a paraller line to the orbit_edge,
                 % through which we want to illustrate the feedback "pi".
                 final = obj.nodes(j).val(1:2);
                 parallel_vector_normalized = (final - start)/norm(final - start);
@@ -214,33 +170,87 @@ classdef PRM_class < PRM_interface
                 text_dist = shiftet_dist/2;
                 text_position = bottom_vertices_outer + text_dist*perpendicular_vector_normalized;
                 text_position(1) = text_position(1) - 0.45; % for some reason MATLAB shifts the starting point of the text a little bit to the right. So, here we return it back.
-                if feedback_text_handle (edge_num) ~= 0 % which means some text has already been written for this edge
-                    current_text = get(feedback_text_handle (edge_num), 'String');
-                    set(feedback_text_handle (edge_num), 'String', [current_text, ', ', num2str(i)])
+                if feedback_text_handle (orbit_edge_num) ~= 0 % which means some text has already been written for this orbit_edge
+                    current_text = get(feedback_text_handle (orbit_edge_num), 'String');
+                    set(feedback_text_handle (orbit_edge_num), 'String', [current_text, ', ', num2str(i)])
                 else
-                    feedback_text_handle (edge_num) = text(text_position(1), text_position(2), num2str(i), 'fontsize',10,'color','r','EdgeColor','g');
-                    feedback_plot_handle = [feedback_plot_handle, feedback_text_handle (edge_num)]; %#ok<AGROW>
+                    feedback_text_handle (orbit_edge_num) = text(text_position(1), text_position(2), num2str(i), 'fontsize',10,'color','r','EdgeColor','g');
+                    feedback_plot_handle = [feedback_plot_handle, feedback_text_handle (orbit_edge_num)]; %#ok<AGROW>
                 end
             end
         end
-        function nearest_node_ind = compute_nearest_node_ind(obj,current_node_ind)
-            % This function computes the nearest node to the "current_node_ind"
-            neighbors = find(obj.edges_matrix(current_node_ind,:));
-            weighted_norm = nan(1,length(neighbors));
-            
+        function nearest_orbit_ind = compute_nearest_orbit_ind(obj,current_node_ind)
+            error('This function has not been updated from PRM to PNPRM, yet.')
+            % This function computes the nearest orbit to a given ???
+            neighbors = find(obj.orbit_edges_matrix(current_node_ind,:));
+            dist = nan(1,length(neighbors));
             for i = 1 : length(neighbors)
-                elem_wise_distance = abs(obj.nodes(current_node_ind).signed_element_wise_dist(obj.nodes(neighbors(i)))); % Never forget "abs" function
-                weighted_norm(i) = norm(elem_wise_distance .* state.sup_norm_weights , 2); % last argument tells that which norm you are using. Here for PRM we use 2-norm.
+                dist(i) = norm( obj.nodes(current_node_ind).val(1:2) - obj.nodes(neighbors(i)).val(1:2) );
             end
-            [~,min_ind] = min(weighted_norm);
+            [~,min_ind] = min(dist);
             nearest_node_ind = neighbors(min_ind);
+        end
+        function nominal_traj = generate_node_to_orbit_trajectory(obj , start_orbit_ind, node_ind_on_orbit , end_orbit_ind)
+            % This funtion concatenates a part on orbit and the "PRM.orbit_edges_trajectory" to generate the node to
+            % orbit trajectories.
+                
+            % computing closest state on the orbit to the
+            % "temp_orbit_edge_start" %  Not complete
+            start_orbit = obj.orbits(start_orbit_ind);
+            end_orbit = obj.orbits(end_orbit_ind);
+            
+            alpha = node_ind_on_orbit; % the number of node on the starting orbit.
+            node_time_stage = start_orbit.node_time_stages(alpha); % the time stage of alpha-th node on i-th orbit
+            %initial_gamma = atan2(start_orbit.x(2,1) - start_orbit.center(2),start_orbit.x(1,1) - start_orbit.center(1));  % The anlge on which the start of orbit lies.
+            node_gamma   = atan2(start_orbit.x(2,node_time_stage) - start_orbit.center.val(2) , start_orbit.x(1,node_time_stage) - start_orbit.center.val(1));  % The anlge on which the "alpha"-th node on orbit lies.
+            angle_of_connecting_line = atan2( end_orbit.center.val(2) - start_orbit.center.val(2) , end_orbit.center.val(1) - start_orbit.center.val(1) ); % the angle of the orbit_edge connecting two orbit i to j
+            gamma_start_of_orbit_edge = angle_of_connecting_line - pi/2; % the angle on which the starting point of orbit_edge lies on orbit i.
+            
+            % making "gamma" and "node_gamma" positive.
+            % it is very problematic part (verified by plotting)
+            gamma_start_of_orbit_edge = mod(gamma_start_of_orbit_edge, 2*pi);
+            node_gamma = mod(node_gamma, 2*pi);
+            if node_gamma>gamma_start_of_orbit_edge
+                node_gamma = node_gamma - 2*pi;
+            end
+            % till here
+            
+            delta_theta_on_orbit = 2*pi/start_orbit.period;
+            steps_till_start_of_orbit_edge = floor((gamma_start_of_orbit_edge - node_gamma)/delta_theta_on_orbit);  % This "floor" can make a lot of problems. You have to take it out ASAP.
+            %error(' the above line is fixed in the unicycle class, correct it please')
+            steps_till_start_of_orbit_edge = mod(steps_till_start_of_orbit_edge,start_orbit.period);
+            T = start_orbit.period;
+            more_than_period = node_time_stage+steps_till_start_of_orbit_edge - T;
+            if more_than_period < 0
+                more_than_period = 0;
+            end
+            pre_edge_traj.x = [ start_orbit.x(:,node_time_stage : node_time_stage+steps_till_start_of_orbit_edge - more_than_period) , start_orbit.x(:,1:more_than_period) ];
+            pre_edge_traj.u = [start_orbit.u(:,node_time_stage : node_time_stage+steps_till_start_of_orbit_edge - more_than_period -1) , start_orbit.u(:,1:more_than_period)];
+            
+            % making "gamma_end_of_orbit_edge" positive.
+            gamma_end_of_orbit_edge = gamma_start_of_orbit_edge; % this is correct when the conncting lines (from i to j and from j to i) does not interesect with each other. i.e., when they are parallel.
+            initial_gamma = 3*pi/2;
+            angle_diff = gamma_end_of_orbit_edge - initial_gamma;
+            if angle_diff <0
+                angle_diff = angle_diff +2*pi;
+            end
+            
+            end_orbit_edge_time = floor((angle_diff)/delta_theta_on_orbit);
+            if end_orbit_edge_time ==0, end_orbit_edge_time =T; end
+            post_edge_traj.x = [ end_orbit.x(:,end_orbit_edge_time:T) ];
+            post_edge_traj.u = [ end_orbit.u(:,end_orbit_edge_time:T) ];
+            
+            nominal_traj.x = [pre_edge_traj.x , obj.orbit_edges_trajectory(start_orbit_ind,end_orbit_ind).x , post_edge_traj.x];
+            nominal_traj.u = [pre_edge_traj.u , obj.orbit_edges_trajectory(start_orbit_ind,end_orbit_ind).u , post_edge_traj.u];
+            
+            disp('Following lines seems problematic')
+            nominal_traj.x = [pre_edge_traj.x(:,1:end-1) , obj.orbit_edges_trajectory(start_orbit_ind,end_orbit_ind).x(:,1:end-1) , post_edge_traj.x];
+            nominal_traj.u = [pre_edge_traj.u , obj.orbit_edges_trajectory(start_orbit_ind,end_orbit_ind).u , post_edge_traj.u];
+            
         end
     end
     
     methods (Access = private)
-<<<<<<< HEAD
-        function neighbors = find_neighbors(obj,i)
-=======
         function obj = request_orbits(obj)
             % This function reveives orbits from the user and draws them.
             old_prop = obj.set_figure();
@@ -343,22 +353,14 @@ classdef PRM_class < PRM_interface
             obj.edges_list = obj.orbit_edges_list;
         end
         function neighbors = find_orbit_neighbors(obj,i_orbit)
->>>>>>> ba6fc21e4458b0b1914888aaba4114631ed30a9f
             neighbors = [];
-            for j = [1:i-1,i+1:obj.num_nodes]
-                elem_wise_distance = abs(obj.nodes(i).signed_element_wise_dist(obj.nodes(j))); % Never forget "abs" function
-                % disp('the following line is only true in multi-robot')
-                % if ~all(elem_wise_distance), continue; end
-                weighted_norm = norm(elem_wise_distance .* state.sup_norm_weights , 2); % last argument tells that which norm you are using. Here for PRM we use 2-norm.
-                if weighted_norm < obj.par.neighboring_distance_threshold
-                    neighbors = [neighbors,j]; %#ok<AGROW>
+            for j_orbit = [1:i_orbit - 1 , i_orbit+1:obj.num_orbits]
+                dist = norm(obj.orbits(i_orbit).center.signed_element_wise_dist(obj.orbits(j_orbit).center));
+                if dist < ...
+                        obj.par.neighboring_distance_threshold
+                    neighbors = [ neighbors,j_orbit ]; %#ok<AGROW>
                 end
             end
-        end
-        function obj = draw_edge(obj,edge_number)
-            traj_flag = 0; % this has to be fixed. This should be defined by user
-            tmp_handle = MotionModel_class.draw_nominal_traj(obj.edges(edge_number), traj_flag);
-            obj.edges_plot_handle = [obj.edges_plot_handle,tmp_handle];
         end
     end
 end
