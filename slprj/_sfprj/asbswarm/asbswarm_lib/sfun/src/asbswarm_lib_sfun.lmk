@@ -1,0 +1,23 @@
+CC     = "C:\Program Files\MATLAB\R2012a\sys\lcc\bin\lcc.exe"
+LD     = "C:\Program Files\MATLAB\R2012a\sys\lcc\bin\lcclnk.exe"
+LIBCMD = "C:\Program Files\MATLAB\R2012a\sys\lcc\bin\lcclib.exe"
+CFLAGS = -c -Zp8 -DMATLAB_MEX_FILE -noregistrylookup
+LDFLAGS = -s -dll -L"C:\Program Files\MATLAB\R2012a\sys\lcc\lib"
+LIBFLAGS = 
+
+OBJECTS = \
+	"asbswarm_lib_sfun.obj"\
+	"c1_asbswarm_lib.obj"\
+	"c2_asbswarm_lib.obj"\
+
+INCLUDE_PATH= -I"C:\Program Files\MATLAB\R2012a\sys\lcc\include"  -I"C:\Program Files\MATLAB\R2012a\extern\include"  -I"C:\Program Files\MATLAB\R2012a\simulink\include"  -I"C:\Program Files\MATLAB\R2012a\stateflow\c\mex\include"  -I"C:\Program Files\MATLAB\R2012a\stateflow\c\debugger\include" 
+ 
+
+asbswarm_lib_sfun.lib : $(MAKEFILE) $(OBJECTS)
+	$(LIBCMD) $(LIBFLAGS) /OUT:asbswarm_lib_sfun.lib *.obj
+asbswarm_lib_sfun.obj :	"asbswarm_lib_sfun.c"
+	$(CC) $(CFLAGS) $(INCLUDE_PATH) "asbswarm_lib_sfun.c"
+c1_asbswarm_lib.obj :	"c1_asbswarm_lib.c"
+	$(CC) $(CFLAGS) $(INCLUDE_PATH) "c1_asbswarm_lib.c"
+c2_asbswarm_lib.obj :	"c2_asbswarm_lib.c"
+	$(CC) $(CFLAGS) $(INCLUDE_PATH) "c2_asbswarm_lib.c"

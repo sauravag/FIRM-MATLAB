@@ -1,6 +1,7 @@
 classdef user_data_class < handle
     properties (Constant = true)
         par = call_GUI_helper_function();
+        
     end
 end
 
@@ -47,4 +48,7 @@ else
     par_new.Cancel_Run = par_new_from_GUI.Cancel_Run;
 end
 
+disp('Saurav: Adding the new parameters to the user_param class')
+par_new.disturbance_allowed = true;
+par_new.draw_at_every_n_steps = 1;
 end

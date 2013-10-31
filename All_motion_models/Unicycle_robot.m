@@ -1,8 +1,8 @@
 %% Class Definition
-classdef Unicycle_robot < handle
+classdef Unicycle_robot < MotionModel_interface
     %==============================  UNICYCLE  MOTION MODEL =========================================
     % Note that because the class is defined as a handle class, the
-    % properties must be defined such that they are do not change from an
+    % properties must be defined such that they do not change from an
     % object to another one.
     
     %% Properties
@@ -15,13 +15,14 @@ classdef Unicycle_robot < handle
         sigma_b_u = user_data_class.par.motion_model_parameters.sigma_b_u_unicycle;
         eta_u = user_data_class.par.motion_model_parameters.eta_u_unicycle;
         P_Wg = user_data_class.par.motion_model_parameters.P_Wg;
+        zeroNoise = zeros(Unicycle_robot.wDim,1);
     end
     
     properties (Constant = true) % orbit-related properties
-        turn_radius_min = 1.5; % indeed we need to define the minimum linear velocity in turnings (on orbits) and then find the minimum radius accordingly. But, we picked the more intuitive way.
-        angular_velocity_max = 17*pi/180; % degree per second (converted to radian per second)
+        turn_radius_min = 1.5*0.1; % indeed we need to define the minimum linear velocity in turnings (on orbits) and then find the minimum radius accordingly. But, we picked the more intuitive way.
+        angular_velocity_max = 90*pi/180; % degree per second (converted to radian per second)
         linear_velocity_min_on_orbit = Unicycle_robot.turn_radius_min*Unicycle_robot.angular_velocity_max; % note that on the straight line the minimum velocity can go to zero. But, in turnings (on orbit) the linear velocity cannot fall below this value.
-        linear_velocity_max = 0.5;
+        linear_velocity_max = 0.5*10;
     end
     
     %% Methods
@@ -138,7 +139,7 @@ classdef Unicycle_robot < handle
             gamma_end_of_tangent_line = gamma_tangent + pi/2; % the angle on which the ending point of the tangent line lies on orbit i.
             
             initial_robot_gamma =   x_initial(3) + pi/2; % Note that this is not robot's heading angle. This says that at which angle robot lies on the circle.
-            final_robot_gamma   =   x_final(3)    + pi/2; % Note that this is not robot's heading angle. This says that at which angle robot lies on the circle.
+            final_robot_gamma    =   x_final(3)   + pi/2; % Note that this is not robot's heading angle. This says that at which angle robot lies on the circle.
             
             % Turn part on the first circle
             entire_th_on_initial_circle = delta_theta_turn(initial_robot_gamma, gamma_start_of_tangent_line, 'cw'); % NOTE: this must be a negative number as we turn CLOCKWISE.
@@ -290,12 +291,11 @@ classdef Unicycle_robot < handle
         end
         %% Sample a valid orbit (periodic trajectory)
         function orbit = sample_a_valid_orbit()
-            [x_temp,y_temp]=ginput(1);
-            if isempty(x_temp)
+            orbit_center = state.sample_a_valid_state();
+            if isempty( orbit_center)
                 orbit = [];
                 return
             else
-                orbit_center = [x_temp;y_temp];
                 orbit = Unicycle_robot.generate_orbit(orbit_center);
                 orbit = Unicycle_robot.draw_orbit(orbit);
             end
@@ -322,7 +322,7 @@ classdef Unicycle_robot < handle
             w_zero = zeros(Unicycle_robot.wDim,1); % no noise
             
             % defining state steps on the orbit
-            x_p(:,1) = [orbit_center - [0;orbit.radius] ; 0*pi/180]; % initial x
+            x_p(:,1) = [orbit_center.val(1:2) - [0;orbit.radius] ; 0*pi/180]; % initial x
             for k=1:T
                 x_p(:,k+1) = MotionModel_class.f_discrete(x_p(:,k),u_p(:,k),w_zero);
             end
@@ -372,8 +372,8 @@ classdef Unicycle_robot < handle
             else
                 orbit.plot_handle = [];
                 th_orbit_draw = [0:0.1:2*pi , 2*pi];
-                x_orbit_draw = orbit.center(1) + orbit.radius*cos(th_orbit_draw);
-                y_orbit_draw = orbit.center(2) + orbit.radius*sin(th_orbit_draw);
+                x_orbit_draw = orbit.center.val(1) + orbit.radius*cos(th_orbit_draw);
+                y_orbit_draw = orbit.center.val(2) + orbit.radius*sin(th_orbit_draw);
                 tmp_h = plot(x_orbit_draw,y_orbit_draw,'lineWidth',orbit_width);
                 Xstate = state(orbit.x(:,1));
                 Xstate = Xstate.draw('RobotShape',robot_shape,'robotsize',robot_size);
@@ -381,7 +381,7 @@ classdef Unicycle_robot < handle
             end
             
             if ~isempty(orbit_text)
-                text_pos = orbit.center;
+                text_pos = orbit.center.val;
                 text_pos(1) = text_pos(1) - text_shift; % for some reason MATLAB shifts the starting point of the text a little bit to the right. So, here we return it back.
                 tmp_handle = text( text_pos(1), text_pos(2), orbit_text, 'fontsize', text_size, 'color', text_color);
                 orbit.plot_handle = [orbit.plot_handle,tmp_handle];
@@ -389,42 +389,45 @@ classdef Unicycle_robot < handle
                 
         end
         %% Generate open-loop Orbit-to-Orbit trajectory
-        function nominal_traj = generate_open_loop_orbit2orbit_traj(start_orbit, end_orbit) % generates open-loop trajectories between two start and end orbits
+        function nominal_traj = generate_VALID_open_loop_orbit2orbit_traj(start_orbit, end_orbit) % generates open-loop trajectories between two start and end orbits
             % check if the both orbits are turning in the same
             % direction or not.
             direction_start_orbit = sign(start_orbit.u(1,1))*sign(start_orbit.u(2,1));
             direction_end_orbit = sign(end_orbit.u(1,1))*sign(end_orbit.u(2,1));
             % finding the connecting edge between orbits.
             if direction_start_orbit == direction_end_orbit % both orbits turn in a same direction
-                gamma = atan2( end_orbit.center(2) - start_orbit.center(2) , end_orbit.center(1) - start_orbit.center(1) );
-                temp_edge_start = start_orbit.radius * [ cos(gamma-pi/2) ; sin(gamma-pi/2) ] + start_orbit.center;
-                temp_edge_end = end_orbit.radius* [ cos(gamma-pi/2) ; sin(gamma-pi/2) ] + end_orbit.center;
+                gamma = atan2( end_orbit.center.val(2) - start_orbit.center.val(2) , end_orbit.center.val(1) - start_orbit.center.val(1) );
+                temp_edge_start = start_orbit.radius * [ cos(gamma-pi/2) ; sin(gamma-pi/2) ] + start_orbit.center.val(1:2);
+                temp_edge_end = end_orbit.radius* [ cos(gamma-pi/2) ; sin(gamma-pi/2) ] + end_orbit.center.val(1:2);
             else
                 error('different directions have not been implemented in PNPRM yet.')
             end
-            temp_traj.x(:,1) = temp_edge_start;  temp_traj.x(:,2) = temp_edge_end;  % we generate this trajectory (only composed of start and end points) to check the collision probabilities before generating the edges.
-            collision = Unicycle_robot.is_constraints_violated(temp_traj);  % checking intersection with obstacles
-            if collision == 1
-                nominal_traj = [];
-                return
-            else
-                % construction edge trajectory
-                tmp_traj_start = [temp_edge_start ; gamma ];
-                V_p = start_orbit.u(1,1);
-                step_length = V_p * Unicycle_robot.dt;
-                edge_length = norm ( end_orbit.center - start_orbit.center ) ;
-                edge_steps = floor(edge_length/step_length);
-                
-                omega_p = 0;
-                u_p = [V_p;omega_p];
-                w_zero = zeros(MotionModel_class.wDim , 1); % no noise
-                
-                nominal_traj.x(:,1) = tmp_traj_start;
-                for k =1:edge_steps
-                    nominal_traj.x(:,k+1) = MotionModel_class.f_discrete(nominal_traj.x(:,k), u_p, w_zero);
-                end
-                nominal_traj.u(:,1:edge_steps) = repmat(u_p,1,edge_steps);
+            %temp_traj.x(:,1) = temp_edge_start;  temp_traj.x(:,2) = temp_edge_end;  % we generate this trajectory (only composed of start and end points) to check the collision probabilities before generating the edges.
+            %collision = Unicycle_robot.is_constraints_violated(temp_traj);  % checking intersection with obstacles
+            %             if collision == 1
+            %                 nominal_traj = [];
+            %                 return
+            %             else
+            %                 % construction edge trajectory
+            tmp_traj_start = [temp_edge_start ; gamma ];
+            V_p = start_orbit.u(1,1);
+            step_length = V_p * Unicycle_robot.dt;
+            edge_length = norm ( end_orbit.center.val - start_orbit.center.val ) ;
+            edge_steps = floor(edge_length/step_length);
+            
+            omega_p = 0;
+            u_p_single = [V_p;omega_p];
+            u_p = repmat(u_p_single ,1,edge_steps);
+            w_zero = zeros(MotionModel_class.wDim , 1); % no noise
+            
+            x_p(:,1) = tmp_traj_start;
+            for k =1:edge_steps
+                x_p(:,k+1) = MotionModel_class.f_discrete(x_p(:,k),u_p(:,k),w_zero);
+                tmp = state(x_p(:,k+1)); if tmp.is_constraint_violated, nominal_traj =[]; return; end
+                %                 tmp.draw(); % FOR DEBUGGING
             end
+            nominal_traj.x = x_p;
+            nominal_traj.u = u_p;
         end
         %% check if the trajectory is collision-free or not
         function YesNo = is_constraints_violated(open_loop_traj) % this function checks if the "open_loop_traj" violates any constraints or not. For example it checks collision with obstacles.
@@ -474,8 +477,8 @@ classdef Unicycle_robot < handle
         %% Draw orbit neighborhood
         function plot_handle = draw_orbit_neighborhood(orbit, scale)
             tmp_th = 0:0.1:2*pi;
-            x = orbit.center(1);
-            y = orbit.center(2);
+            x = orbit.center.val(1);
+            y = orbit.center.val(2);
             plot_handle = plot(scale*cos(tmp_th) + x , scale*sin(tmp_th) + y, '--');
         end
     end

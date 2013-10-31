@@ -9,14 +9,14 @@ classdef PLQG_based_FIRM_graph_class < FIRM_graph_interface
         function obj = PLQG_based_FIRM_graph_class(PRM_inp)
             obj = obj@FIRM_graph_interface(PRM_inp);
             obj.num_stabilizers = obj.PRM.num_orbits;
-            obj.num_edges = size(PRM_inp.edges_list,1) * obj.PRM.orbits(1).num_nodes;
+            obj.num_edges = size( obj.PRM.edges_list,1) * obj.PRM.orbits(1).num_nodes;
             
-            obj.Stabilizers = Orbit_stabilizer_PLQG_class.empty;
-            obj.Stabilizers(obj.num_stabilizers,1) = Orbit_stabilizer_PLQG_class; % Preallocate object array
+            obj.Stabilizers = stabilizer_class.empty;
+            obj.Stabilizers(obj.num_stabilizers,1) = stabilizer_class; % Preallocate object array
             obj.Nodes = FIRM_node_class.empty;
             obj.Nodes(obj.num_nodes,1) = FIRM_node_class; % Preallocate object array
             obj.Edges = FIRM_edge_class.empty;
-            obj.Edges(obj.num_edges,1) = FIRM_edge_class; % Preallocate object array
+%             obj.Edges(obj.num_edges,1) = FIRM_edge_class; % Preallocate object array
         end
         function obj = construct_all_stabilizers_and_FIRM_nodes(obj)
             % This function constructs stabilizers used in PLQG-based FIRM framework and constructs reachable nodes under this stabilizers and assigns values to the "stabilizers" and "nodes" properties of the class.
@@ -53,13 +53,13 @@ classdef PLQG_based_FIRM_graph_class < FIRM_graph_interface
             n = 0; % n represents the absolute number of nodes (Not on a single orbit, but among all nodes)
             for io = 1:num_oribts % io is the orbit number
                 for alpha = 1:obj.PRM.orbits(io).num_nodes % alpha is the number of node on the orbit
-                    edges_from_orbit_io = find(obj.PRM.edges_list(:,1)==io);
+                    edges_from_orbit_io = find(obj.PRM.orbit_edges_list(:,1) == io);
                     for ie = edges_from_orbit_io' % IMPORTANT: in this kind of indexing, the right hand side MUST be a row vector for indexing to work.
                         tic
                         n = n+1; % absolute number of edge. Note that the numbe of FIRM edges in this case are not the same as number of PNPRM edges. Because in FIRM, we cosider node-to-orbit edges, but in PNPRM, we consider the orbit to orbit edges.
                         
                         %start_orbit_ind = obj.PRM.edges_list(ie,1); % this must be the same as "io"
-                        end_orbit_ind = obj.PRM.edges_list(ie,2);
+                        end_orbit_ind = obj.PRM.orbit_edges_list(ie,2);
                         fprintf('Constructing edge %d, -------- starting from node %d on orbit %d to orbit %d.\n', n, alpha, io, end_orbit_ind )
                         % The following funtion concatenates a part on orbit "io" and
                         % the "PRM.orbit_edges_trajectory" to generate the node to

@@ -69,7 +69,7 @@ classdef Omni_directional_robot < MotionModel_interface
             P_Un = control_noise_covariance(u);
             Q_process_noise = blkdiag(P_Un,Omni_directional_robot.P_Wg);
         end
-        function nominal_traj = generate_open_loop_point2point_traj(X_initial,X_final) % generates open-loop trajectories between two start and goal states
+        function nominal_traj = generate_VALID_open_loop_point2point_traj(X_initial,X_final) % generates open-loop trajectories between two start and goal states
             if isa(X_initial,'state'), X_initial=X_initial.val; end % retrieve the value of the state vector
             if isa(X_final,'state'), X_final=X_final.val; end % retrieve the value of the state vector
             % parameters
@@ -134,6 +134,7 @@ classdef Omni_directional_robot < MotionModel_interface
                 u_p(:,k) = T_inv_k*delta_body_velocities_k;  % "T_inv_k" maps the "velocities in body coordinate" to the control signal
              
                 x_p(:,k+1) = x_p(:,k) + delta_state_nominal(:,k);
+                tmp = state(x_p(:,k+1)); if tmp.is_constraint_violated, nominal_traj =[]; return; end
             end
             
             % noiselss motion  % for debug: if you uncomment the following

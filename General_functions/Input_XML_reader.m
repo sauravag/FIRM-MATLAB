@@ -2,7 +2,6 @@ function par_new = Input_XML_reader(old_par, par_new_from_GUI, new_output_direct
 
 %  Parameters (they have to go into an XML)
 %=======================================================================================
-
 par_new = par_new_from_GUI;   % first we copy the newly provided parameters from GUI
 
 %=========== Simulator Parameters
@@ -31,7 +30,7 @@ par_new.sim.draw_at_every_n_steps = 1;
 par_new.sim.FrameRate = 5;
 par_new.sim.env_limits = [-5  5  -5  5]; %[-3.75 , 100 , -23.75 , 80]; %[0 100 0 100]; %[-3 155 -3 155]; %[-10 10 -10 10];%[-6 104 -28 85];%[-5 265 -5 225];%[-6 104 -28 85];
 par_new.sim.env_background_image_address = 'none'; %'C:\Ali\Academics\PhD_Paper_tryings\Needle_steering\Needle_pics_web\liver.png';%'none'; %'C:\Users\Ali\Desktop\Needle_pics_web\liver-panel5.png';  % This field has to be the address of some image or has to be 'none'
-par_new.sim.Lighting_and_3D_plots = 0;
+par_new.sim.Lighting_and_3D_plots = 1;
 par_new.sim.imageResizeRatio = 0.25;
 par_new.sim.viewAngle = [30,40];
 par_new.sim.initialZoomRatio = 1.2;%2.5;
@@ -67,8 +66,16 @@ elseif strcmpi(par_new.selected_motion_model,'Revolute joint 8arm manipulator')
     typeDef('Revolute_joint_manipulator' , 'MotionModel_class')
 elseif strcmpi(par_new.selected_motion_model,'Dynamical planar 8arm manipulator')
     typeDef('Planar_dyn_manipulator_state' , 'state')
-    typeDef('Planar_dyn_manipulator_state' , 'belief')
+    typeDef('Planar_dyn_manipulator_belief' , 'belief')
     typeDef('Dynamical_planar_manipulator' , 'MotionModel_class')
+elseif strcmpi(par_new.selected_motion_model,'FixedWing Aircraft')
+    typeDef('Six_DOF_robot_state' , 'state')
+    typeDef('Six_DOF_robot_belief' , 'belief')
+    typeDef('Aircraft_Kinematic' , 'MotionModel_class')
+elseif strcmpi(par_new.selected_motion_model,'Kuka YouBot Base')
+    typeDef('planar_robot_XYTheta_state' , 'state')
+    typeDef('planar_robot_XYTheta_belief' , 'belief')
+    typeDef('youbot_base' , 'MotionModel_class')
 end
 
 [par_new.motion_model_parameters , par_new.state_parameters] = gather_state_and_motion_model_parameters(old_par, par_new.selected_motion_model);
@@ -77,34 +84,39 @@ end
 warning('off', 'MATLAB:rmpath:DirNotFound'); % In the next line when we remove the paths, some warning may occur, if those path does not exist. So, we supress that warning here.
 rmpath( genpath('All_observation_models')); % This line remove all paths below the "All_observation_models" directory, which have been possibly added in the last run of the program.
 addpath('All_observation_models'); % However, we still want the "All_observation_models" folder path to be on the Matlab path (Not its subdirectories though).
-if strcmpi(par_new.selected_observation_model,'Three robot good-poor GPS no comm')
-        typeDef('Three_robot_good_poor_GPS_no_comm','ObservationModel_class')
-elseif strcmpi(par_new.selected_observation_model,'Three robot good-poor GPS with comm')
-        typeDef('Three_robot_good_poor_GPS_with_comm','ObservationModel_class')
-elseif strcmpi(par_new.selected_observation_model,'Landmark (range and bearing) sensing')
-    typeDef('Landmarks_Range_bearing' , 'ObservationModel_class')
-elseif strcmpi(par_new.selected_observation_model,'Multi Robot Sensing')
-    addpath(genpath('All_observation_models/Multi_robot_sensing')); % In this line we import everything inside the "All_observation_models/multi_robot_sensing" directory.
-elseif strcmpi(par_new.selected_observation_model,'Two robots with no communication')
-    typeDef('Two_robots_no_communication','ObservationModel_class')
-    %addpath(genpath('All_observation_models/Two_robots_no_communication')); % In this line we import everything inside the "All_observation_models/multi_robot_sensing" directory.
-elseif strcmpi(par_new.selected_observation_model,'Two robots with communication')
-    addpath(genpath('All_observation_models/Two_robots_with_communication')); % In this line we import everything inside the "All_observation_models/multi_robot_sensing" directory.
-elseif strcmpi(par_new.selected_observation_model,'n-arm Manipulator')
-    typeDef('Planar_manipulator_wall_sensing_deadzone','ObservationModel_class');
-elseif strcmpi(par_new.selected_observation_model,'Dynamical n-arm Manipulator')
-    typeDef('Dyn_manipulator_wall_sensing_deadzone','ObservationModel_class');
-end
-
+% if strcmpi(par_new.selected_observation_model,'Three robot good-poor GPS no comm')
+%         typeDef('Three_robot_good_poor_GPS_no_comm','ObservationModel_class')
+% elseif strcmpi(par_new.selected_observation_model,'Three robot good-poor GPS with comm')
+%         typeDef('Three_robot_good_poor_GPS_with_comm','ObservationModel_class')
+% elseif strcmpi(par_new.selected_observation_model,'Landmark (range and bearing) sensing')
+%     typeDef('Landmarks_Range_bearing' , 'ObservationModel_class')
+% elseif strcmpi(par_new.selected_observation_model,'Multi Robot Sensing')
+%     addpath(genpath('All_observation_models/Multi_robot_sensing')); % In this line we import everything inside the "All_observation_models/multi_robot_sensing" directory.
+% elseif strcmpi(par_new.selected_observation_model,'Two robots with no communication')
+%     typeDef('Two_robots_no_communication','ObservationModel_class')
+%     %addpath(genpath('All_observation_models/Two_robots_no_communication')); % In this line we import everything inside the "All_observation_models/multi_robot_sensing" directory.
+% elseif strcmpi(par_new.selected_observation_model,'Two robots with communication')
+%     addpath(genpath('All_observation_models/Two_robots_with_communication')); % In this line we import everything inside the "All_observation_models/multi_robot_sensing" directory.
+% elseif strcmpi(par_new.selected_observation_model,'n-arm Manipulator')
+%     typeDef('Planar_manipulator_wall_sensing_deadzone','ObservationModel_class');
+% elseif strcmpi(par_new.selected_observation_model,'Dynamical n-arm Manipulator')
+%     typeDef('Dyn_manipulator_wall_sensing_deadzone','ObservationModel_class');
+% elseif strcmpi(par_new.selected_observation_model,'3D Landmark (range and bearing)')
+%     typeDef('Landmarks_3D_Range_bearing','ObservationModel_class');
+% end
+typeDef('Landmarks_3D_Range_bearing','ObservationModel_class');
 par_new.observation_model_parameters = gather_observation_model_parameters(old_par, par_new.observation_model_parameters, par_new.selected_observation_model);
 
 
 %=========== Planning Problem (Solver) Parameters
 if strcmpi(par_new.planning_problem_param.solver, 'Stationary LQG-based FIRM')
+    typeDef('Point_PRM_class', 'PRM_class')
     typeDef('Point_stabilizer_SLQG_class', 'stabilizer_class')
 elseif strcmpi(par_new.planning_problem_param.solver, 'Periodic LQG-based FIRM')
+    typeDef('Orbit_PRM_class', 'PRM_class')
     typeDef('Orbit_stabilizer_PLQG_class', 'stabilizer_class')
 elseif strcmpi(par_new.planning_problem_param.solver, 'DFL-and-SKF-based FIRM')
+    typeDef('Point_PRM_class', 'PRM_class')
     typeDef('Point_stabilizer_DFL_SKF', 'stabilizer_class')
 else
     error('not implemented yet')
@@ -145,23 +157,30 @@ elseif strcmpi(par_new.selected_motion_model,'Dynamical planar 8arm manipulator'
     par_new.FIRM_node_parameters.cov_neighborhood_size = tmp_vector*tmp_vector'*cov_neighb_magnifying_coeff ; % note that the last entry, ie theta's neighborhood, has to be in radian. % This is a matrix.
     % Hbliefe convergece-related parameters:
     GHb_conv_reg_thresh = tmp_vector*35; % distance threshold for either Xg_mean or Xest_mean_mean; Xdist has to be a column vector
+elseif strcmpi(par_new.selected_motion_model,'FixedWing Aircraft')
+    tmp_vector = repmat( [0.08 ; 0.08 ; 0.08; 1 ; 1 ; 1 ; 1] , 1 , 1);
+    par_new.FIRM_node_parameters.mean_neighborhood_size = tmp_vector*mean_neighb_magnifying_coeff ; % note that the last entry, ie theta's neighborhood, has to be in radian.
+    par_new.FIRM_node_parameters.cov_neighborhood_size = tmp_vector*tmp_vector'*cov_neighb_magnifying_coeff ; % note that the last entry, ie theta's neighborhood, has to be in radian. % This is a matrix.
+    % Hbliefe convergece-related parameters:
+    GHb_conv_reg_thresh = tmp_vector*35; % distance threshold for either Xg_mean or Xest_mean_mean; Xdist has to be a column vector
 else
     par_new.FIRM_node_parameters.mean_neighborhood_size = [0.08 ; 0.08 ; 3 *pi/180 ]*mean_neighb_magnifying_coeff ; % this only works for 3D state spaces % note that the last entry, ie theta's neighborhood, has to be in radian.
     par_new.FIRM_node_parameters.cov_neighborhood_size = [0.08 ; 0.08 ; 3 *pi/180 ]*[0.08 ; 0.08 ; 3 *pi/180 ]'*cov_neighb_magnifying_coeff ; % this only works for 3D state spaces % note that the last entry, ie theta's neighborhood, has to be in radian. % This is a matrix.
     % Hbliefe convergece-related parameters:
     GHb_conv_reg_thresh = [0.08 ; 0.08 ; 1.5*pi/180]*35; % distance threshold for either Xg_mean or Xest_mean_mean; Xdist has to be a column vector
 end
+
 BigX_thresh = [GHb_conv_reg_thresh;GHb_conv_reg_thresh];
 par_new.FIRM_node_parameters.GHb_conv_BigX_thresh = BigX_thresh; % distance threshold for both Xg_mean and Xest_mean_mean in the single vector
 par_new.FIRM_node_parameters.GHb_conv_Pest_thresh = GHb_conv_reg_thresh*GHb_conv_reg_thresh'; % defines the convergence threshold for Pest
 par_new.FIRM_node_parameters.GHb_conv_BigCov_thresh = BigX_thresh*BigX_thresh'; % defines the convergence threshold for BigCov
 
 %=========== Stabilizer Parameters
-par_new.stabilizer_parameters.max_stopping_time = 1000;
+par_new.stabilizer_parameters.max_stopping_time = 250;
 par_new.stabilizer_parameters.draw_cov_centered_on_nominal = 1;
 
 %=========== MonteCarlo Simulation
-par_new.par_n = 5; % number of particles
+par_new.par_n = 2; % number of particles
 
 %=========== (LQR design) Node and Edge controller
 LQR_cost_coef=[0.03*0.1 , 0.03*0.1 , 0.1];  % first entry is the "final state cost coeff". The second is the "state cost coeff", and the third is the "control cost coeff".
@@ -178,6 +197,8 @@ elseif strcmpi(par_new.selected_motion_model,'Revolute joint 8arm manipulator')
     par_new.valid_linearization_domain = ones(par_new.state_parameters.stateDim , 1)*75*pi/180;
 elseif strcmpi(par_new.selected_motion_model,'Dynamical planar 8arm manipulator')
     par_new.valid_linearization_domain = [ones(par_new.state_parameters.stateDim/2 , 1)*75*pi/180; ones(par_new.state_parameters.stateDim/2 , 1)*1000*pi/180];
+elseif strcmpi(par_new.selected_motion_model, 'FixedWing Aircraft')
+    par_new.valid_linearization_domain = repmat([3;3;3;1;1;1;1]*3 , 1 , 1);
 else
     par_new.valid_linearization_domain = [3;3;75*pi/180]*3;
 end
@@ -194,6 +215,7 @@ par_new.No_history = 1;
 par_new.No_plot = 1; % this is for plots in construction phase. The execution phase plots are different.
 
 %=========== PRM parameters
+
 par_new.PRM_parameters.neighboring_distance_threshold = 15*1.5*10; %* 1.25 * 1000;% * 0.3;
 par_new.PRM_parameters.PRM_node_text = 1; % if this is one, the number of nodes will be written on the figure.
 par_new.PRM_parameters.PRM_node_plot_properties =  {'RobotShape','triangle','robotSize',2};% {'RobotShape','triangle','robotSize',2};
@@ -205,7 +227,7 @@ par_new.PRM_parameters.draw_edges_flag = 1;
 % par_new.PRM_parameters.orbit_text_color = 'b'; % Default value for "OrbitTextColor" property.
 % par_new.PRM_parameters.orbit_robot_shape = 'triangle'; % The shape of robot (to draw trajectories and to show direction of edges and orbits)
 % par_new.PRM_parameters.orbit_robot_size = 1; % Robot size on orbits (to draw trajectories and to show direction of edges and orbits)
-par_new.PRM_parameters.node_to_orbit_trajectories_flag = 0; % Make it one if you want to see the node-to-orbit trajectories. Zero, otherwise.
+par_new.PRM_parameters.node_to_orbit_trajectories_flag = 1; % Make it one if you want to see the node-to-orbit trajectories. Zero, otherwise.
 % par_new.PRM_parameters.orbit_color = 'k'; % User-provided value for "orbit_color" property.
 % par_new.PRM_parameters.orbit_width = 2; % User-provided value for "orbit_width" property.
 % par_new.PRM_parameters.orbit_trajectory_flag = 0; % Make it one if you want to see the orbit trajectories. Zero, otherwise.
@@ -294,7 +316,27 @@ elseif strcmpi(selected_motion_model,'Dynamical planar 8arm manipulator')
     state_parameters.num_revolute_joints = n/2;
     state_parameters.stateDim = n;
     state_parameters.sup_norm_weights_nonNormalized = ones(n , 1); % You can think of the right-most vector (in the denominator) as the ractangular neighborhood used in finding neighbor nodes in constructing PRM graph. Note that this must be a column vector.
-    motion_model_parameters.controlDim=n/2;
+    motion_model_parameters.controlDim = n/2;
+elseif strcmpi(selected_motion_model,'FixedWing Aircraft')
+    state_parameters.stateDim = 7;
+    state_parameters.sup_norm_weights_nonNormalized = ones(state_parameters.stateDim , 1); 
+    disp('state norm for aircraft model needs to be fixed')
+    motion_model_parameters.controlDim = 4;
+    motion_model_parameters.eta_u_aircraft = [0.02 ; 0.01 ; 0.01 ; 0.01];  
+    motion_model_parameters.sigma_b_u_aircraft = [0.02 ; 0.01 ; 0.01 ; 0.01];  
+    P_rootsqaure_Wg_diags = [0.2 ; 0.2 ; 0.2 ; 0.001 ; 0.001 ; 0.001 ; 0.001];
+    motion_model_parameters.P_Wg = diag(P_rootsqaure_Wg_diags.^2);
+elseif strcmpi(selected_motion_model,'Kuka YouBot Base')
+    state_parameters.stateDim = 3;
+    state_parameters.sup_norm_weights_nonNormalized = 1./[1 ; 1 ; inf]; % You can think of the right-most vector (in the denominator) as the ractangular neighborhood used in finding neighbor nodes in constructing PRM graph. Note that this must be a column vector.
+    motion_model_parameters.controlDim = 4;
+    motion_model_parameters.dt = 0.1;
+    motion_model_parameters.eta_u_KukaBase = [0; 0; 0; 0];  %str2num(get(handles.edit_eta_u_omni,'String'))'; %#ok<ST2NM> % note that eta_u in this case is a three by one vector, reprensing eta for velocity of each of omni-dir wheels.
+    motion_model_parameters.sigma_b_u_KukaBase = [0; 0; 0; 0];  % note that sigma_b_u in this case is a three by one vector, reprensing sigma_b (bias variance) for linear velocity and angular velocity.
+    P_rootsqaure_Wg_diags=[0.2 ; 0.2 ; 4*pi/180]*2;
+    motion_model_parameters.P_Wg=diag(P_rootsqaure_Wg_diags.^2);
+    motion_model_parameters.distBetweenFrontWheels = 0.158*2; % from YouBot datasheet
+    motion_model_parameters.distBetweenFrontAndBackWheels = 0.228*2; % from YouBot datasheet
 else
     error('SFMP algorithm: The selected motion model does not match with the existing database');
 end

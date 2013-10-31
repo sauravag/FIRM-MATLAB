@@ -188,6 +188,7 @@ classdef LQG_class
     methods (Access = private)
         function YesNo = is_in_valid_linearization_region(obj,est_OF_error)
             YesNo = all(abs(est_OF_error) < obj.valid_lnr_domain); % never forget the "absolute value operator" in computing distances.
+
         end
     end
 end

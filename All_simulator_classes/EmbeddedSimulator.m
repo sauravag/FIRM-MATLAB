@@ -36,7 +36,7 @@ classdef EmbeddedSimulator < SimulatorInterface
             end
             if user_data_class.par.observation_model_parameters.interactive_OM == 1
                 OM = ObservationModel_class; % The object OM is only created for "Constant" properties of the "ObservationModel_class" class to be initialized.
-                OM.plot_handle = ObservationModel_class.tmp_prop.tmp_plot_handle; % the "plot_handle" property is not a constant property. Thus, it has to be assigned to its value here.
+                OM.plot_handle = OM.draw();
             end
             
             % video making
@@ -47,17 +47,17 @@ classdef EmbeddedSimulator < SimulatorInterface
                 vidObj.FrameRate = obj.par.FrameRate;
                 open(vidObj);
             end
-            %             obj = Environment_construction(obj); % Construct the environment (obstacles, landmarks, PRM)
+            %obj = Environment_construction(obj); % Construct the environment (obstacles, landmarks, PRM)
             if ~strcmpi(obj.par.env_background_image_address,'none') % check to see if the environment has any background picuture or not
                 background = imread(obj.par.env_background_image_address);
-                smaller_background=imresize(background,EmbeddedSimulator.par.imageResizeRatio);
+                smaller_background=imresize(background,obj.par.imageResizeRatio);
                 smaller_background = flipdim(smaller_background,1);
                 warp(smaller_background); axis on; set(gca,'Ydir','normal');view(0,90)
             end
             if obj.par.Lighting_and_3D_plots == 1
-                view(EmbeddedSimulator.par.viewAngle);
+                view(obj.par.viewAngle);
                 camlight('right')
-                camzoom(EmbeddedSimulator.par.initialZoomRatio)
+                camzoom(obj.par.initialZoomRatio)
             end
             obj.robot = state();
             obj.belief = belief();
@@ -111,7 +111,7 @@ classdef EmbeddedSimulator < SimulatorInterface
             obj.robot.val = MotionModel_class.f_discrete(obj.robot.val,u,w);
         end
         
-        function z = getObservation(obj,noiseMode)
+        function z = getObservation(obj, noiseMode)
             % generating observation noise
             if noiseMode
                 v = ObservationModel_class.generate_observation_noise(obj.robot.val);
@@ -130,7 +130,7 @@ classdef EmbeddedSimulator < SimulatorInterface
             figure(gcf);
             if ~strcmpi(obj.par.env_background_image_address,'none') % check to see if the environment has any background picuture or not
                 background = imread(obj.par.env_background_image_address);
-                smaller_background=imresize(background,EmbeddedSimulator.par.imageResizeRatio);
+                smaller_background=imresize(background,obj.par.imageResizeRatio);
                 smaller_background = flipdim(smaller_background,1);
                 imshow(smaller_background); axis on; set(gca,'Ydir','normal');view(0,90)
             end

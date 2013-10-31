@@ -36,8 +36,8 @@ classdef SLQG_class < LQG_interface
                 Hn = obj.lnr_sys.H;
                 Mn = obj.lnr_sys.M;
                 Rn = obj.lnr_sys.R;
-                Ln = obj.Stationary_LQR.Lss;
-                Kn = obj.Stationary_Kalman_gain;
+                Ln = obj.separated_controller.Lss;
+                Kn = obj.estimator.stationaryGain;
                 % Following lines changes the "obj" because the class is a subclass of the "handle" class.
                 % Otherwise, we had to output the "obj".
                 obj.Big_lnr_sys.BigF = [An,-Bn*Ln;Kn*Hn*An,An-Bn*Ln-Kn*Hn*An];
@@ -57,6 +57,50 @@ classdef SLQG_class < LQG_interface
             else
                 stationGHb_val = obj.Stationary_Gaussian_Hb;
             end
+        end
+        function [next_Hstate, reliable] = propagate_Hstate(obj,old_Hstate,noise_mode)
+            % propagates the Hstate using Stationary Kalman Filter and
+            % Stationary LQR.
+            % "noise_mode" must be the last input argument.
+            % output "reliable" is 1 if the current estimate is inside the
+            % valid linearization region of LQG. It is 0, otherwise.
+            if exist('noise_mode','var') && strcmpi(noise_mode,'No-noise')
+                w = MotionModel_class.zeroNoise;
+                Vg = ObservationModel_class.zeroNoise;
+            end
+            
+            Xg = old_Hstate.Xg;
+            b = old_Hstate.b; % belief
+            
+            % generating feedback controls
+            [u , reliable] = obj.separated_controller.generate_feedback_control(b);
+            
+            % generating process noises
+            if ~exist('noise_mode','var')
+                w = MotionModel_class.generate_process_noise(Xg.val,u);
+            end
+            
+            % True state propagation
+            next_Xg_val = MotionModel_class.f_discrete(Xg.val,u,w);
+            
+            % generating observation noise
+            if ~exist('noise_mode','var')
+                Vg = ObservationModel_class.generate_observation_noise(next_Xg_val);
+            end
+            
+            % constructing ground truth observation
+            Zg = ObservationModel_class.h_func(next_Xg_val,Vg);
+            
+            % Since "StationaryKF_estimate" leads to unsymmetric estimation
+            % covariances, we use the LKF instead.
+            % b_next = Kalman_filter.StationaryKF_estimate(b,up+dU,Zg,obj.lnr_sys,obj.Stationary_Kalman_gain);
+            
+            % Note that if we use LKF in "Stationary_LQG" the linear system
+            % used for "prediction" is the same as the linear system used
+            % for "update".
+            b_next = obj.estimator.estimate(b,u,Zg,obj.lnr_sys,obj.lnr_sys);
+            
+            next_Hstate = Hstate(state(next_Xg_val),b_next);
         end
         function [nextBelief, reliable,sim] = executeOneStep(obj,oldBelief,sim,noiseFlag)
             % propagates the system and belief using Stationary Kalman Filter and
@@ -175,7 +219,7 @@ classdef SLQG_class < LQG_interface
             %     else
             %         error('Ali: Covariances are too unsymmetric!!')
             %     end
-            Pest_ss = obj.Stationary_Pest;
+            Pest_ss = obj.estimator.stationaryCov;
             Xg_mean = state(obj.lnr_pts.x);
             Xest_MeanOfMean = Xg_mean; % in the stationary Hbelief, the mean of Xg and the mean of Xest_mean are equal.
             stGHb = Hbelief_G(Xg_mean, Xest_MeanOfMean, Pest_ss,BigCov_better);
