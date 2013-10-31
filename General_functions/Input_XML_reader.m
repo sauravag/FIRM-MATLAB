@@ -180,7 +180,7 @@ par_new.stabilizer_parameters.max_stopping_time = 250;
 par_new.stabilizer_parameters.draw_cov_centered_on_nominal = 1;
 
 %=========== MonteCarlo Simulation
-par_new.par_n = 2; % number of particles
+par_new.par_n = 1; % number of particles
 
 %=========== (LQR design) Node and Edge controller
 LQR_cost_coef=[0.03*0.1 , 0.03*0.1 , 0.1];  % first entry is the "final state cost coeff". The second is the "state cost coeff", and the third is the "control cost coeff".
@@ -212,13 +212,13 @@ par_new.alpha_for_HBRM_cost = [0.01,0.1,1]; % respectively, corresponding to "st
 %=========== Roadmap Type and Construction
 par_new.RoadMap = 'FIRM'; % This parameter can be HBRM or FIRM
 par_new.No_history = 1;
-par_new.No_plot = 1; % this is for plots in construction phase. The execution phase plots are different.
+par_new.No_plot = 0; % this is for plots in construction phase. The execution phase plots are different.
 
 %=========== PRM parameters
 
 par_new.PRM_parameters.neighboring_distance_threshold = 15*1.5*10; %* 1.25 * 1000;% * 0.3;
 par_new.PRM_parameters.PRM_node_text = 1; % if this is one, the number of nodes will be written on the figure.
-par_new.PRM_parameters.PRM_node_plot_properties =  {'RobotShape','triangle','robotSize',2};% {'RobotShape','triangle','robotSize',2};
+par_new.PRM_parameters.PRM_node_plot_properties =  {'RobotShape','triangle','robotSize',0.2};% {'RobotShape','triangle','robotSize',2};
 par_new.PRM_parameters.draw_edges_flag = 1;
 
 % =========== Orbit parameters
@@ -322,9 +322,10 @@ elseif strcmpi(selected_motion_model,'FixedWing Aircraft')
     state_parameters.sup_norm_weights_nonNormalized = ones(state_parameters.stateDim , 1); 
     disp('state norm for aircraft model needs to be fixed')
     motion_model_parameters.controlDim = 4;
-    motion_model_parameters.eta_u_aircraft = [0.02 ; 0.01 ; 0.01 ; 0.01];  
-    motion_model_parameters.sigma_b_u_aircraft = [0.02 ; 0.01 ; 0.01 ; 0.01];  
-    P_rootsqaure_Wg_diags = [0.2 ; 0.2 ; 0.2 ; 0.001 ; 0.001 ; 0.001 ; 0.001];
+    motion_model_parameters.dt = 0.1;
+    motion_model_parameters.eta_u_aircraft = [0.0002 ; 0.0001 ; 0.0001 ; 0.0001];  
+    motion_model_parameters.sigma_b_u_aircraft = [0.0002 ; 0.0001 ; 0.0001 ; 0.0001];  
+    P_rootsqaure_Wg_diags = [0.0002 ; 0.0002 ; 0.0002 ; 0.0001 ; 0.0001 ; 0.0001 ; 0.0001];
     motion_model_parameters.P_Wg = diag(P_rootsqaure_Wg_diags.^2);
 elseif strcmpi(selected_motion_model,'Kuka YouBot Base')
     state_parameters.stateDim = 3;

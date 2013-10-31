@@ -28,8 +28,13 @@ classdef stabilizer_class < Stabilizer_interface
         function [seq_of_PHb, seq_of_GHb, target_reaching_probabilities] = construct_seq_of_Hb(obj,initial_PHb, initial_GHb)
             if ~user_data_class.par.No_plot
                 % Zoom in to the node area in the figure
+<<<<<<< HEAD
                 old_zoom = obj.PRM_node.zoom_in(5); % the input argument is the zoom ratio (wrt the axis size)
                 xlabel(['Point stabilizer ',num2str(obj.stabilizer_number),' is working ...']);
+=======
+%                 old_zoom = obj.zoom_in();
+                xlabel(['Orbit stabilizer',num2str(obj.stabilizer_number),' is working ...']);
+>>>>>>> ba6fc21e4458b0b1914888aaba4114631ed30a9f
             end
             disp(['Point stabilizer ',num2str(obj.stabilizer_number),' is working ...'])
             % initializing the particle Hbelief sequence
@@ -57,7 +62,13 @@ classdef stabilizer_class < Stabilizer_interface
                 seq_of_PHb(k+1) = obj.controller.propagate_Hb_particle(seq_of_PHb(k));
                 if ~user_data_class.par.No_plot
                     if obj.par.draw_cov_centered_on_nominal == 1 % in this case, we do NOT draw estimation covariance centered at estimation mean. BUT we draw estimation covariance centered at nominal state locations, to illustrate the covariance convergence.
+<<<<<<< HEAD
                         nominal_x = obj.PRM_node;
+=======
+                        T = obj.PRM_orbit.period;
+                        cyclic_kPlus1 = mod(k+1,T)+(T*(mod(k+1,T)==0));
+                        nominal_x = state(obj.controller.lnr_pts(cyclic_kPlus1).x);
+>>>>>>> ba6fc21e4458b0b1914888aaba4114631ed30a9f
                         seq_of_PHb(k+1) = seq_of_PHb(k+1).draw_CovOnNominal(nominal_x , 'robotshape','triangle','XgtriaColor','g','XestTriaColor','r','XgColor','g','XestColor','r');
                         seq_of_PHb(k) = seq_of_PHb(k).delete_plot();
                     else  % This is the normal case, where we draw the estimation covariance centered at estimation mean.

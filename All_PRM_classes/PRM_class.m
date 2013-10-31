@@ -22,6 +22,7 @@ classdef PRM_class < PRM_interface
             % will be used.
             old_prop = obj.set_figure();
             % The following initializations are necessary. Because the initialization in the "property definition" is not enough, when we loading an existing object of this class, that initialization does not happen.
+<<<<<<< HEAD
             obj.edges_plot_handle = [];
             % retrieve PRM parameters provided by the user
             node_text_flag = obj.par.PRM_node_text;
@@ -38,6 +39,33 @@ classdef PRM_class < PRM_interface
                     obj.nodes(p) = obj.nodes(p).draw(varargin_node_props{:},'text',num2str(p));
                 else
                     obj.nodes(p) = obj.nodes(p).draw(varargin_node_props{:});
+=======
+            obj.orbit_edges_traj_handle = [];
+            obj.orbit_edges_plot_handle = [];
+            obj.orbit_text_handle = [];
+            
+            %             text_size = obj.par.orbit_text_size;  % User-provided value for "OrbitTextSize" property.
+            %             text_color = obj.par.orbit_text_color; % User-provided value for "OrbitTextColor" property.
+            %             text_shift = obj.par.orbit_text_shift; % User-provided value for shifting the text a little bit to the left. % for some reason MATLAB shifts the starting point of the text a little bit to the right. So, here we return it back.
+            %             robot_shape = obj.par.orbit_robot_shape;
+            %robot_size = obj.par.orbit_robot_size;
+            node_to_orbit_trajectories_flag = obj.par.node_to_orbit_trajectories_flag;
+            %             orbit_edge_spec = obj.par.orbit_edge_spec;
+            %             orbit_edge_width = obj.par.orbit_edge_width;
+            
+            % drawing orbits and orbit numbers
+            for i = 1:obj.num_orbits
+                orbit_plot_varargin = {'OrbitText', num2str(i)};
+                obj.orbits(i) = MotionModel_class.draw_orbit(obj.orbits(i), orbit_plot_varargin{:});  % the plot_handle of the orbit is saved as a filed of orbit itself.
+            end
+            
+            % drawing orbit_edges
+            for i = 1 : size(obj.orbit_edges_trajectory,1)
+                for j = 1 : size(obj.orbit_edges_trajectory,2)
+                    if ~isempty(obj.orbit_edges_trajectory(i,j).x)
+                        traj_plot_handle = MotionModel_class.draw_nominal_traj(obj.orbit_edges_trajectory(i,j), node_to_orbit_trajectories_flag);
+                    end
+>>>>>>> ba6fc21e4458b0b1914888aaba4114631ed30a9f
                 end
             end
             obj.reset_figure(old_prop);
@@ -210,7 +238,112 @@ classdef PRM_class < PRM_interface
     end
     
     methods (Access = private)
+<<<<<<< HEAD
         function neighbors = find_neighbors(obj,i)
+=======
+        function obj = request_orbits(obj)
+            % This function reveives orbits from the user and draws them.
+            old_prop = obj.set_figure();
+            title({'Please mark the center of orbits'},'fontsize',14)
+            tmp_neighb_plot_handle = [];
+            scale = obj.par.neighboring_distance_threshold;
+            for i = 1:obj.max_number_of_orbits
+                new_orbit = MotionModel_class.sample_a_valid_orbit();
+                if isempty(new_orbit)
+                    delete(tmp_neighb_plot_handle)
+                    break
+                else
+                    new_orbit = obj.select_nodes_on_an_orbit(new_orbit);
+                    obj = obj.add_set_of_orbits(new_orbit);
+                    % depict the distance from the node that can connect to
+                    % other nodes
+                    delete(tmp_neighb_plot_handle)
+                    %tmp_neighb_plot_handle = MotionModel_class.draw_orbit_neighborhood(new_orbit, scale);
+                    disp('uncomment line 273 orbit_prm_class for the drawing');
+                end
+            end
+            obj.reset_figure(old_prop)
+            title([])
+            obj.num_orbits = size(obj.orbits,2);
+        end
+        function orbit = select_nodes_on_an_orbit(obj, orbit)
+            % defining PNPRM nodes on the orbits
+            orbit.num_nodes = obj.par.num_nodes_on_orbits; % number of nodes on each orbit
+            time_dist = orbit.period/orbit.num_nodes; % distance between two consecutive nodes on an orbit. (here, it is a float number)
+            if time_dist < 1, error('The number of nodes on orbit is more than the length of orbit.'), end
+            time_dist = floor(time_dist); % distance between two consecutive nodes on an orbit. (Now, it is a whole number)
+            s = ceil(orbit.period/2); % we start from the middle of orbit
+            tmp_locs = s+[0:orbit.num_nodes-1]*time_dist; %#ok<NBRAK> % temporary node locations (time steps) on an orbit
+            orbit.node_time_stages = mod(tmp_locs,orbit.period)+(orbit.period*(mod(tmp_locs,orbit.period)==0)); % Here, we apply the periodic nature of the orbit to keep the node time between 1 and T.
+        end
+        function obj = add_orbit(obj,new_orbit)
+            % first we increase the number of orbits by one
+            obj.num_orbits = obj.num_orbits + 1;
+            % assign an index to the new orbit
+            new_orbit_ind = obj.num_orbits;
+            disp(['Adding PNPRM orbit ',num2str(new_orbit_ind), ' to the PNPRM']);
+            % add it to the list of orbits
+            if isempty(obj.orbits)  % I put this "if statement" becuase if "obj.orbits" is empty, Matlab does not let you to save the "new_orbit" in its first entry.
+                obj.orbits = new_orbit;
+            else
+                obj.orbits(new_orbit_ind) = new_orbit;
+            end
+            % drawing the new node
+            orbit_prop_varargin = {}; %obj.par.PRM_orbit_plot_properties;
+%             if ~isfield(new_orbit, 'plot_handle') || isempty(new_orbit.plot_handle)  % check if the orbit is already drawn
+%                 obj.orbits(new_orbit_ind) = MotionModel_class.draw_orbit(obj.orbits(new_orbit_ind), orbit_prop_varargin{:});
+%             end
+           disp('Uncomment the above three lines for drawing Orbit_PRM_Class.m line 307');
+            % we compute the neighbors of the newly added orbit.
+            neighbors_of_new = obj.find_orbit_neighbors(new_orbit_ind);
+            % we add the orbit_edges corresponding to this new orbit. 
+            for j = neighbors_of_new % "neighbors_of_new" must be a row vector for this loop to work.
+                % We first consider the orbit_edges that goes out of this orbit
+                obj = add_orbit_edge(obj, new_orbit, obj.orbits(j), new_orbit_ind, j);
+                % Then, we consider the orbit_edges that comes into this orbit.
+                obj = add_orbit_edge(obj, obj.orbits(j), new_orbit, j, new_orbit_ind);
+            end
+            % since "obj.orbit_edges_matrix" may not be square after above
+            % opertations (if the reverse orbit_edges are not collision-free), we make it square here.
+            tmp = zeros(obj.num_orbits,obj.num_orbits);
+            tmp(1:size(obj.orbit_edges_matrix,1) , 1:size(obj.orbit_edges_matrix,2)) = obj.orbit_edges_matrix;
+            obj.orbit_edges_matrix = tmp;
+        end
+        function obj = add_orbit_edge(obj, start_orbit, end_orbit, start_orbit_ind, end_orbit_ind)
+            nominal_traj = MotionModel_class.generate_VALID_open_loop_orbit2orbit_traj(start_orbit, end_orbit); % generates open-loop trajectories between two start and end orbits
+            if ~isempty(nominal_traj)
+                obj.orbit_edges_list = [obj.orbit_edges_list ; [start_orbit_ind , end_orbit_ind]]; % adding orbit_edge to the list of orbit_edges
+                if isempty(obj.orbit_edges_trajectory) % I put this "if statement" becuase if "obj.orbit_edges_trajectory" is empty, Matlab does not let you to save the "nominal_traj" in any of its entries.
+                    obj.orbit_edges_trajectory.x = [];obj.orbit_edges_trajectory.u = [];
+                end
+                obj.orbit_edges_trajectory(start_orbit_ind , end_orbit_ind) = nominal_traj; % adding orbit itself to the set of orbits
+                traj_plot_handle = MotionModel_class.draw_nominal_traj(nominal_traj, obj.par.node_to_orbit_trajectories_flag); % plot the orbit
+                obj.orbit_edges_plot_handle = [obj.orbit_edges_plot_handle , traj_plot_handle];
+                %disp('Uncomment line 332/3 Orbit_PRM_class for drawing');
+                obj.orbit_edges_matrix(start_orbit_ind , end_orbit_ind) = 1;
+            end
+        end
+        function obj = construct_nodes(obj)
+            obj.nodes = state.empty; % class type initialization
+            n = 0; % n represents the absolute number of PRM nodes (Not on a single orbit, but among all PRM nodes)
+            for i = 1:obj.num_orbits
+                for alpha = 1:obj.orbits(i).num_nodes
+                    n = n+1;
+                    node_time_on_orbit = obj.orbits(i).node_time_stages(alpha);
+                    node_tmp(alpha) = state ( obj.orbits(i).x(:,node_time_on_orbit) ); %#ok<AGROW>
+                    obj.nodes(n) = node_tmp(alpha);
+                    obj.corresponding_orbit(n) = i;
+                end
+            end
+            obj.num_nodes = n;
+        end
+        function obj = construct_edges(obj)
+            error('The name and inside of this function needs to be changed as we differentiate between orbit_edges and edges')
+            obj.edges_matrix = obj.orbit_edges_matrix;
+            obj.edges_list = obj.orbit_edges_list;
+        end
+        function neighbors = find_orbit_neighbors(obj,i_orbit)
+>>>>>>> ba6fc21e4458b0b1914888aaba4114631ed30a9f
             neighbors = [];
             for j = [1:i-1,i+1:obj.num_nodes]
                 elem_wise_distance = abs(obj.nodes(i).signed_element_wise_dist(obj.nodes(j))); % Never forget "abs" function

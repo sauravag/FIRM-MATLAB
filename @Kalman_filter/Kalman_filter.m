@@ -47,6 +47,7 @@ classdef Kalman_filter
             Xest_next = Xprd+KG*innov;
             Pest_next = Pprd-KG*H*Pprd;
             b = belief(state(Xest_next),Pest_next);
+            b = b.apply_differentiable_constraints(); % e.g., quaternion norm has to be one
         end
         function b = update_with_periodic_gain(b_prd,Zg,lnr_sys,periodic_Kalman_gain)
             % lnr_sys is the linear or linearized system, Kalman filter is

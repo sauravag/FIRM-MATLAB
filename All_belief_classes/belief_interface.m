@@ -32,6 +32,11 @@ classdef belief_interface
             obj.ellipse_handle = [];
             obj.est_mean = obj.est_mean.delete_plot(varargin{:});
         end
+        function obj = apply_differentiable_constraints(obj)
+            % normally this function is empty. If the state has any
+            % differentiable constraints (e.g., quaternion norm is one),
+            % this function needs to be written specifically.
+        end
     end
 
 end

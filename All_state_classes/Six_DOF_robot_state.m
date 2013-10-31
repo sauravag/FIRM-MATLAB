@@ -19,13 +19,19 @@ classdef Six_DOF_robot_state < state_interface
         function signed_dist_vector = signed_element_wise_dist(obj,x2) % this function returns the "Signed element-wise distance" between two states x1 and x2
              x1 = obj.val; % retrieve the value of the state vector
              if isa(x2,'state'), x2=x2.val; end % retrieve the value of the state vector
-             linear_distance = x1(1:3,1) - x2(1:3,1) ; % [X1-X2, Y1-Y2, Z1-Z2]'
-             %The relative quaternion so to speak 
-             % q_rel = q_current * inv(q_nominal)
-             q_1 = [x1(4) x1(5) x1(6) x1(7)];
-             q_2 = [x2(4) x2(5) x2(6) x2(7)];
-             q21 = quatmultiply(q_1,quatinv(q_2)); % relative rotation quaternion from nominal to current
-             signed_dist_vector = [linear_distance;q21'];
+             signed_dist_vector = x1 - x2; % [X1-X2, Y1-Y2, Z1-Z2]'
+             qnorm = norm(signed_dist_vector(4:7));
+             if qnorm ~= 0
+                 signed_dist_vector = [signed_dist_vector(1:3);signed_dist_vector(4:7)/qnorm];
+             end
+             
+%              linear_distance = x1(1:3,1) - x2(1:3,1) ; % [X1-X2, Y1-Y2, Z1-Z2]'
+%              %The relative quaternion so to speak 
+%              % q_rel = q_current * inv(q_nominal)
+%              q_1 = [x1(4) x1(5) x1(6) x1(7)];
+%              q_2 = [x2(4) x2(5) x2(6) x2(7)];
+%              q21 = quatmultiply(q_1,quatinv(q_2)); % relative rotation quaternion from nominal to current
+%              signed_dist_vector = [linear_distance;q21'];
         end
         function obj = draw(obj, varargin)
             % The full list of properties for this function is:
@@ -68,9 +74,13 @@ classdef Six_DOF_robot_state < state_interface
             end
             x=obj.val;
             obj.head_handle = plot3(x(1),x(2),x(3),'Marker',head_shape,'MarkerSize',head_size,'MarkerEdgeColor',head_color,'MarkerFaceColor',head_color);
-            vertices_x=[0,-robot_size,-robot_size,0];
-            vertices_y=[0,-robot_size/5,robot_size/5,0];
-            vertices_z=[0,0,0,0];
+            robot_size = 0.4;
+%             vertices_x=[0,-robot_size,-robot_size,0];
+%             vertices_y=[0,-robot_size/5,robot_size/5,0];
+%             vertices_z=[0,0,0,0];
+            vertices_x=[0,-robot_size,-robot_size,-robot_size,-robot_size/2,-robot_size,-robot_size,0];
+            vertices_y=[0,-robot_size/5,0,0,0,0,robot_size/5,0];
+            vertices_z=[0,0,0,robot_size/10,0,0,0,0];
             
             q_rot = Quaternion(x(4:7)); % rotation quaternion
             q_rot = unit(q_rot);% making a normalized quarternion, dont use quatnormalize
@@ -167,6 +177,18 @@ classdef Six_DOF_robot_state < state_interface
             new_ylim = new_center(2) + [-new_y_length,new_y_length]/2;
             axis([new_xlim,new_ylim])
         end
+        function obj = apply_differentiable_constraints(obj)
+            qnorm = norm(obj.val(4:7));
+            if qnorm ~=0
+                obj.val(4:7) = obj.val(4:7)/qnorm;
+            end
+        end
+        function J = get_differentiable_constraints_jacobian(obj)
+            q = obj.val(4:7);
+            nq = norm(q);
+            Jq = -nq^(-3)*(q*q')+nq^(-1)*eye(4);
+            J = blkdiag(eye(3),Jq);
+        end
     end
     
     methods (Static)
@@ -185,8 +207,8 @@ classdef Six_DOF_robot_state < state_interface
                         [xrange(1) yrange(1) zrange(1)];
                     
                     yaw = rand*2*pi;
-                    pitch = rand*2*pi;
-                    roll =  rand*2*pi;
+                    pitch = -pi/2 + rand*pi;
+                    roll =  -pi/2 + rand*pi;
                     quat = angle2quat(yaw,pitch,roll);
                     sampled_state = state([x , y , xyz(3), quat]');
                 end
