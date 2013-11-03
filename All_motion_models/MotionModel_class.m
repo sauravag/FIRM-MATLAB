@@ -35,8 +35,8 @@ classdef MotionModel_class < MotionModel_interface
     methods (Static = true)
 
         function x_next = f_discrete(x,u,w)
-            pos = x(1:3);% position state
-            rot  = x(4:7);% rotation state
+            pos = [x(1) ; x(2) ; x(3)];% position state
+            rot  = [x(4) ; x(5) ; x(6) ; x(7)];% rotation state
             q_rot = Quaternion(rot);
             q_rot = unit(q_rot);% making a normalized quarternion, dont use quatnormalize
             p = q_rot.R;
@@ -291,7 +291,7 @@ classdef MotionModel_class < MotionModel_interface
             end
             
             if ~isempty(nomXs)
-                nominal_traj.x = nomXs;
+                nominal_traj.x = [start,nomXs];
                 nominal_traj.u = controls;
             end
             
@@ -380,7 +380,11 @@ classdef MotionModel_class < MotionModel_interface
             orbit.u = u_p;  % "u_p" is of length T.
             orbit.plot_handle = [];
         end
-        
+        function point = point_on_orbit(orbit, point_angle)
+            gamma = point_angle;
+            %start_orbit.radius*[cos(gamma_start_of_orbit_edge);sin(gamma_start_of_orbit_edge);0]+start_orbit.center.val;
+            
+        end
                 %% Draw an orbit
         function orbit = draw_orbit(orbit,varargin)
             % This function draws the orbit.
