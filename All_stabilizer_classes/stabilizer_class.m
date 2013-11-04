@@ -116,7 +116,7 @@ classdef stabilizer_class < Stabilizer_interface
             end
             % zoom out
             if ~user_data_class.par.No_plot
-                obj.zoom_out(old_zoom);
+%                 obj.zoom_out(old_zoom);
             end
         end
         function [next_Hstate, lost, YesNo_unsuccessful, absolute_landed_node_ind] = execute(obj,current_Hstate, convergence_time)
