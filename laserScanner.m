@@ -54,7 +54,9 @@ classdef laserScanner
             [obj.laserResponse(4),obj.rob_ori] = vrep.simxGetObjectOrientation(clientID,robot,-1,vrep.simx_opmode_streaming);
             
             %% Checking for initial data reception
-            while(obj.status ==0)
+            countAttempt = 0;
+            while(obj.status ==0 && countAttempt <6)
+              countAttempt = countAttempt+1;  
                 [obj.laserResponse(1)] = vrep.simxSetStringSignal(clientID,'request',mode,vrep.simx_opmode_oneshot);
                 if (obj.laserResponse(1)==vrep.simx_error_noerror)
                     [obj.laserResponse(2),obj.oneScan] = vrep.simxGetStringSignal(clientID,'reply',vrep.simx_opmode_buffer);
@@ -128,7 +130,7 @@ classdef laserScanner
                 end
             end
             %%
-            pause(0.5); %% Necessary for communication. You may decrease the pause based on your requirements and System Capabilities
+         %%%%%%%%%% FIXIT :DO we really need this  pause(0.5); %% Necessary for communication. You may decrease the pause based on your requirements and System Capabilities
             
         end
     end

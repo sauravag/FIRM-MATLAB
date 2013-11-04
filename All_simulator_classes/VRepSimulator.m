@@ -81,9 +81,6 @@ classdef VRepSimulator < SimulatorInterface
             obj.vrep.delete();
             fprintf('Simulation Ended\n');
         end
-    end
-    
-    methods
         
         
         %% Setting up the environment
@@ -103,9 +100,9 @@ classdef VRepSimulator < SimulatorInterface
             % Taking user input for choice of planner and robot model
             %             fprintf('Enter the name of the robot model used : \ndr12 or dr20 or youbot\n');
             %             obj.robotModel = input('Enter the model : ','s');
-%             obj.robotModel = 'dr20';
+            %             obj.robotModel = 'dr20';
             %               obj.robotModel = 'dr12';
-                          obj.robotModel = 'youbot';
+            obj.robotModel = 'youbot';
             %             fprintf('Enter choice for the planner\n for FIRM enter "1" \tor\tfor V-Rep internal Planner enter "0" :\n')
             %             obj.planner = str2num(input('Enter the planner : ','s'));
             disp('planner is FIRM \n')
@@ -120,7 +117,8 @@ classdef VRepSimulator < SimulatorInterface
                     obj.scene = fullfile(pwd,'laser_test_dr20_with_control.ttt');
                     
                 elseif(strcmp(obj.robotModel,'youbot'))
-                    obj.scene = fullfile(pwd,'laser_test_youbot_with_control.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
+                    %                     obj.scene = fullfile(pwd,'laser_test_youbot_with_control.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
+                    obj.scene = fullfile(pwd,'youbot_test_w_laser.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
                     
                 end
                 
@@ -130,7 +128,8 @@ classdef VRepSimulator < SimulatorInterface
                 elseif(strcmp(obj.robotModel,'dr20'))
                     obj.scene = fullfile(pwd,'env_fourthfloor.ttt');
                 elseif(strcmp(obj.robotModel,'youbot'))
-                    obj.scene = fullfile(pwd,'laser_test_youbot_with_control.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
+                    %                     obj.scene = fullfile(pwd,'laser_test_youbot_with_control.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
+                    obj.scene = fullfile(pwd,'youbot_test_wo_laser.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
                     
                 end
             end
@@ -161,8 +160,9 @@ classdef VRepSimulator < SimulatorInterface
                 obj.interWheelDistance = 0.254;
                 [res, obj.robot] = obj.vrep.simxGetObjectHandle(obj.clientID,'dr20',obj.vrep.simx_opmode_oneshot_wait);
             elseif(strcmp(obj.robotModel,'youbot'))
-                obj.interWheelDistance = 0.254;
-                [res, obj.robot] = obj.vrep.simxGetObjectHandle(obj.clientID,'youBot#0',obj.vrep.simx_opmode_oneshot_wait);
+                
+                %                 [res, obj.robot] = obj.vrep.simxGetObjectHandle(obj.clientID,'youBot#0',obj.vrep.simx_opmode_oneshot_wait);
+                [res, obj.robot] = obj.vrep.simxGetObjectHandle(obj.clientID,'youBot',obj.vrep.simx_opmode_oneshot_wait);
                 
             end
             
@@ -185,8 +185,8 @@ classdef VRepSimulator < SimulatorInterface
                     obj.controlType = 'kinematic';
                 elseif(mode==2)
                     obj.controlType = 'dynamic';
-                    [res(14)] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, obj.robot_joints(2), 0,obj.vrep.simx_opmode_streaming);
-                    [res(15)] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, obj.robot_joints(3), 0,obj.vrep.simx_opmode_streaming);
+                    %                     [res(14)] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, obj.robot_joints(2), 0,obj.vrep.simx_opmode_streaming);
+                    %                     [res(15)] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, obj.robot_joints(3), 0,obj.vrep.simx_opmode_streaming);
                 end
             end
             
@@ -205,7 +205,8 @@ classdef VRepSimulator < SimulatorInterface
         
         %% Setting up the Robot
         function obj = setRobot(obj,position)
-            
+            if isa(position,'state'), position = position.val; end
+
             %Setting position of the robot
             % remember to convert position[1] to position.val[1] and do so
             % when trying to use the full closed loop problem
@@ -217,9 +218,9 @@ classdef VRepSimulator < SimulatorInterface
                 [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[position(1),position(2), 0.1517],obj.vrep.simx_opmode_oneshot);
                 [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,-1,[0,0,position(3)],obj.vrep.simx_opmode_oneshot);
             elseif (strcmp(obj.robotModel,'youbot'))
-                                [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[position(1),position(2), 0.1517],obj.vrep.simx_opmode_oneshot);
+                [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[position(1),position(2), 0.0957],obj.vrep.simx_opmode_oneshot);
                 [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,-1,[0,0,position(3)],obj.vrep.simx_opmode_oneshot);
-
+                
             end
         end
         
@@ -344,19 +345,29 @@ classdef VRepSimulator < SimulatorInterface
                         [res(16)] = obj.vrep.simxPauseCommunication(obj.clientID,0);% Resuming communication between MATLAB and V-rep
                     end
                     
-                     elseif(strcmp(obj.robotModel,'youbot'))
+                elseif(strcmp(obj.robotModel,'youbot'))
                     wheelDiameter = 0.085;
                     % Converting control signals to wheel velocities
                     obj.leftJointVelocity = 0.2;%(linear_velocity - ((obj.interWheelDistance*ang_velocity)/2))*(2/wheelDiameter);
                     obj.rightJointVelocity = 0.2;%(linear_velocity + ((obj.interWheelDistance*ang_velocity)/2))*(2/wheelDiameter);
                     
                     if(strcmp(obj.controlType,'dynamic'))
-                        [res(14)] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, obj.robot_joints(2), obj.leftJointVelocity,obj.vrep.simx_opmode_oneshot);
-                        [res(15)] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, obj.robot_joints(3), obj.rightJointVelocity,obj.vrep.simx_opmode_oneshot);
-                        for i=1:17
-                        [res(14)] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, obj.robot_joints(i), obj.leftJointVelocity,obj.vrep.simx_opmode_oneshot);
+                        [res, rollingJoint_fl] = obj.vrep.simxGetObjectHandle(obj.clientID,'rollingJoint_fl',obj.vrep.simx_opmode_oneshot_wait); %1-->1
+                        [res, rollingJoint_fr] = obj.vrep.simxGetObjectHandle(obj.clientID,'rollingJoint_fr',obj.vrep.simx_opmode_oneshot_wait); %4-->2
+                        [res, rollingJoint_rl] = obj.vrep.simxGetObjectHandle(obj.clientID,'rollingJoint_rl',obj.vrep.simx_opmode_oneshot_wait); %2-->3
+                        [res, rollingJoint_rr] = obj.vrep.simxGetObjectHandle(obj.clientID,'rollingJoint_rr',obj.vrep.simx_opmode_oneshot_wait); %3-->4
                         
-                        end
+                        
+                        %% Set the joint velocities
+                        vel_w_fl = control(1);
+                        vel_w_fr = control(2);
+                        vel_w_rl = control(3);
+                        vel_w_rr = control(4);
+                        
+                        [res_fl] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, rollingJoint_fl,vel_w_fl,obj.vrep.simx_opmode_oneshot_wait);%1-->1
+                        [res_fr] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, rollingJoint_fr, vel_w_fr,obj.vrep.simx_opmode_oneshot_wait);%4-->2
+                        [res_rl] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, rollingJoint_rl,vel_w_rl,obj.vrep.simx_opmode_oneshot_wait);%2-->3
+                        [res_rr] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, rollingJoint_rr, vel_w_rr,obj.vrep.simx_opmode_oneshot_wait);%3-->4
                         
                     elseif(strcmp(obj.controlType,'kinematic'))
                         
@@ -389,7 +400,7 @@ classdef VRepSimulator < SimulatorInterface
                         [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[obj.robot_position(1),obj.robot_position(2), 0.1517],obj.vrep.simx_opmode_oneshot);
                         [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,-1,[0,0,obj.robot_orientation(3)],obj.vrep.simx_opmode_oneshot);
                         [res(16)] = obj.vrep.simxPauseCommunication(obj.clientID,0);% Resuming communication between MATLAB and V-rep
-                    end               
+                    end
                     
                     
                     

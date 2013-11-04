@@ -97,7 +97,13 @@ classdef LQG_class
             end
             
             feedback_gain = obj.L_seq{k};
+            
+            persistent error_hist            
+            
             dU = - feedback_gain*est_OF_error; % feedback control du
+            
+            error_hist = [error_hist, est_OF_error];
+            
             up = obj.planned_lnr_pts_seq(k).u; % planned u
             
             % generating process noises

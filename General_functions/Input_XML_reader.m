@@ -2,7 +2,6 @@ function par_new = Input_XML_reader(old_par, par_new_from_GUI, new_output_direct
 
 %  Parameters (they have to go into an XML)
 %=======================================================================================
-
 par_new = par_new_from_GUI;   % first we copy the newly provided parameters from GUI
 
 %=========== Simulator Parameters
@@ -73,6 +72,10 @@ elseif strcmpi(par_new.selected_motion_model,'FixedWing Aircraft')
     typeDef('Six_DOF_robot_state' , 'state')
     typeDef('Six_DOF_robot_belief' , 'belief')
     typeDef('Aircraft_Kinematic' , 'MotionModel_class')
+elseif strcmpi(par_new.selected_motion_model,'Kuka YouBot Base')
+    typeDef('planar_robot_XYTheta_state' , 'state')
+    typeDef('planar_robot_XYTheta_belief' , 'belief')
+    typeDef('youbot_base' , 'MotionModel_class')
 end
 
 [par_new.motion_model_parameters , par_new.state_parameters] = gather_state_and_motion_model_parameters(old_par, par_new.selected_motion_model);
@@ -324,6 +327,17 @@ elseif strcmpi(selected_motion_model,'FixedWing Aircraft')
     motion_model_parameters.sigma_b_u_aircraft = [0.0002 ; 0.0001 ; 0.0001 ; 0.0001];  
     P_rootsqaure_Wg_diags = [0.0002 ; 0.0002 ; 0.0002 ; 0.0001 ; 0.0001 ; 0.0001 ; 0.0001];
     motion_model_parameters.P_Wg = diag(P_rootsqaure_Wg_diags.^2);
+elseif strcmpi(selected_motion_model,'Kuka YouBot Base')
+    state_parameters.stateDim = 3;
+    state_parameters.sup_norm_weights_nonNormalized = 1./[1 ; 1 ; inf]; % You can think of the right-most vector (in the denominator) as the ractangular neighborhood used in finding neighbor nodes in constructing PRM graph. Note that this must be a column vector.
+    motion_model_parameters.controlDim = 4;
+    motion_model_parameters.dt = 0.1;
+    motion_model_parameters.eta_u_KukaBase = [0; 0; 0; 0];  %str2num(get(handles.edit_eta_u_omni,'String'))'; %#ok<ST2NM> % note that eta_u in this case is a three by one vector, reprensing eta for velocity of each of omni-dir wheels.
+    motion_model_parameters.sigma_b_u_KukaBase = [0; 0; 0; 0];  % note that sigma_b_u in this case is a three by one vector, reprensing sigma_b (bias variance) for linear velocity and angular velocity.
+    P_rootsqaure_Wg_diags=[0.2 ; 0.2 ; 4*pi/180]*2;
+    motion_model_parameters.P_Wg=diag(P_rootsqaure_Wg_diags.^2);
+    motion_model_parameters.distBetweenFrontWheels = 0.158*2; % from YouBot datasheet
+    motion_model_parameters.distBetweenFrontAndBackWheels = 0.228*2; % from YouBot datasheet
 else
     error('SFMP algorithm: The selected motion model does not match with the existing database');
 end

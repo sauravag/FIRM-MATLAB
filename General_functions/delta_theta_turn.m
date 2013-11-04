@@ -1,4 +1,5 @@
 function delta_th = delta_theta_turn(th_initial, th_final, direction)
+% this function returns the angle difference in the [-2pi, 2pi] range
 
 if strcmpi( direction, 'cw' ) % check if the direction is clockwise
     th_init_0_2pi = mod(th_initial, 2*pi) ; % here we shift the "th_initial"to the [0,2pi] range

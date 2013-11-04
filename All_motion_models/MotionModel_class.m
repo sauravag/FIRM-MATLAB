@@ -291,7 +291,7 @@ classdef MotionModel_class < MotionModel_interface
             end
             
             if ~isempty(nomXs)
-                nominal_traj.x = nomXs;
+                nominal_traj.x = [start,nomXs];
                 nominal_traj.u = controls;
             end
             
@@ -380,7 +380,11 @@ classdef MotionModel_class < MotionModel_interface
             orbit.u = u_p;  % "u_p" is of length T.
             orbit.plot_handle = [];
         end
-        
+        function point = point_on_orbit(orbit, point_angle)
+            gamma = point_angle;
+            %start_orbit.radius*[cos(gamma_start_of_orbit_edge);sin(gamma_start_of_orbit_edge);0]+start_orbit.center.val;
+            
+        end
                 %% Draw an orbit
         function orbit = draw_orbit(orbit,varargin)
             % This function draws the orbit.

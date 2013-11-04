@@ -190,7 +190,8 @@ classdef Orbit_PRM_class < PRM_interface
             [~,min_ind] = min(dist);
             nearest_node_ind = neighbors(min_ind);
         end
-        function nominal_traj = generate_node_to_orbit_trajectory(obj , start_orbit_ind, node_ind_on_orbit , end_orbit_ind)
+        function nominal_traj = generate_node_to_orbit_trajectory_obsolete(obj , start_orbit_ind, node_ind_on_orbit , end_orbit_ind)
+            error('should not be called -- obsolete')
             % This funtion concatenates a part on orbit and the "PRM.orbit_edges_trajectory" to generate the node to
             % orbit trajectories.
                 
@@ -236,6 +237,74 @@ classdef Orbit_PRM_class < PRM_interface
             end
             
             end_orbit_edge_time = floor((angle_diff)/delta_theta_on_orbit);
+            if end_orbit_edge_time ==0, end_orbit_edge_time =T; end
+            post_edge_traj.x = [ end_orbit.x(:,end_orbit_edge_time:T) ];
+            post_edge_traj.u = [ end_orbit.u(:,end_orbit_edge_time:T) ];
+            
+            nominal_traj.x = [pre_edge_traj.x , obj.orbit_edges_trajectory(start_orbit_ind,end_orbit_ind).x , post_edge_traj.x];
+            nominal_traj.u = [pre_edge_traj.u , obj.orbit_edges_trajectory(start_orbit_ind,end_orbit_ind).u , post_edge_traj.u];
+            
+            disp('Following lines seems problematic')
+            nominal_traj.x = [pre_edge_traj.x(:,1:end-1) , obj.orbit_edges_trajectory(start_orbit_ind,end_orbit_ind).x(:,1:end-1) , post_edge_traj.x];
+            nominal_traj.u = [pre_edge_traj.u , obj.orbit_edges_trajectory(start_orbit_ind,end_orbit_ind).u , post_edge_traj.u];
+            
+        end
+        function nominal_traj = generate_node_to_orbit_trajectory(obj , start_orbit_ind, node_ind_on_orbit , end_orbit_ind)
+            % This
+            
+            % This funtion concatenates a part on orbit and the "PRM.orbit_edges_trajectory" to generate the node to
+            % orbit trajectories.
+                
+            % computing closest state on the orbit to the
+            % "temp_orbit_edge_start" %  Not complete
+            start_orbit = obj.orbits(start_orbit_ind);
+            end_orbit = obj.orbits(end_orbit_ind);
+            
+            alpha = node_ind_on_orbit; % the number of node on the starting orbit.
+            node_time_stage = start_orbit.node_time_stages(alpha); % the time stage of alpha-th node on i-th orbit
+            %initial_gamma = atan2(start_orbit.x(2,1) - start_orbit.center(2),start_orbit.x(1,1) - start_orbit.center(1));  % The anlge on which the start of orbit lies.
+            node_gamma   = atan2(start_orbit.x(2,node_time_stage) - start_orbit.center.val(2) , start_orbit.x(1,node_time_stage) - start_orbit.center.val(1));  % The anlge on which the "alpha"-th node on orbit lies.
+            angle_of_connecting_line = atan2( end_orbit.center.val(2) - start_orbit.center.val(2) , end_orbit.center.val(1) - start_orbit.center.val(1) ); % the angle of the orbit_edge connecting two orbit i to j
+            gamma_start_of_orbit_edge = angle_of_connecting_line - pi/2; % the angle on which the starting point of orbit_edge lies on orbit i.
+            leaving_point = MotionModel_class.point_on_orbit(start_orbit, gamma_start_of_orbit_edge);
+                        
+            % making "gamma" and "node_gamma" positive.
+            % it is very problematic part (verified by plotting)
+            gamma_start_of_orbit_edge = mod(gamma_start_of_orbit_edge, 2*pi);
+            node_gamma = mod(node_gamma, 2*pi);
+            if node_gamma>gamma_start_of_orbit_edge
+                node_gamma = node_gamma - 2*pi;
+            end
+            % till here
+            
+            delta_theta_on_orbit = 2*pi/start_orbit.period;
+            steps_till_start_of_orbit_edge_rational = -delta_theta_turn(node_gamma,gamma_start_of_orbit_edge,'cw')/delta_theta_on_orbit;
+            steps_till_start_of_orbit_edge_minusOne = floor(steps_till_start_of_orbit_edge_rational);
+            steps_till_start_of_orbit_edge = ceil(steps_till_start_of_orbit_edge_rational);
+                        
+            T = start_orbit.period;
+            fraction = steps_till_start_of_orbit_edge_rational - steps_till_start_of_orbit_edge_minusOne;
+            if node_time_stage+steps_till_start_of_orbit_edge_minusOne < T
+                pre_edge_traj.x = [ start_orbit.x(:,node_time_stage : node_time_stage+steps_till_start_of_orbit_edge_minusOne), leaving_point];
+                pre_edge_traj.u = [start_orbit.u(:,node_time_stage : node_time_stage+steps_till_start_of_orbit_edge_minusOne -1), ...
+                    start_orbit.u(:, node_time_stage+steps_till_start_of_orbit_edge_minusOne)*fraction];
+            else
+                more_than_period = node_time_stage+steps_till_start_of_orbit_edge_minusOne - T;
+                pre_edge_traj.x = [ start_orbit.x(:,node_time_stage : T), start_orbit.x(:,1:more_than_period), leaving_point];
+                pre_edge_traj.u = [start_orbit.u(:,node_time_stage : T), start_orbit.u(:,1:more_than_period-1), start_orbit.u(more_than_period)*fraction];
+            end
+            
+            
+            % making "gamma_end_of_orbit_edge" positive.
+            gamma_end_of_orbit_edge = gamma_start_of_orbit_edge; % this is correct when the conncting lines (from i to j and from j to i) does not interesect with each other. i.e., when they are parallel.
+            initial_gamma = 3*pi/2;
+            angle_diff = gamma_end_of_orbit_edge - initial_gamma;
+            if angle_diff <0
+                angle_diff = angle_diff +2*pi;
+            end
+            
+            end_orbit_edge_time = floor((angle_diff)/delta_theta_on_orbit);% This "floor" can make a lot of problems. You have to take it out ASAP.
+            %error('In the above line it is fixed for the start orbit already')
             if end_orbit_edge_time ==0, end_orbit_edge_time =T; end
             post_edge_traj.x = [ end_orbit.x(:,end_orbit_edge_time:T) ];
             post_edge_traj.u = [ end_orbit.u(:,end_orbit_edge_time:T) ];
