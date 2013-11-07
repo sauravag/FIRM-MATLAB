@@ -522,7 +522,8 @@ classdef RRT3D < Navigation
                 Points(1:3,i) = RRT3D.start(1:3) + (i/(nPointsOnSegment+1))*guidanceVector(1:3);
                 Points(4:7,i) = quat;
             end
-            
+            quat = angle2quat(yaw,0,roll);
+            Points(4:7,end)=quat;
         end
         
         

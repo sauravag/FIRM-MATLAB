@@ -70,7 +70,7 @@ classdef MotionModel_class < MotionModel_interface
             %             x_next_q_rot = Quaternion();
             %             x_next_q_rot = unit(q_rot * transition_quat);% normalizing resultant quaternion)
             %             x_next_rot = double(x_next_q_rot);% converting to matrix f
-          
+            
             x_next = [x_next_pos(1)  x_next_pos(2)  x_next_pos(3) q_next(1) q_next(2) q_next(3) q_next(4)]'; % augmenting state and rotational part
         end
 
@@ -382,6 +382,10 @@ classdef MotionModel_class < MotionModel_interface
         end
         function point = point_on_orbit(orbit, point_angle)
             gamma = point_angle;
+            point = orbit.radius * [ cos(gamma) ; sin(gamma);0 ] + orbit.center.val(1:3);
+            yaw = gamma+pi/2;
+            q = angle2quat(yaw,0,0);
+            point = [point;q'];
             %start_orbit.radius*[cos(gamma_start_of_orbit_edge);sin(gamma_start_of_orbit_edge);0]+start_orbit.center.val;
             
         end

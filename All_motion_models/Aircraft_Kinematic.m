@@ -15,8 +15,8 @@ classdef Aircraft_Kinematic < MotionModel_interface
         Max_Velocity = 1.0; % m/s
         Min_Velocity = 0.25;% m/s
         zeroNoise = zeros(Aircraft_Kinematic.wDim,1);
-       turn_radius_min = Aircraft_Kinematic.Min_Velocity/Aircraft_Kinematic.Max_Yaw_Rate; % indeed we need to define the minimum linear velocity in turnings (on orbits) and then find the minimum radius accordingly. But, we picked the more intuitive way.
-
+        turn_radius_min = Aircraft_Kinematic.Min_Velocity/Aircraft_Kinematic.Max_Yaw_Rate; % indeed we need to define the minimum linear velocity in turnings (on orbits) and then find the minimum radius accordingly. But, we picked the more intuitive way.
+        
     end
     
     %% Methods
@@ -33,7 +33,7 @@ classdef Aircraft_Kinematic < MotionModel_interface
     %     end
     
     methods (Static = true)
-
+        
         function x_next = f_discrete(x,u,w)
             pos = [x(1) ; x(2) ; x(3)];% position state
             rot  = [x(4) ; x(5) ; x(6) ; x(7)];% rotation state
@@ -44,23 +44,23 @@ classdef Aircraft_Kinematic < MotionModel_interface
             u_linear_ground  =  p *[u(1); 0; 0] ;
             w_linear_ground = p * [w(1); 0 ; 0];
             x_next_pos = pos + Aircraft_Kinematic.dt * (u_linear_ground) + ((Aircraft_Kinematic.dt^0.5) * w_linear_ground);
-
+            
             u_angular_ground = [u(2); u(3); u(4)];%p * [u(2); u(3); u(4)];
             u_angular_ground = [u_angular_ground(1); u_angular_ground(2); u_angular_ground(3)];
             w_angular_ground = [w(2); w(3); w(4)]; % p * [w(2); w(3); w(4)]
             w_angular_ground = [w_angular_ground(1); w_angular_ground(2); w_angular_ground(3)];
-%             q0 = x(4);
-%             q1 = x(5);
-%             q2 = x(6);
-%             q3 = x(7);
+            %             q0 = x(4);
+            %             q1 = x(5);
+            %             q2 = x(6);
+            %             q3 = x(7);
             Amat = [-x(5),  -x(6), -x(7);
-                      x(4)  , -x(7), x(6);
-                     x(7)  , x(4),  -x(5);
-                     -x(6),  x(5) ,  x(4)];
-                 
+                x(4)  , -x(7), x(6);
+                x(7)  , x(4),  -x(5);
+                -x(6),  x(5) ,  x(4)];
+            
             dq_dt_u = 0.5*Amat*u_angular_ground;
             dq_dt_w = 0.5*Amat*w_angular_ground;
-             
+            
             control = dq_dt_u * Aircraft_Kinematic.dt;
             noise = dq_dt_w * Aircraft_Kinematic.dt^0.5;
             x_next_rot = rot + control + noise;
@@ -70,11 +70,11 @@ classdef Aircraft_Kinematic < MotionModel_interface
             %             x_next_q_rot = Quaternion();
             %             x_next_q_rot = unit(q_rot * transition_quat);% normalizing resultant quaternion)
             %             x_next_rot = double(x_next_q_rot);% converting to matrix f
-          
+            
             x_next = [x_next_pos(1)  x_next_pos(2)  x_next_pos(3) q_next(1) q_next(2) q_next(3) q_next(4)]'; % augmenting state and rotational part
         end
-
-         function  J = df_dx_func(x,u,w) % state Jacobian
+        
+        function  J = df_dx_func(x,u,w) % state Jacobian
             pos = [x(1) , x(2) , x(3)];% position state
             rot  = [x(4) , x(5) , x(6) , x(7)];% rotation state
             q_rot = Quaternion(rot);
@@ -98,7 +98,7 @@ classdef Aircraft_Kinematic < MotionModel_interface
             a_32 = - 0.5 * t3(3) * Aircraft_Kinematic.dt - 0.5 * t4(3) * (Aircraft_Kinematic.dt)^0.5;
             a_33 = 1 ;
             a_34 = 0.5 * t3(1) * Aircraft_Kinematic.dt + 0.5 * t4(1) * (Aircraft_Kinematic.dt)^0.5;
-            a_41 = 0.5 * t3(3) * Aircraft_Kinematic.dt + 0.5 * t4(3) * (Aircraft_Kinematic.dt)^0.5;  
+            a_41 = 0.5 * t3(3) * Aircraft_Kinematic.dt + 0.5 * t4(3) * (Aircraft_Kinematic.dt)^0.5;
             a_42 = 0.5 * t3(2) * Aircraft_Kinematic.dt + 0.5 * t4(2) * (Aircraft_Kinematic.dt)^0.5;
             a_43 = -0.5 * t3(1) * Aircraft_Kinematic.dt - 0.5 * t4(1) * (Aircraft_Kinematic.dt)^0.5;
             a_44 = 1 ;
@@ -136,10 +136,10 @@ classdef Aircraft_Kinematic < MotionModel_interface
             
             J = zeros(7,7);
             J(1:3,1:7) = B;
-            J(4:7,4:7) = A; 
-           
-         end
-
+            J(4:7,4:7) = A;
+            
+        end
+        
         function J = df_du_func(x,u,w)
             rot  = [x(4) , x(5) , x(6) , x(7)];% rotation state
             q_rot = Quaternion(rot);
@@ -177,7 +177,7 @@ classdef Aircraft_Kinematic < MotionModel_interface
             a_22 = 0;
             a_23 = 0;
             a_24 = 0;
-            a_31 = 2*(q1*q3-q0*q2) * Aircraft_Kinematic.dt; 
+            a_31 = 2*(q1*q3-q0*q2) * Aircraft_Kinematic.dt;
             a_32 = 0;
             a_33 = 0;
             a_34 = 0;
@@ -225,7 +225,7 @@ classdef Aircraft_Kinematic < MotionModel_interface
             a_22 = 0;
             a_23 = 0;
             a_24 = 0;
-            a_31 = 2*(q1*q3-q0*q2) * (Aircraft_Kinematic.dt)^0.5; 
+            a_31 = 2*(q1*q3-q0*q2) * (Aircraft_Kinematic.dt)^0.5;
             a_32 = 0;
             a_33 = 0;
             a_34 = 0;
@@ -259,7 +259,7 @@ classdef Aircraft_Kinematic < MotionModel_interface
         end
         
         function nominal_traj = generate_open_loop_point2point_traj(start,goal) % generates open-loop trajectories between two start and goal states
-             % The MATLAB RVC ToolBox Must be loaded first
+            % The MATLAB RVC ToolBox Must be loaded first
             disp('Using RRT3D to connect points on two orbits');
             disp('Start point is:');start
             disp('Goal point is:');goal
@@ -285,7 +285,7 @@ classdef Aircraft_Kinematic < MotionModel_interface
                     else
                         controls = [controls,(data.steer(:,end:-1:1))'];
                         nomXs = [nomXs,data.path];
-
+                        
                     end
                 end
             end
@@ -296,20 +296,20 @@ classdef Aircraft_Kinematic < MotionModel_interface
             end
             
             disp('Done with RRT...');
-%             
-%             x = start;
-%             X = [];
-%             X = [X,x];
-%             w = [0,0,0,0]';
-%             for i=1:length(controls(1,:))
-%                 u = controls(:,i);
-%                 x = Aircraft_Kinematic.f_discrete(x,u,w);
-%                 X = [X,x];
-%                 plot3(X(1,:),X(2,:),X(3,:),'x');
-%                 pause(0.1);
-%             end
+            %
+            %             x = start;
+            %             X = [];
+            %             X = [X,x];
+            %             w = [0,0,0,0]';
+            %             for i=1:length(controls(1,:))
+            %                 u = controls(:,i);
+            %                 x = Aircraft_Kinematic.f_discrete(x,u,w);
+            %                 X = [X,x];
+            %                 plot3(X(1,:),X(2,:),X(3,:),'x');
+            %                 pause(0.1);
+            %             end
         end
-          %% Generate open-loop Orbit-to-Orbit trajectory
+        %% Generate open-loop Orbit-to-Orbit trajectory
         function nominal_traj = generate_VALID_open_loop_orbit2orbit_traj(start_orbit, end_orbit) % generates open-loop trajectories between two start and end orbits
             % check if both the orbits are turning in the same
             % direction or not.
@@ -334,7 +334,7 @@ classdef Aircraft_Kinematic < MotionModel_interface
             pitch_tmp_traj_start = 0;
             yaw_tmp_traj_start = gamma;
             q_tmp_traj_start = angle2quat(yaw_tmp_traj_start,pitch_tmp_traj_start,roll_tmp_traj_start);
-    
+            
             tmp_traj_start = [temp_edge_start ; q_tmp_traj_start' ];
             tmp_traj_goal = [temp_edge_end; q_tmp_traj_start'];
             nominal_traj = MotionModel_class.generate_open_loop_point2point_traj(tmp_traj_start,tmp_traj_goal);
@@ -365,8 +365,15 @@ classdef Aircraft_Kinematic < MotionModel_interface
             orbit.center = orbit_center;
             
             % defining controls on the orbit
-            V_p = Aircraft_Kinematic.Min_Velocity * [ones(1,T-1) , T_rational-floor(T_rational)]; % we traverse the orbit with minimum linear velocity
-            omega_p = Aircraft_Kinematic.Max_Yaw_Rate * [ones(1,T-1) , T_rational-floor(T_rational)]; % we traverse the orbit with maximum angular velocity
+            if T_rational-floor(T_rational)==0
+                V_p = Aircraft_Kinematic.Min_Velocity * ones(1,T); % we traverse the orbit with minimum linear velocity
+                omega_p = Aircraft_Kinematic.Max_Yaw_Rate * ones(1,T); % we traverse the orbit with maximum angular velocity
+            else
+                V_p = Aircraft_Kinematic.Min_Velocity * [ones(1,T-1) , T_rational-floor(T_rational)]; % we traverse the orbit with minimum linear velocity
+                omega_p = Aircraft_Kinematic.Max_Yaw_Rate * [ones(1,T-1) , T_rational-floor(T_rational)]; % we traverse the orbit with maximum angular velocity
+            end
+            
+            
             u_p = [V_p;zeros(1,T);zeros(1,T);omega_p];
             w_zero = Aircraft_Kinematic.zeroNoise; % no noise
             
@@ -382,10 +389,14 @@ classdef Aircraft_Kinematic < MotionModel_interface
         end
         function point = point_on_orbit(orbit, point_angle)
             gamma = point_angle;
+            point = orbit.radius * [ cos(gamma) ; sin(gamma);0 ] + orbit.center.val(1:3);
+            yaw = gamma+pi/2;
+            q = angle2quat(yaw,0,0);
+            point = [point;q'];
             %start_orbit.radius*[cos(gamma_start_of_orbit_edge);sin(gamma_start_of_orbit_edge);0]+start_orbit.center.val;
             
         end
-                %% Draw an orbit
+        %% Draw an orbit
         function orbit = draw_orbit(orbit,varargin)
             % This function draws the orbit.
             % default values
@@ -442,7 +453,7 @@ classdef Aircraft_Kinematic < MotionModel_interface
                 tmp_handle = text( text_pos(1), text_pos(2), orbit_text, 'fontsize', text_size, 'color', text_color);
                 orbit.plot_handle = [orbit.plot_handle,tmp_handle];
             end
-                
+            
         end
         function YesNo = is_constraints_violated(open_loop_traj)
             error('not yet implemented');
@@ -461,8 +472,8 @@ classdef Aircraft_Kinematic < MotionModel_interface
                 traj_plot_handle = [traj_plot_handle , tmp_handle];
                 len = size( nominal_traj.x , 2);
                 tmp_Xstate = state( nominal_traj.x(:,floor(len/2)) ); % to plot the direction of the line.
-%                 tmp_Xstate = tmp_Xstate.draw('RobotShape','triangle','robotsize',2);
-%                 traj_plot_handle = [traj_plot_handle , tmp_Xstate.plot_handle , tmp_Xstate.head_handle , tmp_Xstate.tria_handle , tmp_Xstate.text_handle ];
+                %                 tmp_Xstate = tmp_Xstate.draw('RobotShape','triangle','robotsize',2);
+                %                 traj_plot_handle = [traj_plot_handle , tmp_Xstate.plot_handle , tmp_Xstate.head_handle , tmp_Xstate.tria_handle , tmp_Xstate.text_handle ];
                 drawnow
             end
         end

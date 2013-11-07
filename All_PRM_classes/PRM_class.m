@@ -287,11 +287,11 @@ classdef PRM_class < PRM_interface
             if node_time_stage+steps_till_start_of_orbit_edge_minusOne < T
                 pre_edge_traj.x = [ start_orbit.x(:,node_time_stage : node_time_stage+steps_till_start_of_orbit_edge_minusOne), leaving_point];
                 pre_edge_traj.u = [start_orbit.u(:,node_time_stage : node_time_stage+steps_till_start_of_orbit_edge_minusOne -1), ...
-                    start_orbit.u(:, node_time_stage+steps_till_start_of_orbit_edge_minusOne)*fraction];
+                start_orbit.u(:, node_time_stage+steps_till_start_of_orbit_edge_minusOne)*fraction];
             else
                 more_than_period = node_time_stage+steps_till_start_of_orbit_edge_minusOne - T;
-                pre_edge_traj.x = [ start_orbit.x(:,node_time_stage : T), start_orbit.x(:,1:more_than_period), leaving_point];
-                pre_edge_traj.u = [start_orbit.u(:,node_time_stage : T), start_orbit.u(:,1:more_than_period-1), start_orbit.u(more_than_period)*fraction];
+                pre_edge_traj.x = [start_orbit.x(:,node_time_stage : T), start_orbit.x(:,1:more_than_period), leaving_point];
+                pre_edge_traj.u = [start_orbit.u(:,node_time_stage : T), start_orbit.u(:,1:more_than_period-1), start_orbit.u(:,more_than_period)*fraction];
             end
             
             
@@ -313,9 +313,13 @@ classdef PRM_class < PRM_interface
             nominal_traj.u = [pre_edge_traj.u , obj.orbit_edges_trajectory(start_orbit_ind,end_orbit_ind).u , post_edge_traj.u];
             
             disp('Following lines seems problematic')
-            nominal_traj.x = [pre_edge_traj.x(:,1:end-1) , obj.orbit_edges_trajectory(start_orbit_ind,end_orbit_ind).x(:,1:end-1) , post_edge_traj.x];
+            nominal_traj.x = [pre_edge_traj.x(:,1:end-1) , obj.orbit_edges_trajectory(start_orbit_ind,end_orbit_ind).x(:,1:end-1), post_edge_traj.x];
             nominal_traj.u = [pre_edge_traj.u , obj.orbit_edges_trajectory(start_orbit_ind,end_orbit_ind).u , post_edge_traj.u];
             
+            %% Test Code 
+%             nominal_traj.x = pre_edge_traj.x(:,1:end);
+%             nominal_traj.u = pre_edge_traj.u;
+            %%
         end
     end
     
