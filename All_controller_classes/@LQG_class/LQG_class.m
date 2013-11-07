@@ -90,7 +90,7 @@ classdef LQG_class
             xp = obj.planned_lnr_pts_seq(k).x; % planned x
             % generating feedback controls
             est_OF_error = b.est_mean.signed_element_wise_dist(xp);  % this basically computes the "signed element-wise distance" between "b.est_mean" and "xp"
-            
+            est_OF_error(4)=0;
             reliable = obj.is_in_valid_linearization_region(est_OF_error);
             if ~reliable
                 warning('Ali: error is too much; the linearization is not reliable');
@@ -98,11 +98,11 @@ classdef LQG_class
             
             feedback_gain = obj.L_seq{k};
             
-            persistent error_hist            
+%             persistent error_hist            
             
             dU = - feedback_gain*est_OF_error; % feedback control du
             
-            error_hist = [error_hist, est_OF_error];
+%             error_hist = [error_hist, est_OF_error];
             
             up = obj.planned_lnr_pts_seq(k).u; % planned u
             

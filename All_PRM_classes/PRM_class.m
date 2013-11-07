@@ -278,14 +278,14 @@ classdef PRM_class < PRM_interface
             % till here
             
             delta_theta_on_orbit = 2*pi/start_orbit.period;
-            steps_till_start_of_orbit_edge_rational = -delta_theta_turn(node_gamma,gamma_start_of_orbit_edge,'cw')/delta_theta_on_orbit;
+            steps_till_start_of_orbit_edge_rational = delta_theta_turn(node_gamma,gamma_start_of_orbit_edge,'ccw')/delta_theta_on_orbit;
             steps_till_start_of_orbit_edge_minusOne = floor(steps_till_start_of_orbit_edge_rational);
             steps_till_start_of_orbit_edge = ceil(steps_till_start_of_orbit_edge_rational);
                         
             T = start_orbit.period;
             fraction = steps_till_start_of_orbit_edge_rational - steps_till_start_of_orbit_edge_minusOne;
             if node_time_stage+steps_till_start_of_orbit_edge_minusOne < T
-                pre_edge_traj.x = [ start_orbit.x(:,node_time_stage : node_time_stage+steps_till_start_of_orbit_edge_minusOne), leaving_point];
+                pre_edge_traj.x = [start_orbit.x(:,node_time_stage : node_time_stage+steps_till_start_of_orbit_edge_minusOne), leaving_point];
                 pre_edge_traj.u = [start_orbit.u(:,node_time_stage : node_time_stage+steps_till_start_of_orbit_edge_minusOne -1), ...
                 start_orbit.u(:, node_time_stage+steps_till_start_of_orbit_edge_minusOne)*fraction];
             else
@@ -297,22 +297,40 @@ classdef PRM_class < PRM_interface
             
             % making "gamma_end_of_orbit_edge" positive.
             gamma_end_of_orbit_edge = gamma_start_of_orbit_edge; % this is correct when the conncting lines (from i to j and from j to i) does not interesect with each other. i.e., when they are parallel.
+            entering_point = MotionModel_class.point_on_orbit(end_orbit, gamma_end_of_orbit_edge);
             initial_gamma = 3*pi/2;
-            angle_diff = gamma_end_of_orbit_edge - initial_gamma;
-            if angle_diff <0
-                angle_diff = angle_diff +2*pi;
+            end_edge_step_number_rational = delta_theta_turn(initial_gamma,gamma_end_of_orbit_edge,'ccw')/delta_theta_on_orbit;
+            
+            if end_edge_step_number_rational == ceil(end_edge_step_number_rational)
+                first_discrete_step_on_orbit = ceil(end_edge_step_number_rational);
+                post_edge_traj.x = orbit.x(:,first_discrete_step_on_orbit:T);
+                post_edge_traj.u = [orbit.u(:,first_discrete_step_on_orbit:T-1),orbit.u(:,T)]; % the separation of T from 0:T-1 is just for clarity.
+            else
+                first_discrete_step_on_orbit = ceil(end_edge_step_number_rational);
+                fraction = first_discrete_step_on_orbit - end_edge_step_number_rational;
+                post_edge_traj.x = [entering_point, end_orbit.x(:,first_discrete_step_on_orbit:T)];
+                if first_discrete_step_on_orbit == 1, first_discrete_step_on_orbit = T+1; end
+                post_edge_traj.u = [end_orbit.u(:,first_discrete_step_on_orbit-1)*fraction, end_orbit.u(:,first_discrete_step_on_orbit:T-1),end_orbit.u(:,T)]; % the separation of T from 0:T-1 is just for clarity.
             end
             
-            end_orbit_edge_time = floor((angle_diff)/delta_theta_on_orbit);% This "floor" can make a lot of problems. You have to take it out ASAP.
+            
+%             angle_diff = gamma_end_of_orbit_edge - initial_gamma;
+%             if angle_diff <0
+%                 angle_diff = angle_diff +2*pi;
+%             end
+            
+%             end_orbit_edge_time = floor(angle_diff/delta_theta_on_orbit);% This "floor" can make a lot of problems. You have to take it out ASAP.
+%             end_orbit_edge_time_rational = angle_diff/delta_theta_on_orbit;
+            
             %error('In the above line it is fixed for the start orbit already')
-            if end_orbit_edge_time ==0, end_orbit_edge_time =T; end
-            post_edge_traj.x = [ end_orbit.x(:,end_orbit_edge_time:T) ];
-            post_edge_traj.u = [ end_orbit.u(:,end_orbit_edge_time:T) ];
+%             if end_orbit_edge_time ==0, end_orbit_edge_time =T; end
+%             post_edge_traj.x = [ end_orbit.x(:,end_orbit_edge_time:T) ];
+%             post_edge_traj.u = [ end_orbit.u(:,end_orbit_edge_time:T) ];
             
             nominal_traj.x = [pre_edge_traj.x , obj.orbit_edges_trajectory(start_orbit_ind,end_orbit_ind).x , post_edge_traj.x];
             nominal_traj.u = [pre_edge_traj.u , obj.orbit_edges_trajectory(start_orbit_ind,end_orbit_ind).u , post_edge_traj.u];
             
-            disp('Following lines seems problematic')
+            disp('Following lines seem problematic')
             nominal_traj.x = [pre_edge_traj.x(:,1:end-1) , obj.orbit_edges_trajectory(start_orbit_ind,end_orbit_ind).x(:,1:end-1), post_edge_traj.x];
             nominal_traj.u = [pre_edge_traj.u , obj.orbit_edges_trajectory(start_orbit_ind,end_orbit_ind).u , post_edge_traj.u];
             
