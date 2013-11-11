@@ -303,8 +303,9 @@ classdef Orbit_PRM_class < PRM_interface
             
             if end_edge_step_number_rational == ceil(end_edge_step_number_rational)
                 first_discrete_step_on_orbit = ceil(end_edge_step_number_rational);
-                post_edge_traj.x = orbit.x(:,first_discrete_step_on_orbit:T);
-                post_edge_traj.u = [orbit.u(:,first_discrete_step_on_orbit:T-1),orbit.u(:,T)]; % the separation of T from 0:T-1 is just for clarity.
+                if first_discrete_step_on_orbit == 0, first_discrete_step_on_orbit = T; end
+                post_edge_traj.x = end_orbit.x(:,first_discrete_step_on_orbit:T);
+                post_edge_traj.u = [end_orbit.u(:,first_discrete_step_on_orbit:T-1),end_orbit.u(:,T)]; % the separation of T from 0:T-1 is just for clarity.
             else
                 first_discrete_step_on_orbit = ceil(end_edge_step_number_rational);
                 fraction = first_discrete_step_on_orbit - end_edge_step_number_rational;

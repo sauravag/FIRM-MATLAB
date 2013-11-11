@@ -66,6 +66,10 @@ classdef Aircraft_Kinematic < MotionModel_interface
             x_next_rot = rot + control + noise;
             q_next = unit(x_next_rot); % Make a unit quaternion
             
+            if q_next(1) < 0
+                q_next = -q_next;
+            end
+            
             %             %transition_quat = Aircraft_Kinematic.f_transquat(Aircraft_Kinematic.dt , u_angular ,w_angular);
             %             x_next_q_rot = Quaternion();
             %             x_next_q_rot = unit(q_rot * transition_quat);% normalizing resultant quaternion)
