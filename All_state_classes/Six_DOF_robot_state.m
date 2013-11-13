@@ -164,15 +164,16 @@ classdef Six_DOF_robot_state < state_interface
             end
         end
         function old_limits = zoom_in(obj,zoom_ratio)
-            old_xlim = xlim;
-            old_ylim = ylim;
-            old_limits = [old_xlim,old_ylim];
-            new_center = obj.val;
-            new_x_length = (old_xlim(2)-old_xlim(1))/zoom_ratio;
-            new_y_length = (old_ylim(2)-old_ylim(1))/zoom_ratio;
-            new_xlim = new_center(1) + [-new_x_length,new_x_length]/2;
-            new_ylim = new_center(2) + [-new_y_length,new_y_length]/2;
-            axis([new_xlim,new_ylim])
+            old_limits = axis;
+%             old_xlim = xlim;
+%             old_ylim = ylim;
+%             old_limits = [old_xlim,old_ylim];
+%             new_center = obj.val;
+%             new_x_length = (old_xlim(2)-old_xlim(1))/zoom_ratio;
+%             new_y_length = (old_ylim(2)-old_ylim(1))/zoom_ratio;
+%             new_xlim = new_center(1) + [-new_x_length,new_x_length]/2;
+%             new_ylim = new_center(2) + [-new_y_length,new_y_length]/2;
+%             axis([new_xlim,new_ylim])
         end
         function obj = apply_differentiable_constraints(obj)
             qnorm = norm(obj.val(4:7));

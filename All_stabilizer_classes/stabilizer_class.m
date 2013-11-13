@@ -158,10 +158,13 @@ classdef stabilizer_class < Stabilizer_interface
                 
                 bel = next_Hstate.b;
                 YesNo_reached = 0;
-                for gamma = 1:length(obj.reachable_FIRM_nodes)
-                    candidate_FIRM_node = obj.reachable_FIRM_nodes(gamma);
-                    if candidate_FIRM_node.is_reached(bel), YesNo_reached = 1; landed_gamma = gamma; break; end
+                cyclic_k = mod(k , T)+(T*(mod(k , T)==0)); % we apply the periodic nature to the time evolution. IMPORTANT: the reason we use "k-1" instead of "k" is that we count the starting location of orbit twice when we concatenate edge and orbit. This may be revised later.
+                matched_node_ind_on_orbit = find(obj.PRM_orbit.node_time_stages == cyclic_k); % here we check to see if the current time is the same as any of the node times on orbit or not.
+                if ~isempty(matched_node_ind_on_orbit)
+                    candidate_FIRM_node = obj.reachable_FIRM_nodes(matched_node_ind_on_orbit);
+                    if candidate_FIRM_node.is_reached(bel), YesNo_reached = 1; landed_gamma = matched_node_ind_on_orbit; break; end
                 end
+                
                 YesNo_timeout = (k+1-convergence_time > obj.par.max_stopping_time);
                 YesNo_collision = next_Hstate.Xg.is_constraint_violated();
                 stop_flag = YesNo_reached || YesNo_timeout || YesNo_collision || lost;
