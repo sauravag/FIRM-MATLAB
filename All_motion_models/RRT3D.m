@@ -439,7 +439,7 @@ classdef RRT3D < Navigation
                 
                 %% find point on the path closest to xg
                 % distance of all path points from goal
-                d = colnorm( [bsxfun(@minus, x(1:3,:), xg(1:3)); angdiff(x(4:6,:), xg(4:6))] );
+                d = colnorm( [bsxfun(@minus, x(1:7,:), xg)] );
                 % the closest one
                 [dmin,k] = min(d);
                 

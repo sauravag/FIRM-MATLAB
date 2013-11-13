@@ -160,7 +160,7 @@ classdef FIRM_edge_class
             convergence_time = 0; % This is zero because, we right now do not consider GHb convergence as a pre-condition for FIRM node reaching. Otherwise, the following line has to be uncommented.
             % convergence_time = obj.HBelief_convergence_time - obj.kf;
             [next_Hstate, lost, YesNo_unsuccessful, landed_node_ind] = ...
-                obj.target_node_stabilizer.execute(current_Hstate,convergence_time);
+                obj.target_node_stabilizer.execute(current_Hstate,convergence_time,obj.possible_end_node_indices);
         end
     end
     

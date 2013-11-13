@@ -323,9 +323,9 @@ elseif strcmpi(selected_motion_model,'FixedWing Aircraft')
     disp('state norm for aircraft model needs to be fixed')
     motion_model_parameters.controlDim = 4;
     motion_model_parameters.dt = 0.1;
-    motion_model_parameters.eta_u_aircraft = [0.0002 ; 0.0001 ; 0.0001 ; 0.0001];  
-    motion_model_parameters.sigma_b_u_aircraft = [0.0002 ; 0.0001 ; 0.0001 ; 0.0001];  
-    P_rootsqaure_Wg_diags = [0.0002 ; 0.0002 ; 0.0002 ; 0.0001 ; 0.0001 ; 0.0001 ; 0.0001];
+    motion_model_parameters.eta_u_aircraft = [0.01 ; 0.001 ; 0.001 ; 0.001];  
+    motion_model_parameters.sigma_b_u_aircraft = [0.01 ; 0.001 ; 0.001 ; 0.001];  
+    P_rootsqaure_Wg_diags = [0.0002 ; 0.0002 ; 0.02 ; 0.001 ; 0.001 ; 0.001 ; 0.001];
     motion_model_parameters.P_Wg = diag(P_rootsqaure_Wg_diags.^2);
 elseif strcmpi(selected_motion_model,'Kuka YouBot Base')
     state_parameters.stateDim = 3;

@@ -1043,7 +1043,7 @@ classdef PGraph < handle
                     q2 = [x2(4,:); x2(5,:); x2(6,:); x2(7,:)];
                     inner_prod = q1(1)*q2(1,:)+q1(2)*q2(2,:)+q1(3)*q2(3,:)+q1(4)*q2(4,:);
                     quat_dist = 1 - inner_prod.^2;
-                    d(4,:) = quat_dist;
+                    d(4,:) = 2*quat_dist;
                     d = colnorm(d);
 
                   

@@ -26,11 +26,19 @@ classdef PLQG_based_FIRM_graph_class < FIRM_graph_interface
             tic
             % we design the stabilizers (belief orbit stabilizers) in the following loop.
             for i = 1:obj.num_stabilizers % i is the stabilizer number (or orbit number in this class)
-                PRM_nodes_on_orbit = obj.PRM.nodes(obj.PRM.corresponding_orbit == i);  % The set of PRM nodes on orbit  i
+                nodes_on_orbit = (obj.PRM.corresponding_orbit == i);
+                PRM_nodes_on_orbit = obj.PRM.nodes(nodes_on_orbit);  % The set of PRM nodes on orbit  i
+                target_node_indices = [];
+                for j =1:length(nodes_on_orbit)
+                    if nodes_on_orbit(j)==1
+                        target_node_indices= [target_node_indices,j];
+                    end
+                end
+                
                 PRM_orbit = obj.PRM.orbits(i);
                 disp(['Orbit Stabilizer ',num2str(i),' out of total ',num2str(obj.num_stabilizers),' stabilizers'])
                 obj.Stabilizers(i).stabilizer_number = i;  % We need this for display purposes in the "Orbit_stabilizer_PLQG_class". However, we do not provide it as a constructor input, since it is not a real property of the class.
-                obj.Stabilizers(i) = stabilizer_class(PRM_nodes_on_orbit  ,  PRM_orbit );  % constructing i-th stabilizer
+                obj.Stabilizers(i) = stabilizer_class(PRM_nodes_on_orbit  ,  PRM_orbit, target_node_indices);  % constructing i-th stabilizer
             end
             n = 0; % n represents the absolute number of PRM nodes (Not on a single orbit, but among all nodes)
             for i = 1:num_oribts % i is the orbit number

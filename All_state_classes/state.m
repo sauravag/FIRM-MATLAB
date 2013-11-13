@@ -1,5 +1,5 @@
 classdef state < state_interface
-    % This class encapsulates the state of a planar robot, described by its 2D location and heading angle.
+    % This class encapsulates the state of a 6DOF robot, described by its 3D location and orientation quaternion.
     properties (Constant)
         dim = 7; % state dimension [X,Y,Z,q0,q1,q2,q3]
         zeroQuaternion = [1 0 0 0];
@@ -20,7 +20,6 @@ classdef state < state_interface
              x1 = obj.val; % retrieve the value of the state vector
              if isa(x2,'state'), x2=x2.val; end % retrieve the value of the state vector
              signed_dist_vector = x1 - x2; % [X1-X2, Y1-Y2, Z1-Z2]'
-%              signed_dist_vector(4)=0;
 %              qnorm = norm(signed_dist_vector(4:7));
 %              if qnorm > 0.0001
 %                  signed_dist_vector = [signed_dist_vector(1:3);signed_dist_vector(4:7)];
@@ -76,9 +75,6 @@ classdef state < state_interface
             x=obj.val;
             obj.head_handle = plot3(x(1),x(2),x(3),'Marker',head_shape,'MarkerSize',head_size,'MarkerEdgeColor',head_color,'MarkerFaceColor',head_color);
             robot_size = 0.4;
-%             vertices_x=[0,-robot_size,-robot_size,0];
-%             vertices_y=[0,-robot_size/5,robot_size/5,0];
-%             vertices_z=[0,0,0,0];
             vertices_x=[0,-robot_size,-robot_size,-robot_size,-robot_size/2,-robot_size,-robot_size,0];
             vertices_y=[0,-robot_size/5,0,0,0,0,robot_size/5,0];
             vertices_z=[0,0,0,robot_size/10,0,0,0,0];

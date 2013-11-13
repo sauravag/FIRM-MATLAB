@@ -6,8 +6,8 @@ classdef MotionModel_class < MotionModel_interface
         wDim = 4;   % Process noise (W) dimension  % For the generality we also consider the additive noise on kinematics equation (3 dimension), but it most probably will set to zero. The main noise is a 2 dimensional noise which is added to the controls.
         dt = user_data_class.par.motion_model_parameters.dt;
         % base_length = user_data_class.par.motion_model_parameters.base_length;  % distance between robot's rear wheels.
-        sigma_b_u = [0.01 ; 0.001 ; 0.001 ; 0.001];%user_data_class.par.motion_model_parameters.sigma_b_u_aircraft ;
-        eta_u = [0.01 ; 0.001 ; 0.001 ; 0.001];%user_data_class.par.motion_model_parameters.eta_u_aircraft ;
+        sigma_b_u = user_data_class.par.motion_model_parameters.sigma_b_u_aircraft ;
+        eta_u = user_data_class.par.motion_model_parameters.eta_u_aircraft ;
         P_Wg = user_data_class.par.motion_model_parameters.P_Wg;
         Max_Roll_Rate = deg2rad(45); % try 45
         Max_Pitch_Rate = deg2rad(45);% try 45
@@ -264,54 +264,46 @@ classdef MotionModel_class < MotionModel_interface
         
         function nominal_traj = generate_open_loop_point2point_traj(start,goal) % generates open-loop trajectories between two start and goal states
             % The MATLAB RVC ToolBox Must be loaded first
-            disp('Using RRT3D to connect points on two orbits');
-            disp('Start point is:');start
-            disp('Goal point is:');goal
-            disp('Solving...');
-            veh = MotionModel_class();
-            rrt = RRT3D([], veh, 'start', start, 'range', 5,'npoints',500,'speed',2,'time', MotionModel_class.dt);
-            rrt.plan('goal',goal)   ;          % create navigation tree
-            nominal_traj.x = [];
-            nominal_traj.u = [];
-            nominal_traj = rrt.path(start, goal) ; % animate path from this start location
-            
-            %% Code for plotting
-            controls = [];
-            nomXs = [];
-            for i = 1:length(nominal_traj)
-                p = nominal_traj(i);
-                g  = rrt.graph;
-                data = g.data(p);
-                if ~isempty(data)
-                    if i >= length(nominal_traj) || g.edgedir(p, nominal_traj(i+1)) > 0
-                        controls = [controls,data.steer'];
-                        nomXs = [nomXs,data.path];
-                    else
-                        controls = [controls,(data.steer(:,end:-1:1))'];
-                        nomXs = [nomXs,data.path];
-                        
+%             disp('Using RRT3D to connect points on two orbits');
+%             disp('Start point is:');start
+%             disp('Goal point is:');goal
+%             disp('Solving...');
+            if is_trajectory_valid(start, goal)
+                veh = MotionModel_class();
+                rrt = RRT3D([], veh, 'start', start, 'range', 5,'npoints',500,'speed',2,'time', MotionModel_class.dt);
+                rrt.plan('goal',goal)   ;          % create navigation tree
+                nominal_traj.x = [];
+                nominal_traj.u = [];
+                nominal_traj = rrt.path(start, goal) ; % animate path from this start location
+                % Code for plotting
+                controls = [];
+                nomXs = [];
+                for i = 1:length(nominal_traj)
+                    p = nominal_traj(i);
+                    g  = rrt.graph;
+                    data = g.data(p);
+                    if ~isempty(data)
+                        if i >= length(nominal_traj) || g.edgedir(p, nominal_traj(i+1)) > 0
+                            controls = [controls,data.steer'];
+                            nomXs = [nomXs,data.path];
+                        else
+                            controls = [controls,(data.steer(:,end:-1:1))'];
+                            nomXs = [nomXs,data.path];
+
+                        end
                     end
                 end
+
+                if ~isempty(nomXs)
+                    nominal_traj.x = [start,nomXs];
+                    nominal_traj.u = controls;
+                end
+
+                disp('Done with RRT...');
+            else
+                nominal_traj =[]; 
+                return;
             end
-            
-            if ~isempty(nomXs)
-                nominal_traj.x = [start,nomXs];
-                nominal_traj.u = controls;
-            end
-            
-            disp('Done with RRT...');
-            %
-            %             x = start;
-            %             X = [];
-            %             X = [X,x];
-            %             w = [0,0,0,0]';
-            %             for i=1:length(controls(1,:))
-            %                 u = controls(:,i);
-            %                 x = MotionModel_class.f_discrete(x,u,w);
-            %                 X = [X,x];
-            %                 plot3(X(1,:),X(2,:),X(3,:),'x');
-            %                 pause(0.1);
-            %             end
         end
         %% Generate open-loop Orbit-to-Orbit trajectory
         function nominal_traj = generate_VALID_open_loop_orbit2orbit_traj(start_orbit, end_orbit) % generates open-loop trajectories between two start and end orbits
@@ -467,7 +459,8 @@ classdef MotionModel_class < MotionModel_interface
             if traj_flag == 1
                 for k = 1 : size(nominal_traj.x , 2)
                     tmp_Xstate = state (nominal_traj.x(:,k) );
-                    tmp_Xstate.draw('RobotShape','triangle','robotsize',1);%,'TriaColor',color(cycles));
+                    tmp_Xstate.draw();
+                    %                     tmp_Xstate.draw('RobotShape','triangle','robotsize',1);%,'TriaColor',color(cycles));
                     %traj_plot_handle(k:k+2) =
                     %[tmp_Xstate.head_handle,tmp_Xstate.text_handle,tmp_Xstate.tria_handle];
                 end
@@ -488,7 +481,23 @@ classdef MotionModel_class < MotionModel_interface
     end
 end
 
+function YesNo = is_trajectory_valid(start, goal)
 
+    vel = (MotionModel_class.Min_Velocity + MotionModel_class.Max_Velocity)/2;
+    nPointsOnSegment = ceil(( norm(goal(1:3)-start(1:3)) )/(vel*MotionModel_class.dt));
+    
+    guidanceVector = goal(1:3) - start(1:3);
+
+    for i=1:nPointsOnSegment+1
+        point = start(1:3) + (i/(nPointsOnSegment+1))*guidanceVector(1:3);
+        tmp = state([point;1;0;0;0]); 
+        if tmp.is_constraint_violated 
+            YesNo=0; 
+            return; 
+        end
+    end
+    YesNo = 1;
+end
 %% Generating Control-dependent Noise Covariance
 %
 % $$ P^{U_n} = \left(

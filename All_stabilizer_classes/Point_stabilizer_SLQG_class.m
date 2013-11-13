@@ -123,7 +123,7 @@ classdef Point_stabilizer_SLQG_class < Stabilizer_interface
             % Zoom in to the node area in the figure
             old_zoom = obj.PRM_node.zoom_in(5); % the input argument is the zoom ratio (wrt the axis size)
             xlabel(['Point stabilizer ', num2str(obj.stabilizer_number),' is working ...']);
-            show_just_once = 1; % this is an auxiliary variable that cause the figure lable is just updated once.
+            show_just_once = 1; % this is an auxiliary variable that cause the figure label is just updated once.
             k = 1;
             stop_flag = 0; % initialization
             lost = 0; % initialization % only needed if the "replanning flag" is turned on by user.

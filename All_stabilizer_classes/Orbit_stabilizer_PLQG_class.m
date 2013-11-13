@@ -14,11 +14,11 @@ classdef Orbit_stabilizer_PLQG_class < Stabilizer_interface
     end
     
     methods
-        function obj = Orbit_stabilizer_PLQG_class(PRM_nodes_on_orbit_inp  ,  PRM_orbit_inp)  % Two first inputs are only for consistency with the other FIRM_node_classes. This issue should be resolved.
+        function obj = Orbit_stabilizer_PLQG_class(PRM_nodes_on_orbit_inp,  PRM_orbit_inp, target_node_indices)  % Two first inputs are only for consistency with the other FIRM_node_classes. This issue should be resolved.
             if nargin > 0
                 obj.PRM_nodes_on_orbit = PRM_nodes_on_orbit_inp;
                 obj.PRM_orbit = PRM_orbit_inp;
-                %                 obj.PRM_orbit_number = stabilizer_number_inp;
+                obj.absolute_node_numbers = target_node_indices;
                 obj.controller = PLQG_class(PRM_orbit_inp); % Note that the node controller is an object of "LQG_periodic_class" NOT simple "LQG".
                 obj.par = user_data_class.par.stabilizer_parameters;
             end
@@ -119,28 +119,23 @@ classdef Orbit_stabilizer_PLQG_class < Stabilizer_interface
 %                 obj.zoom_out(old_zoom);
             end
         end
-        function [next_Hstate, lost, YesNo_unsuccessful, absolute_landed_node_ind] = execute(obj,current_Hstate, convergence_time)
+        function [next_Hstate, lost, YesNo_unsuccessful, landed_node_ind] = execute(obj,current_Hstate, convergence_time)
             % This function stabilizes the belief in a runtime and
             % terminates if replanning is needed (if the user has turned "on" the replanning flag).
             
             % Zoom in to the node area in the figure
-%             center_state = state( [obj.PRM_orbit.center ; 0 ]); % This is a very poor code line, as it only works for 3D state. I need to fix it ASAP.
-            
             old_zoom = obj.PRM_orbit.center.zoom_in(5); % the input argument is the zoom ratio (wrt the axis size)
             xlabel(['Orbit stabilizer number ',num2str(obj.stabilizer_number),' is working ...']);
-            
-            show_just_once = 1;
+            show_just_once = 1; % this is an auxiliary variable that cause the figure label is just updated once.
             k = 1;
             stop_flag = 0; % initialization
             lost = 0; % initialization % only needed if the "replanning flag" is turned on by user.
             while ~stop_flag
-                                disp(['Step ',num2str(k),' of orbit stabilizer number ',num2str(obj.stabilizer_number),'. convergence time is ',num2str(convergence_time),'.']);
+                disp(['Step ',num2str(k),' of orbit stabilizer number ',num2str(obj.stabilizer_number),'. convergence time is ',num2str(convergence_time),'.']);
                 next_Hstate = obj.controller.propagate_Hstate(current_Hstate,k); % note that periodic LQG is a time-varying controller. So, it needs "k" as an input.
                 if obj.par.draw_cov_centered_on_nominal == 1 % in this case, we do NOT draw estimation covariance centered at estimation mean. BUT we draw estimation covariance centered at nominal state locations, to illustrate the covariance convergence.
                     T = obj.PRM_orbit.period;
                     cyclic_kPlus1 = mod(k+1,T)+(T*(mod(k+1,T)==0));
-                    %nominal_x = state(obj.controller.lnr_pts_periodic(cyclic_kPlus1).x);
-                    disp('Attention Ali line 143 Orbit_stabilizer_PLQG_class.m / lnr_pts vs lnr_pts_periodic')
                     nominal_x = state(obj.controller.lnr_pts(cyclic_kPlus1).x);
                     next_Hstate = next_Hstate.draw_CovOnNominal(nominal_x,'robotshape','triangle','XgtriaColor','g','XestTriaColor','r','XgColor','g','XestColor','r');
                     current_Hstate = current_Hstate.delete_plot(); %#ok<NASGU>
@@ -151,24 +146,48 @@ classdef Orbit_stabilizer_PLQG_class < Stabilizer_interface
                 if user_data_class.par.replanning == 1
                     % Here, we check if we lie in the valid linearization
                     % region of node controller or not
-                    error('not updated yet')
-                    %                     signed_elem_wise_difference = next_Hstate.b.est_mean.signed_element_wise_dist(obj.PRM_node);
-                    %                     is_in_end_node_lnr_domain = all(abs(signed_elem_wise_difference) < user_data_class.par.valid_linearization_domain); % never forget the "absolute value operator" in computing distances.
-                    %                     lost = ~is_in_end_node_lnr_domain;
+                    T = obj.PRM_orbit.period;
+                    cyclic_kPlus1 = mod(k+1,T)+(T*(mod(k+1,T)==0));
+                    nominal_x = state(obj.controller.lnr_pts(cyclic_kPlus1).x);
+                    signed_elem_wise_difference = next_Hstate.b.est_mean.signed_element_wise_dist(nominal_x);
+                    is_in_end_node_lnr_domain = all(abs(signed_elem_wise_difference) < user_data_class.par.valid_linearization_domain); % never forget the "absolute value operator" in computing distances.
+                    lost = ~is_in_end_node_lnr_domain;
                 else
                     lost = 0; % By this, we indeed disable the replanning
                 end
                 
-%                 ?????????????
+                bel = next_Hstate.b;
+                YesNo_reached = 0;
+                for gamma = 1:length(obj.reachable_FIRM_nodes)
+                    candidate_FIRM_node = obj.reachable_FIRM_nodes(gamma);
+                    if candidate_FIRM_node.is_reached(bel), YesNo_reached = 1; landed_gamma = gamma; break; end
+                end
+                YesNo_timeout = (k+1-convergence_time > obj.par.max_stopping_time);
+                YesNo_collision = next_Hstate.Xg.is_constraint_violated();
+                stop_flag = YesNo_reached || YesNo_timeout || YesNo_collision || lost;
+                if show_just_once == 1 % we do not want to update the xlabel at each step.
+                    xlabel('Hbelief has converged. Particles  are trying to reach stopping region...')
+                    disp('Hbelief has converged. Particles are trying to reach stopping region...')
+                    show_just_once = 0;
+                end
+                drawnow
+                % making a video of runtime
+                if user_data_class.par.sim.video == 1
+                    global vidObj; %#ok<TLEV>
+                    currFrame = getframe(gcf);
+                    writeVideo(vidObj,currFrame);
+                end
+                % update the ensemble and GHb
+                current_Hstate = next_Hstate;
+                k = k+1;
             end
-            
-            
-            absolute_landed_node_ind = (obj.PRM_orbit_number-1)*length(obj.PRM_nodes_on_orbit)+landed_node_ind_on_orbit;
-            
-            axis(old_limits);
-        end
-        function [next_hstate, lost, failed] = execute_with_replanning(obj,current_hstate,current_GHb,convergence_time) %#ok<STOUT,MANU,INUSD>
-            error('Not implemented yet');
+            YesNo_unsuccessful =  YesNo_timeout || YesNo_collision;
+            if YesNo_unsuccessful == 1
+                landed_node_ind = 'No landed node! the execution was unsuccessful.';
+            else
+                landed_node_ind = obj.absolute_node_numbers(landed_gamma);
+            end
+            axis(old_zoom);
         end
     end
     
