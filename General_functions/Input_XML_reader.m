@@ -180,7 +180,7 @@ par_new.stabilizer_parameters.max_stopping_time = 250;
 par_new.stabilizer_parameters.draw_cov_centered_on_nominal = 1;
 
 %=========== MonteCarlo Simulation
-par_new.par_n = 1; % number of particles
+par_new.par_n = 4; % number of particles
 
 %=========== (LQR design) Node and Edge controller
 LQR_cost_coef=[0.03*0.1 , 0.03*0.1 , 0.1];  % first entry is the "final state cost coeff". The second is the "state cost coeff", and the third is the "control cost coeff".
