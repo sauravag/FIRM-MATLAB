@@ -84,27 +84,27 @@ end
 warning('off', 'MATLAB:rmpath:DirNotFound'); % In the next line when we remove the paths, some warning may occur, if those path does not exist. So, we supress that warning here.
 rmpath( genpath('All_observation_models')); % This line remove all paths below the "All_observation_models" directory, which have been possibly added in the last run of the program.
 addpath('All_observation_models'); % However, we still want the "All_observation_models" folder path to be on the Matlab path (Not its subdirectories though).
-% if strcmpi(par_new.selected_observation_model,'Three robot good-poor GPS no comm')
-%         typeDef('Three_robot_good_poor_GPS_no_comm','ObservationModel_class')
-% elseif strcmpi(par_new.selected_observation_model,'Three robot good-poor GPS with comm')
-%         typeDef('Three_robot_good_poor_GPS_with_comm','ObservationModel_class')
-% elseif strcmpi(par_new.selected_observation_model,'Landmark (range and bearing) sensing')
-%     typeDef('Landmarks_Range_bearing' , 'ObservationModel_class')
-% elseif strcmpi(par_new.selected_observation_model,'Multi Robot Sensing')
-%     addpath(genpath('All_observation_models/Multi_robot_sensing')); % In this line we import everything inside the "All_observation_models/multi_robot_sensing" directory.
-% elseif strcmpi(par_new.selected_observation_model,'Two robots with no communication')
-%     typeDef('Two_robots_no_communication','ObservationModel_class')
-%     %addpath(genpath('All_observation_models/Two_robots_no_communication')); % In this line we import everything inside the "All_observation_models/multi_robot_sensing" directory.
-% elseif strcmpi(par_new.selected_observation_model,'Two robots with communication')
-%     addpath(genpath('All_observation_models/Two_robots_with_communication')); % In this line we import everything inside the "All_observation_models/multi_robot_sensing" directory.
-% elseif strcmpi(par_new.selected_observation_model,'n-arm Manipulator')
-%     typeDef('Planar_manipulator_wall_sensing_deadzone','ObservationModel_class');
-% elseif strcmpi(par_new.selected_observation_model,'Dynamical n-arm Manipulator')
-%     typeDef('Dyn_manipulator_wall_sensing_deadzone','ObservationModel_class');
-% elseif strcmpi(par_new.selected_observation_model,'3D Landmark (range and bearing)')
-%     typeDef('Landmarks_3D_Range_bearing','ObservationModel_class');
-% end
-typeDef('Landmarks_3D_Range_bearing','ObservationModel_class');
+if strcmpi(par_new.selected_observation_model,'Three robot good-poor GPS no comm')
+        typeDef('Three_robot_good_poor_GPS_no_comm','ObservationModel_class')
+elseif strcmpi(par_new.selected_observation_model,'Three robot good-poor GPS with comm')
+        typeDef('Three_robot_good_poor_GPS_with_comm','ObservationModel_class')
+elseif strcmpi(par_new.selected_observation_model,'Landmark (range and bearing) sensing')
+    typeDef('Landmarks_Range_bearing' , 'ObservationModel_class')
+elseif strcmpi(par_new.selected_observation_model,'Multi Robot Sensing')
+    addpath(genpath('All_observation_models/Multi_robot_sensing')); % In this line we import everything inside the "All_observation_models/multi_robot_sensing" directory.
+elseif strcmpi(par_new.selected_observation_model,'Two robots with no communication')
+    typeDef('Two_robots_no_communication','ObservationModel_class')
+    %addpath(genpath('All_observation_models/Two_robots_no_communication')); % In this line we import everything inside the "All_observation_models/multi_robot_sensing" directory.
+elseif strcmpi(par_new.selected_observation_model,'Two robots with communication')
+    addpath(genpath('All_observation_models/Two_robots_with_communication')); % In this line we import everything inside the "All_observation_models/multi_robot_sensing" directory.
+elseif strcmpi(par_new.selected_observation_model,'n-arm Manipulator')
+    typeDef('Planar_manipulator_wall_sensing_deadzone','ObservationModel_class');
+elseif strcmpi(par_new.selected_observation_model,'Dynamical n-arm Manipulator')
+    typeDef('Dyn_manipulator_wall_sensing_deadzone','ObservationModel_class');
+elseif strcmpi(par_new.selected_observation_model,'3D Landmark (range and bearing)')
+    typeDef('Landmarks_3D_Range_bearing','ObservationModel_class');
+end
+% typeDef('Landmarks_3D_Range_bearing','ObservationModel_class');
 par_new.observation_model_parameters = gather_observation_model_parameters(old_par, par_new.observation_model_parameters, par_new.selected_observation_model);
 
 

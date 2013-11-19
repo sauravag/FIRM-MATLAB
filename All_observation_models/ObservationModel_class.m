@@ -13,8 +13,8 @@ classdef ObservationModel_class < ObservationModel_interface
         obsDim = ObservationModel_class.tmp_prop.obsDim;
         obsNoiseDim = ObservationModel_class.obsDim; % observation noise dimension. In some other observation models the noise dimension may be different from the observation dimension.
         zeroNoise = zeros(ObservationModel_class.obsNoiseDim,1); % zero observation noise
-        eta = [0.001;0.001;0.001];%user_data_class.par.observation_model_parameters.eta; 
-        sigma_b = [0.001;0.001;0.001];%user_data_class.par.observation_model_parameters.sigma_b;
+        eta = user_data_class.par.observation_model_parameters.eta; %[0.001;0.001;0.001];%
+        sigma_b = user_data_class.par.observation_model_parameters.sigma_b;%[0.001;0.001;0.001];%
     end
     properties
        plot_handle;
