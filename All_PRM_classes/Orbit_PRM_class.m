@@ -336,8 +336,8 @@ classdef Orbit_PRM_class < PRM_interface
             nominal_traj.u = [pre_edge_traj.u , obj.orbit_edges_trajectory(start_orbit_ind,end_orbit_ind).u , post_edge_traj.u];
             
             %% Test Code 
-%             nominal_traj.x = pre_edge_traj.x(:,1:end);
-%             nominal_traj.u = pre_edge_traj.u;
+%             nominal_traj.x = [start_orbit.x,start_orbit.x];%,start_orbit.x(:,node_time_stage : T)];
+%             nominal_traj.u = [start_orbit.u,start_orbit.u];%,start_orbit.u(:,node_time_stage : T)];
             %%
         end
     end

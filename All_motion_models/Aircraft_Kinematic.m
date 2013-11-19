@@ -65,10 +65,7 @@ classdef Aircraft_Kinematic < MotionModel_interface
             noise = dq_dt_w * Aircraft_Kinematic.dt^0.5;
             x_next_rot = rot + control + noise;
             q_next = unit(x_next_rot); % Make a unit quaternion
-            
-            if q_next(1) < 0
-                q_next = -q_next;
-            end
+            q_next = correct_quaternion(q_next);
             
             %             %transition_quat = Aircraft_Kinematic.f_transquat(Aircraft_Kinematic.dt , u_angular ,w_angular);
             %             x_next_q_rot = Quaternion();
@@ -388,6 +385,7 @@ classdef Aircraft_Kinematic < MotionModel_interface
             point = orbit.radius * [ cos(gamma) ; sin(gamma);0 ] + orbit.center.val(1:3);
             yaw = gamma+pi/2;
             q = angle2quat(yaw,0,0);
+            q = correct_quaternion(q);
             point = [point;q'];
             %start_orbit.radius*[cos(gamma_start_of_orbit_edge);sin(gamma_start_of_orbit_edge);0]+start_orbit.center.val;
             
@@ -478,6 +476,13 @@ classdef Aircraft_Kinematic < MotionModel_interface
             % not implemented yet
             plot_handle = [];
         end
+    end
+end
+
+function qcorrected = correct_quaternion(q)
+    qcorrected = q;
+    if q(1) < 0
+        qcorrected = -q;
     end
 end
 
