@@ -27,9 +27,9 @@ classdef belief < belief_interface
             end
             obj.est_mean = obj.est_mean.draw(New_varargin{:});
            if ~isempty(ellipse_spec)
-%                 tmp=get(gca,'NextPlot'); hold on
-%                 obj.ellipse_handle = plotUncertainEllip2D(obj.est_cov(1:2,1:2),obj.est_mean.val(1:2),ellipse_spec, ellipse_width);
-%                 set(gca,'NextPlot',tmp);
+                tmp=get(gca,'NextPlot'); hold on
+                obj.ellipse_handle = plotUncertainEllip2D(obj.est_cov(1:2,1:2),obj.est_mean.val(1:2),ellipse_spec, ellipse_width);
+                set(gca,'NextPlot',tmp);
             end
         end
         function obj = draw_CovOnNominal(obj, nominal_state, varargin)
@@ -54,15 +54,10 @@ classdef belief < belief_interface
             end
             obj.est_mean = obj.est_mean.draw(New_varargin{:});
            if ~isempty(ellipse_spec)
-%                 tmp=get(gca,'NextPlot'); hold on
-%                 obj.ellipse_handle = plotUncertainEllip2D(obj.est_cov(1:2,1:2),nominal_state.val(1:2),ellipse_spec, ellipse_width);
-%                 set(gca,'NextPlot',tmp);
+                tmp=get(gca,'NextPlot'); hold on
+                obj.ellipse_handle = plotUncertainEllip2D(obj.est_cov(1:2,1:2),nominal_state.val(1:2),ellipse_spec, ellipse_width);
+                set(gca,'NextPlot',tmp);
             end
-        end
-        function obj = apply_differentiable_constraints(obj)
-            obj.est_mean = obj.est_mean.apply_differentiable_constraints();
-            constraint_Jacobian = obj.est_mean.get_differentiable_constraints_jacobian();
-            obj.est_cov = constraint_Jacobian*obj.est_cov*constraint_Jacobian';
         end
     end
 end

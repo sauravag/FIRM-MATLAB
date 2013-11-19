@@ -35,7 +35,7 @@ classdef youbot_base < MotionModel_interface
             gama1= 2/(l1+l2);
             x_dot = (1/4)*[1      -1     -1      1;...
                            1       1      1      1;...
-                           -gmam1 gama1 -gama1 gama1]*u+wg;
+                           -gama1 gama1 -gama1 gama1]*u+wg;
         end
         function A = df_dx_func(x,u,w)
             un = w(1:youbot_base.ctDim); % The size of Un may be different from ctDim in some other model.
@@ -53,12 +53,12 @@ classdef youbot_base < MotionModel_interface
             gama1= 2/(l1+l2);
             B     = (1/4)*[1      -1     -1      1;...
                            1       1      1      1;...
-                           -gmam1 gama1 -gama1 gama1]*youbot_base.dt;
+                           -gama1 gama1 -gama1 gama1]*youbot_base.dt;
             end
         function G = df_dw_func(x,u,w) %#ok<INUSD>
             B     = (1/4)*[1      -1     -1      1;...
                            1       1      1      1;...
-                           -gmam1 gama1 -gama1 gama1]*youbot_base.dt;
+                           -gama1 gama1 -gama1 gama1]*youbot_base.dt;
             G = [B,eye(youbot_base.stDim)]*sqrt(youbot_base.dt);
         end
         function w = generate_process_noise(x,u) %#ok<INUSD>
