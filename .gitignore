@@ -2,3 +2,11 @@ Top_runs/
 output/
 *.asv
 *.pdf
+All_state_classes/state.m
+All_stabilizer_classes/stabilizer_class.m
+All_simulator_classes/Simulator.m
+All_PRM_classes/PRM_class.m
+All_observation_models/ObservationModel_class.m
+All_motion_models/MotionModel_class.m
+All_belief_classes/belief.m
+
