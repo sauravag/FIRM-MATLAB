@@ -106,7 +106,7 @@ if any(d(:) < 0)
    fprintf('warning: negative eigenvalues\n');
    d = max(d,0);
 end
-d = 5*sdwidth * sqrt(d); % convert variance to sdwidth*sd
+d = 10*sdwidth * sqrt(d); % convert variance to sdwidth*sd
 bp = (v*d*ap) + repmat(means, 1, size(ap,2)); 
 xp = reshape(bp(1,:), size(x));
 yp = reshape(bp(2,:), size(y));

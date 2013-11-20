@@ -91,8 +91,8 @@ classdef LQG_class
             % generating feedback controls
             est_OF_error = b.est_mean.signed_element_wise_dist(xp);  % this basically computes the "signed element-wise distance" between "b.est_mean" and "xp"
             
-%             disp('<<--Driving difference in q0 to 0 in LQG Class -->>');
-%             est_OF_error(4)=0;
+            disp('<<--Driving difference in q0 to 0 in LQG Class -->>');
+            est_OF_error(4)=0;
             reliable = obj.is_in_valid_linearization_region(est_OF_error);
             if ~reliable
                 warning('Ali: error is too much; the linearization is not reliable');
