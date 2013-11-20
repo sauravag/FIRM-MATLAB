@@ -284,7 +284,7 @@ classdef Orbit_PRM_class < PRM_interface
                         
             T = start_orbit.period;
             fraction = steps_till_start_of_orbit_edge_rational - steps_till_start_of_orbit_edge_minusOne;
-            if node_time_stage+steps_till_start_of_orbit_edge_minusOne < T
+            if node_time_stage+steps_till_start_of_orbit_edge_minusOne <= T
                 pre_edge_traj.x = [start_orbit.x(:,node_time_stage : node_time_stage+steps_till_start_of_orbit_edge_minusOne), leaving_point];
                 pre_edge_traj.u = [start_orbit.u(:,node_time_stage : node_time_stage+steps_till_start_of_orbit_edge_minusOne -1), ...
                 start_orbit.u(:, node_time_stage+steps_till_start_of_orbit_edge_minusOne)*fraction];

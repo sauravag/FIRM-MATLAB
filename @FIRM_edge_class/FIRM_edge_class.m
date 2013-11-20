@@ -126,6 +126,7 @@ classdef FIRM_edge_class
             draw_at_every_n_steps = user_data_class.par.draw_at_every_n_steps;
             for k = 1 : obj.kf
                 % propagation of a single robot (or an Hstate)
+                k
                 if user_data_class.par.replanning == 1
                     [next_Hstate, in_lnr_reg] = obj.edge_controller.propagate_Hstate(current_Hstate,k);
                     lost = ~in_lnr_reg;
@@ -225,6 +226,7 @@ classdef FIRM_edge_class
                     limits = axis;
                     within_axis = (current_click_position(1,1)>limits(1) && current_click_position(1,1)<limits(2) && current_click_position(1,2)>limits(3) && current_click_position(1,2)<limits(4));
                     if within_axis
+                        disp('This intractive disturbance only works for a planar robot.')
                         disturbed_Xg.val(1:state.dim-1) = [current_click_position(1,1);current_click_position(1,2)];
                     end
                 end
