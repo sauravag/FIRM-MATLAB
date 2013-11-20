@@ -246,7 +246,7 @@ par_new.failure_cost_to_go = 15;
 par_new.selected_nodes_for_plotting_feedback_pi = [ ];%setdiff(1:22, [4,7,19,17,8,20,12,3,6,22]);
 
 %===========  Replanning
-par_new.replanning = 0;
+par_new.replanning = 1;
 par_new.goBack_to_nearest_node = 0; % this does not work correctly, yet.
 
 %=======================================================================================

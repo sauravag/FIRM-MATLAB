@@ -50,7 +50,7 @@ classdef Planning_Problem
                 start_node_ind = 6;
                 goal_node_ind = 7;
              
-		text_height = 0.5;
+                text_height = 0.5;
                 text(obj.FIRM_graph.PRM.nodes(start_node_ind).val(1),obj.FIRM_graph.PRM.nodes(start_node_ind).val(2),obj.FIRM_graph.PRM.nodes(start_node_ind).val(3)+text_height,'start','color','r','fontsize',14); % we write "start" next to the start node
                 text(obj.FIRM_graph.PRM.nodes(goal_node_ind).val(1),obj.FIRM_graph.PRM.nodes(goal_node_ind).val(2),obj.FIRM_graph.PRM.nodes(goal_node_ind).val(3)+text_height,'goal','color','r','fontsize',14); % we write "goal" next to the goal node
                 
