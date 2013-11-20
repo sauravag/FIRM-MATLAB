@@ -241,12 +241,12 @@ par_new.PRM_parameters.num_nodes_on_orbits = 3; % number of nodes on each orbit
 
 
 %===========  Dynamic Programming parameters
-par_new.initial_values = 100;
+par_new.initial_values = 1;
 par_new.failure_cost_to_go = 15;
 par_new.selected_nodes_for_plotting_feedback_pi = [ ];%setdiff(1:22, [4,7,19,17,8,20,12,3,6,22]);
 
 %===========  Replanning
-par_new.replanning = 1;
+par_new.replanning = 0;
 par_new.goBack_to_nearest_node = 0; % this does not work correctly, yet.
 
 %=======================================================================================
@@ -323,9 +323,9 @@ elseif strcmpi(selected_motion_model,'FixedWing Aircraft')
     disp('state norm for aircraft model needs to be fixed')
     motion_model_parameters.controlDim = 4;
     motion_model_parameters.dt = 0.1;
-    motion_model_parameters.eta_u_aircraft = [0.05 ; 0.1 ; 0.1 ; 0.1];  
-    motion_model_parameters.sigma_b_u_aircraft = [0.01 ; 0.01 ; 0.01 ; 0.01];  
-    P_rootsqaure_Wg_diags = [0.1 ; 0.1 ; 0.1 ; 0.01 ; 0.01 ; 0.01 ; 0.01];
+    motion_model_parameters.eta_u_aircraft = [0.001 ; 0.001 ; 0.001 ; 0.001];  
+    motion_model_parameters.sigma_b_u_aircraft = [0.02 ; 0.002 ; 0.002 ; 0.002];  
+    P_rootsqaure_Wg_diags = [0.2 ; 0.2 ; 0.2 ; deg2rad(2) ; deg2rad(2) ; deg2rad(2) ; deg2rad(2)];
     motion_model_parameters.P_Wg = diag(P_rootsqaure_Wg_diags.^2);
 elseif strcmpi(selected_motion_model,'Kuka YouBot Base')
     state_parameters.stateDim = 3;

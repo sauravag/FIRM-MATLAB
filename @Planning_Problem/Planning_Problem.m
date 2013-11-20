@@ -47,8 +47,8 @@ classdef Planning_Problem
                 
 %                 myaa_Ali('FIRM_nodes_figure') % for producing the FIRM nodes figure for a paper
                 
-                start_node_ind = 6;
-                goal_node_ind = 7;
+                start_node_ind = 1;
+                goal_node_ind = 5;
              
                 text_height = 0.5;
                 text(obj.FIRM_graph.PRM.nodes(start_node_ind).val(1),obj.FIRM_graph.PRM.nodes(start_node_ind).val(2),obj.FIRM_graph.PRM.nodes(start_node_ind).val(3)+text_height,'start','color','r','fontsize',14); % we write "start" next to the start node

@@ -19,7 +19,15 @@ classdef Six_DOF_robot_state < state_interface
         function signed_dist_vector = signed_element_wise_dist(obj,x2) % this function returns the "Signed element-wise distance" between two states x1 and x2
              x1 = obj.val; % retrieve the value of the state vector
              if isa(x2,'state'), x2=x2.val; end % retrieve the value of the state vector
-             signed_dist_vector = x1 - x2; % [X1-X2, Y1-Y2, Z1-Z2]'
+             signed_dist_position = x1(1:3) - x2(1:3); % [X1-X2, Y1-Y2, Z1-Z2]'
+             signed_dist_quat = x1(4:7) - x2(4:7);
+             
+             if any(abs(signed_dist_quat) > 1)
+                 signed_dist_quat = x1(4:7) + x2(4:7);
+             end
+             
+             signed_dist_vector = [signed_dist_position;signed_dist_quat];
+                 
 %              qnorm = norm(signed_dist_vector(4:7));
 %              if qnorm > 0.0001
 %                  signed_dist_vector = [signed_dist_vector(1:3);signed_dist_vector(4:7)];
