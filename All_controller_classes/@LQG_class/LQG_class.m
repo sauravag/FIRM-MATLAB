@@ -89,8 +89,20 @@ classdef LQG_class
             
             xp = obj.planned_lnr_pts_seq(k).x; % planned x
             % generating feedback controls
-            est_OF_error = b.est_mean.signed_element_wise_dist(xp);  % this basically computes the "signed element-wise distance" between "b.est_mean" and "xp"
+%             est_OF_error = b.est_mean.signed_element_wise_dist(xp);  % this basically computes the "signed element-wise distance" between "b.est_mean" and "xp"
             
+            %%%%%%%%%%%%%%
+            % EST OF ERROR WITH QUAT PRODUCT %
+             x11 = b.est_mean.val; % retrieve the value of the state vector
+             x22 = xp; % retrieve the value of the state vector
+             signed_dist_position = x11(1:3) - x22(1:3); % [X1-X2, Y1-Y2, Z1-Z2]'
+             q_1 = [x11(4) x11(5) x11(6) x11(7)];
+             q_2 = [x22(4) x22(5) x22(6) x22(7)];
+             q21 = quatmultiply(q_1,quatinv(q_2)); % relative rotation quaternion from nominal to current
+             signed_dist_vector = [signed_dist_position;q21'];
+
+             est_OF_error = signed_dist_vector;
+            %%%%%%%%%%%%%%
             disp('<<--Driving difference in q0 to 0 in LQG Class -->>');
             est_OF_error(4)=0;
             reliable = obj.is_in_valid_linearization_region(est_OF_error);
