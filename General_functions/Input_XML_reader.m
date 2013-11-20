@@ -34,7 +34,7 @@ par_new.sim.Lighting_and_3D_plots = 1;
 par_new.sim.imageResizeRatio = 0.25;
 par_new.sim.viewAngle = [30,40];
 par_new.sim.initialZoomRatio = 1.2;%2.5;
-par_new.sim.verboseFlag = 1;% (0: suppresses the inermediate code messages intended for debugging purposes | 1: simulator will display messages  )
+par_new.sim.verboseFlag = 1; % (0: suppresses the inermediate code messages intended for debugging purposes | 1: simulator will display messages  )
 
 %=========== Motion Model Parameters
 warning('off', 'MATLAB:rmpath:DirNotFound'); % In the next line when we remove the paths, some warning may occur, if those path does not exist. So, we supress that warning here.

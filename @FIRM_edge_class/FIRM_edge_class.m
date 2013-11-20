@@ -215,7 +215,7 @@ classdef FIRM_edge_class
         end
         function disturbed_Xg = apply_disturbance(obj,Xg) %#ok<MANU>
             disturbed_Xg = Xg;
-            if user_data_class.par.disturbance_allowed
+            if user_data_class.par.sim.interactive_disturbance_allowed
                 global last_click_position; %#ok<TLEV>
                 if isempty(last_click_position)
                     last_click_position = get(gca,'CurrentPoint');

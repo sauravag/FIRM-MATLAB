@@ -47,7 +47,7 @@ classdef Planning_Problem
                 
 %                 myaa_Ali('FIRM_nodes_figure') % for producing the FIRM nodes figure for a paper
                 
-		start_node_ind = 6;
+                start_node_ind = 6;
                 goal_node_ind = 7;
              
 		text_height = 0.5;
