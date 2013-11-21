@@ -45,20 +45,24 @@ classdef PRM_interface
     methods %(Access = private)  % These have to be private! But the private methods are not inherited. So, they are set to be public.
         function old_prop = set_figure(obj) % This function sets the figure (size and other properties) to values that are needed for landmark selection or drawing.
             figure(gcf);
-            old_prop{1}=get(gca,'NextPlot');hold on; % save the old "NextPlot" property and set it to "hold on" % Note that this procedure cannot be moved into the "set_figure" function.
-            old_prop{2}=get(gca,'XGrid'); % save the old "XGrid" property.
-            old_prop{3}=get(gca,'YGrid'); % save the old "YGrid" property.
+            old_prop{1}=get(gca,'NextPlot');hold on; % saves the old "NextPlot" property and set it to "hold on" % Note that this procedure cannot be moved into the "set_figure" function.
+            old_prop{2}=get(gca,'XGrid'); % saves the old "XGrid" property.
+            old_prop{3}=get(gca,'YGrid'); % saves the old "YGrid" property.
+            old_prop{4}=get(gca,'view'); % saves the oldl "camera angle" property.
             grid on; % set the XGrid and YGrid to "on".
             if ~isempty(user_data_class.par.sim.figure_position)
                 set(gcf,'Position',user_data_class.par.sim.figure_position)
             end
             axis(user_data_class.par.sim.env_limits);
             set(gca,'DataAspectRatio',[1 1 1]); % makes the scaling of different axes the same. So, a circle is shown as a circle not ellipse.
+            top_2D_view = [0 90];
+            set(gca, 'view', top_2D_view);
         end
         function reset_figure(obj,old_prop) % This function resets the figure properties (size and other properties), to what they were before setting them in this class.
             set(gca,'NextPlot',old_prop{1}); % reset the "NextPlot" property to what it was.
             set(gca,'XGrid',old_prop{2}); % reset  the "XGrid" property to what it was.
             set(gca,'YGrid',old_prop{3}); % reset  the "YGrid" property to what it was.
+            set(gca, 'view', old_prop{4}); % reset  the "view" property to what it was.
         end
         function obj = add_set_of_nodes(obj, new_nodes)
             for i = 1:length(new_nodes)

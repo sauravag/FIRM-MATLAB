@@ -96,8 +96,8 @@ classdef LQG_class
              x11 = b.est_mean.val; % retrieve the value of the state vector
              x22 = xp; % retrieve the value of the state vector
              signed_dist_position = x11(1:3) - x22(1:3); % [X1-X2, Y1-Y2, Z1-Z2]'
-             q_1 = x11(4:7);
-             q_2 = x22(4:7);
+             q_1 = x11(4:7)';
+             q_2 = x22(4:7)';
              q21 = quatmultiply(q_1,quatinv(q_2)); % relative rotation quaternion from nominal to current
              signed_dist_vector = [signed_dist_position;q21'];
 
