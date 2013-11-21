@@ -241,7 +241,7 @@ par_new.PRM_parameters.num_nodes_on_orbits = 3; % number of nodes on each orbit
 
 
 %===========  Dynamic Programming parameters
-par_new.initial_values = 1;
+par_new.initial_values = 100;
 par_new.failure_cost_to_go = 15;
 par_new.selected_nodes_for_plotting_feedback_pi = [ ];%setdiff(1:22, [4,7,19,17,8,20,12,3,6,22]);
 
