@@ -310,8 +310,13 @@ classdef Orbit_PRM_class < PRM_interface
                 first_discrete_step_on_orbit = ceil(end_edge_step_number_rational);
                 fraction = first_discrete_step_on_orbit - end_edge_step_number_rational;
                 post_edge_traj.x = [entering_point, end_orbit.x(:,first_discrete_step_on_orbit:T)];
-                if first_discrete_step_on_orbit == 1, first_discrete_step_on_orbit = T+1; end
-                post_edge_traj.u = [end_orbit.u(:,first_discrete_step_on_orbit-1)*fraction, end_orbit.u(:,first_discrete_step_on_orbit:T-1),end_orbit.u(:,T)]; % the separation of T from 0:T-1 is just for clarity.
+%                 if first_discrete_step_on_orbit == 1, first_discrete_step_on_orbit = T+1; end
+%                 post_edge_traj.u = [end_orbit.u(:,first_discrete_step_on_orbit-1)*fraction, end_orbit.u(:,first_discrete_step_on_orbit:T-1),end_orbit.u(:,T)]; % the separation of T from 0:T-1 is just for clarity.
+                if first_discrete_step_on_orbit == 1
+                    post_edge_traj.u = [end_orbit.u(:,T)*fraction, end_orbit.u(:,first_discrete_step_on_orbit:T-1),end_orbit.u(:,T)];
+                else
+                    post_edge_traj.u = [end_orbit.u(:,first_discrete_step_on_orbit-1)*fraction, end_orbit.u(:,first_discrete_step_on_orbit:T-1),end_orbit.u(:,T)]; % the separation of T from 0:T-1 is just for clarity.
+                end
             end
             
             

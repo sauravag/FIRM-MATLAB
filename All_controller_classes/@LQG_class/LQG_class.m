@@ -25,7 +25,9 @@ classdef LQG_class
                 x_p = nominal_trajectory.x;
                 u_p = nominal_trajectory.u;
                 
-                if size(u_p,2)<obj.kf+1, u_p = [u_p,nan(MotionModel_class.ctDim,1)]; end
+                if size(u_p,2)<obj.kf+1 
+                    u_p = [u_p,nan(MotionModel_class.ctDim,1)]; 
+                end
                 
 %                 [u_p,obj.kf] = MotionModel_class.compute_planned_control(x_initial,x_final);
 %                 x_p = MotionModel_class.compute_planned_traj(x_initial,u_p,obj.kf);
@@ -103,7 +105,7 @@ classdef LQG_class
 
              est_OF_error = signed_dist_vector;
             %%%%%%%%%%%%%%
-            disp('<<--Driving difference in q0 to 0 in LQG Class -->>');
+%             disp('<<--Driving difference in q0 to 0 in LQG Class -->>');
             est_OF_error(4)=0;
             reliable = obj.is_in_valid_linearization_region(est_OF_error);
             if ~reliable

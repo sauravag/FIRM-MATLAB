@@ -26,7 +26,7 @@ par_new.sim.video = 0;
 par_new.sim.video_directory = new_output_directory;
 par_new.sim.video_quality = 100;
 par_new.sim.interactive_disturbance_allowed = 0 ;
-par_new.sim.draw_at_every_n_steps = 1;
+par_new.sim.draw_at_every_n_steps = 4;
 par_new.sim.FrameRate = 5;
 par_new.sim.env_limits = [-5  5  -5  5]; %[-3.75 , 100 , -23.75 , 80]; %[0 100 0 100]; %[-3 155 -3 155]; %[-10 10 -10 10];%[-6 104 -28 85];%[-5 265 -5 225];%[-6 104 -28 85];
 par_new.sim.env_background_image_address = 'none'; %'C:\Ali\Academics\PhD_Paper_tryings\Needle_steering\Needle_pics_web\liver.png';%'none'; %'C:\Users\Ali\Desktop\Needle_pics_web\liver-panel5.png';  % This field has to be the address of some image or has to be 'none'
@@ -174,6 +174,9 @@ BigX_thresh = [GHb_conv_reg_thresh;GHb_conv_reg_thresh];
 par_new.FIRM_node_parameters.GHb_conv_BigX_thresh = BigX_thresh; % distance threshold for both Xg_mean and Xest_mean_mean in the single vector
 par_new.FIRM_node_parameters.GHb_conv_Pest_thresh = GHb_conv_reg_thresh*GHb_conv_reg_thresh'; % defines the convergence threshold for Pest
 par_new.FIRM_node_parameters.GHb_conv_BigCov_thresh = BigX_thresh*BigX_thresh'; % defines the convergence threshold for BigCov
+
+%=========== DP Parameters
+par_new.DP_convergence_threshold = 0.001;
 
 %=========== Stabilizer Parameters
 par_new.stabilizer_parameters.max_stopping_time = 250;
@@ -323,9 +326,9 @@ elseif strcmpi(selected_motion_model,'FixedWing Aircraft')
     disp('state norm for aircraft model needs to be fixed')
     motion_model_parameters.controlDim = 4;
     motion_model_parameters.dt = 0.1;
-    motion_model_parameters.eta_u_aircraft = [0.001 ; 0.001 ; 0.001 ; 0.001];  
-    motion_model_parameters.sigma_b_u_aircraft = [0.02 ; 0.002 ; 0.002 ; 0.002];  
-    P_rootsqaure_Wg_diags = [0.2 ; 0.2 ; 0.2 ; deg2rad(2) ; deg2rad(2) ; deg2rad(2) ; deg2rad(2)];
+    motion_model_parameters.eta_u_aircraft = [0;0;0;0];%[0.01 ; deg2rad(0.025) ; deg2rad(0.025) ; deg2rad(0.025)];  
+    motion_model_parameters.sigma_b_u_aircraft = [1e-2;deg2rad(0.5);deg2rad(0.5);deg2rad(0.5)];%[0.01 ; deg2rad(0.2); deg2rad(0.2); deg2rad(0.2)];  
+    P_rootsqaure_Wg_diags = [0.02 ; 0.02 ; 0.02 ; 0.01 ; 0.01 ; 0.01 ; 0.01];
     motion_model_parameters.P_Wg = diag(P_rootsqaure_Wg_diags.^2);
 elseif strcmpi(selected_motion_model,'Kuka YouBot Base')
     state_parameters.stateDim = 3;

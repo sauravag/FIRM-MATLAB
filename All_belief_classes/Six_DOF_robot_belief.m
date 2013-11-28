@@ -30,7 +30,7 @@ classdef Six_DOF_robot_belief < belief_interface
             m = obj.est_mean.val(1:3);
             C = obj.est_cov(1:3,1:3);
             sdwidth = 2;
-            obj.ellipse_handle = plot_gaussian_ellipsoid(m, C, sdwidth);
+%             obj.ellipse_handle = plot_gaussian_ellipsoid(m, C, sdwidth);
             set(gca,'NextPlot',tmp);
         end
         function obj = draw_CovOnNominal(obj, nominal_state, varargin)

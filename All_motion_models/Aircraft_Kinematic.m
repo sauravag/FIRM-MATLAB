@@ -6,9 +6,9 @@ classdef Aircraft_Kinematic < MotionModel_interface
         wDim = 4;   % Process noise (W) dimension  % For the generality we also consider the additive noise on kinematics equation (3 dimension), but it most probably will set to zero. The main noise is a 2 dimensional noise which is added to the controls.
         dt = user_data_class.par.motion_model_parameters.dt;
         % base_length = user_data_class.par.motion_model_parameters.base_length;  % distance between robot's rear wheels.
-        sigma_b_u = user_data_class.par.motion_model_parameters.sigma_b_u_aircraft ;
-        eta_u = user_data_class.par.motion_model_parameters.eta_u_aircraft ;
-        P_Wg = user_data_class.par.motion_model_parameters.P_Wg;
+        sigma_b_u = [0.01;deg2rad(1);deg2rad(1);deg2rad(1)];%user_data_class.par.motion_model_parameters.sigma_b_u_aircraft ;
+        eta_u = [0;0;0;0];%user_data_class.par.motion_model_parameters.eta_u_aircraft ;
+        P_Wg = [0.02 ; 0.02 ; 0.02 ; 0.01 ; 0.01 ; 0.01 ; 0.01];%user_data_class.par.motion_model_parameters.P_Wg;
         Max_Roll_Rate = deg2rad(45); % try 45
         Max_Pitch_Rate = deg2rad(45);% try 45
         Max_Yaw_Rate = deg2rad(45);% try 45
@@ -35,6 +35,7 @@ classdef Aircraft_Kinematic < MotionModel_interface
     methods (Static = true)
         
         function x_next = f_discrete(x,u,w)
+            w = zeros(4,1);
             pos = [x(1) ; x(2) ; x(3)];% position state
             rot  = [x(4) ; x(5) ; x(6) ; x(7)];% rotation state
             q_rot = Quaternion(rot);
@@ -46,9 +47,9 @@ classdef Aircraft_Kinematic < MotionModel_interface
             x_next_pos = pos + Aircraft_Kinematic.dt * (u_linear_ground) + ((Aircraft_Kinematic.dt^0.5) * w_linear_ground);
             
             u_angular_ground = [u(2); u(3); u(4)];%p * [u(2); u(3); u(4)];
-            u_angular_ground = [u_angular_ground(1); u_angular_ground(2); u_angular_ground(3)];
+%             u_angular_ground = [u_angular_ground(1); u_angular_ground(2); u_angular_ground(3)];
             w_angular_ground = [w(2); w(3); w(4)]; % p * [w(2); w(3); w(4)]
-            w_angular_ground = [w_angular_ground(1); w_angular_ground(2); w_angular_ground(3)];
+%             w_angular_ground = [w_angular_ground(1); w_angular_ground(2); w_angular_ground(3)];
             %             q0 = x(4);
             %             q1 = x(5);
             %             q2 = x(6);

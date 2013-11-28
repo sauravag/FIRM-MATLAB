@@ -111,4 +111,4 @@ bp = (v*d*ap) + repmat(means, 1, size(ap,2));
 xp = reshape(bp(1,:), size(x));
 yp = reshape(bp(2,:), size(y));
 zp = reshape(bp(3,:), size(z));
-h = surf(axh, xp,yp,zp);
+% h = surf(axh, xp,yp,zp);

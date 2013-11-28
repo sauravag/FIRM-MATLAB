@@ -62,7 +62,7 @@ classdef FIRM_graph_interface
             
             value_mat = []; % just for monitoring value updates. Otherwise, not useful.
             new_values = ones(obj.num_nodes,1)*user_data_class.par.initial_values; % initializing node values.
-            while norm(values-new_values)>0.01
+            while norm(values-new_values)>user_data_class.par.DP_convergence_threshold
                 values = new_values;
                 value_mat = [value_mat,values]; %#ok<AGROW> % just for monitoring value updates. Otherwise, not useful.
                 for i = 1 : size(values,1) % i  is the node number (absolute number)
