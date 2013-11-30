@@ -40,7 +40,7 @@ classdef Six_DOF_robot_belief < belief_interface
              m = nominal_state.val(1:3);
              C = obj.est_cov(1:3,1:3);
              sdwidth = 2;
-             obj.ellipse_handle = plot_gaussian_ellipsoid(m, C, sdwidth);
+%              obj.ellipse_handle = plot_gaussian_ellipsoid(m, C, sdwidth);
         end
         function obj = apply_differentiable_constraints(obj)
             obj.est_mean = obj.est_mean.apply_differentiable_constraints();

@@ -92,7 +92,7 @@ classdef LQG_class
             xp = obj.planned_lnr_pts_seq(k).x; % planned x
             % generating feedback controls
 %             est_OF_error = b.est_mean.signed_element_wise_dist(xp);  % this basically computes the "signed element-wise distance" between "b.est_mean" and "xp"
-            
+            disp('LQG_Class: Feedback Control Only works for 7 dim system!!!!')
             %%%%%%%%%%%%%%
             % EST OF ERROR WITH QUAT PRODUCT %
              x11 = b.est_mean.val; % retrieve the value of the state vector
@@ -104,9 +104,10 @@ classdef LQG_class
              signed_dist_vector = [signed_dist_position;q21'];
 
              est_OF_error = signed_dist_vector;
+             est_OF_error(4)=0;
             %%%%%%%%%%%%%%
 %             disp('<<--Driving difference in q0 to 0 in LQG Class -->>');
-            est_OF_error(4)=0;
+            
             reliable = obj.is_in_valid_linearization_region(est_OF_error);
             if ~reliable
                 warning('Ali: error is too much; the linearization is not reliable');
@@ -154,6 +155,7 @@ classdef LQG_class
         function next_Hb_particle = propagate_Hb_particle(obj,old_Hb_particle,k)
             Hparticles = old_Hb_particle.Hparticles;
             % The first particle is the "no-noise" particle.
+            disp(['step number ',num2str(k),';  particle  ',num2str(1)])
             if ~old_Hb_particle.stopped_particles(1) && ~old_Hb_particle.collided_particles(1) % We propagate the particles only if it has not been stopped or collided already. Indeed since LQG is a choice for edge-controller Not for node-controller, the stopping check on this line seems unnecessary.
                 next_Hparticles(1) = obj.propagate_Hstate(Hparticles(1),k,'No-noise');
             else
@@ -161,6 +163,7 @@ classdef LQG_class
             end
             
             for i = 2:old_Hb_particle.num_p
+                disp(['step number ',num2str(k),';  particle  ',num2str(i)])
                 if ~old_Hb_particle.stopped_particles(i) && ~old_Hb_particle.collided_particles(i) % We propagate the particles only if it has not been stopped or collided already. Indeed since LQG is a choice for edge-controller Not for node-controller, the stopping check on this line seems unnecessary.
                     next_Hparticles(i) = obj.propagate_Hstate(Hparticles(i),k);
                 else

@@ -14,7 +14,7 @@ classdef Landmarks_3D_Range_bearing < ObservationModel_interface
         obsNoiseDim = Landmarks_3D_Range_bearing.obsDim; % observation noise dimension. In some other observation models the noise dimension may be different from the observation dimension.
         zeroNoise = zeros(Landmarks_3D_Range_bearing.obsNoiseDim,1); % zero observation noise
         eta = [0.0;0.0;0.0];%user_data_class.par.observation_model_parameters.eta; 
-        sigma_b = [0.01;deg2rad(0.1);deg2rad(0.1)];%user_data_class.par.observation_model_parameters.sigma_b;
+        sigma_b = [0.02;deg2rad(0.1);deg2rad(0.1)];%user_data_class.par.observation_model_parameters.sigma_b;
     end
     properties
        plot_handle;
@@ -89,6 +89,7 @@ classdef Landmarks_3D_Range_bearing < ObservationModel_interface
             H = nan(od,state.dim); % memory preallocation
             
             q = [x(4) x(5) x(6) x(7)];
+            q = q/norm(q);
             q0 = q(1);
             q1 = q(2);
             q2 = q(3);
@@ -117,7 +118,17 @@ classdef Landmarks_3D_Range_bearing < ObservationModel_interface
                 Hi_16 = 0;
                 Hi_17 = 0;
                 
-                temp1 = 1 / ( (d_ib(1))^2 + (d_ib(2))^2 );
+                dx_ib_dx = -R(1,1);
+                dx_ib_dy = -R(1,2);
+                dx_ib_dz = -R(1,3);
+                
+                dy_ib_dx = -R(2,1);
+                dy_ib_dy = -R(2,2);
+                dy_ib_dz = -R(2,3);
+                
+                dz_ib_dx = -R(3,1);
+                dz_ib_dy = -R(3,2);
+                dz_ib_dz = -R(3,3);
                 
                 dx_ib_by_dq0 = dR_by_dq0(1,1)*d_ig(1) + dR_by_dq0(1,2)*d_ig(2) + dR_by_dq0(1,3)*d_ig(3);
                 dx_ib_by_dq1 = dR_by_dq1(1,1)*d_ig(1) + dR_by_dq1(1,2)*d_ig(2) + dR_by_dq1(1,3)*d_ig(3);
@@ -134,9 +145,11 @@ classdef Landmarks_3D_Range_bearing < ObservationModel_interface
                 dz_ib_by_dq2 = dR_by_dq2(3,1)*d_ig(1) + dR_by_dq2(3,2)*d_ig(2) + dR_by_dq2(3,3)*d_ig(3);
                 dz_ib_by_dq3 = dR_by_dq3(3,1)*d_ig(1) + dR_by_dq3(3,2)*d_ig(2) + dR_by_dq3(3,3)*d_ig(3);
                 
-                Hi_21 = temp1*(-R(2,1)*d_ib(1) + R(1,1)*d_ib(2)) ;
-                Hi_22 = temp1*(-R(2,2)*d_ib(1) + R(1,2)*d_ib(2)) ;
-                Hi_23 = temp1*(-R(2,3)*d_ib(1) + R(1,3)*d_ib(2)) ;
+                temp1 = 1 / ( (d_ib(1))^2 + (d_ib(2))^2 );
+                
+                Hi_21 = temp1*(dy_ib_dx*d_ib(1) - dx_ib_dx*d_ib(2)) ;
+                Hi_22 = temp1*(dy_ib_dy*d_ib(1) - dx_ib_dy*d_ib(2)) ;
+                Hi_23 = temp1*(dy_ib_dz*d_ib(1) - dx_ib_dz*d_ib(2)) ;
                 Hi_24 = temp1*(d_ib(1)*dy_ib_by_dq0 -d_ib(2)*dx_ib_by_dq0);
                 Hi_25 = temp1*(d_ib(1)*dy_ib_by_dq1 -d_ib(2)*dx_ib_by_dq1);
                 Hi_26 = temp1*(d_ib(1)*dy_ib_by_dq2 -d_ib(2)*dx_ib_by_dq2);
@@ -144,9 +157,9 @@ classdef Landmarks_3D_Range_bearing < ObservationModel_interface
                 
                 temp2 =  1 / ( (d_ib(1))^2 + (d_ib(3))^2 );
                 
-                Hi_31 = temp2 *(-R(3,1)*d_ib(1) + R(1,1)*d_ib(3));
-                Hi_32 = temp2 *(-R(3,2)*d_ib(1) + R(1,2)*d_ib(3));
-                Hi_33 = temp2 *(-R(3,3)*d_ib(1) + R(1,3)*d_ib(3));
+                Hi_31 = temp2 *(dz_ib_dx*d_ib(1) - dx_ib_dx*d_ib(3));
+                Hi_32 = temp2 *(dz_ib_dy*d_ib(1) - dx_ib_dy*d_ib(3));
+                Hi_33 = temp2 *(dz_ib_dz*d_ib(1) - dx_ib_dz*d_ib(3));
                 Hi_34 = temp2*(d_ib(1)*dz_ib_by_dq0 -d_ib(3)*dx_ib_by_dq0);
                 Hi_35 = temp2*(d_ib(1)*dz_ib_by_dq1 -d_ib(3)*dx_ib_by_dq1);
                 Hi_36 = temp2*(d_ib(1)*dz_ib_by_dq2 -d_ib(3)*dx_ib_by_dq2);
@@ -159,6 +172,8 @@ classdef Landmarks_3D_Range_bearing < ObservationModel_interface
                                    
             end
         end
+        
+        
         function M = dh_dv_func(x,v) %#ok<INUSD>
             % Jacobian of observation wrt observation noise.
             M = eye(Landmarks_3D_Range_bearing.obsDim);
@@ -198,6 +213,28 @@ classdef Landmarks_3D_Range_bearing < ObservationModel_interface
             V = zeros(Landmarks_3D_Range_bearing.obsNoiseDim,1);
             Zprd = Landmarks_3D_Range_bearing.h_func(Xprd,V);
             innov = Zg - Zprd;
+            singleObsDim = 3;
+%             for i=1:size(innov,1)/singleObsDim
+%                 innov(singleObsDim*i-2) = Zg(singleObsDim*i-2) - Zprd(singleObsDim*i-2) ; 
+%                 innov(singleObsDim*i-1) = delta_theta_turn(Zprd(singleObsDim*i-1), Zg(singleObsDim*i-1), 'ccw');
+%                 innov(singleObsDim*i) = delta_theta_turn(Zprd(singleObsDim*i), Zg(singleObsDim*i), 'ccw');
+%             end
+%             for i=1:size(innov,1)/singleObsDim
+%                  
+%                 if innov(singleObsDim*i - 1) > pi
+%                     innov(singleObsDim*i - 1) = innov(3*i - 1) - 2*pi;
+%                 end
+%                 if innov(singleObsDim*i - 1) < -pi
+%                     innov(singleObsDim*i - 1) = innov(3*i - 1) + 2*pi;
+%                 end
+%                 if innov(singleObsDim*i) > pi
+%                     innov(singleObsDim*i) = innov(3*i) - 2*pi;
+%                 end
+%                 if innov(singleObsDim*i) < -pi
+%                     innov(singleObsDim*i) = innov(3*i) + 2*pi;
+%                 end
+%             end
+            
             wrong_innovs = find(innov>pi | innov<-pi);
             for jjj=1:length(wrong_innovs)
                 i=wrong_innovs(jjj);
@@ -212,6 +249,17 @@ classdef Landmarks_3D_Range_bearing < ObservationModel_interface
                     innov(i)=innov(i)+2*pi;
                 end
             end
+            for i=1:size(innov,1)/singleObsDim
+                
+                if abs(innov(singleObsDim*i - 1)) > pi/10
+                    disp('large val in innovation');
+                end
+                if abs(innov(singleObsDim*i)) > pi/10
+                    disp('large val in innovation');
+                end
+ 
+            end
+            
         end
         function old_prop = set_figure() % This function sets the figure (size and other properties) to values that are needed for landmark selection or drawing.
             figure(gcf); 

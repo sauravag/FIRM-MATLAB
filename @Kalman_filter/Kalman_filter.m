@@ -141,6 +141,7 @@ classdef Kalman_filter
             end
             b_prd = Kalman_filter.prediction(b,U,lnr_sys_for_prd);
             b_next = Kalman_filter.update(b_prd,Zg,lnr_sys_for_update);
+            b_next.est_mean.val - b_prd.est_mean.val
         end
         function b_next = StationaryKF_estimate(b,U,Zg,lnr_sys,Stationary_Kalman_gain)
             disp('There is no mathmatical basis for the stationary KF if your system is not linear. So, do not use this. Use LKF and provide the stationary linear system as its inputs both for prediction and update. The problem with stationary KF is that the estimation covariance can become unsymmetric easily.')
