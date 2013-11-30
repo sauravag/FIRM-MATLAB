@@ -33,7 +33,7 @@ classdef FIRM_edge_class
                 obj.nominal_trajectory = nominal_PRM_edge_traj;
                 obj.possible_end_node_indices =possible_end_node_indices_inp;
                 % obj.edge_controller = target_node_stabilizer_inp.controller; % If this line is uncommented, it means we assume the edge controller is the same as the stationary_LQG designed for end_node.
-                obj.edge_controller = LQG_class('LKF',obj.nominal_trajectory);
+                obj.edge_controller = Finite_time_LQG_class(obj.nominal_trajectory,'LKF');
                 obj.kf = obj.edge_controller.kf;
             end
         end
