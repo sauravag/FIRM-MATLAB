@@ -19,28 +19,31 @@ classdef Six_DOF_robot_state < state_interface
         function signed_dist_vector = signed_element_wise_dist(obj,x2) % this function returns the "Signed element-wise distance" between two states x1 and x2
              x1 = obj.val; % retrieve the value of the state vector
              if isa(x2,'state'), x2=x2.val; end % retrieve the value of the state vector
-             signed_dist_position = x1(1:3) - x2(1:3); % [X1-X2, Y1-Y2, Z1-Z2]'
-             signed_dist_quat = x1(4:7) - x2(4:7);
-             
-             if any(abs(signed_dist_quat) > 1)
-                 signed_dist_quat = x1(4:7) + x2(4:7);
-             end
-             
-             signed_dist_vector = [signed_dist_position;signed_dist_quat];
-                 
-%              qnorm = norm(signed_dist_vector(4:7));
-%              if qnorm > 0.0001
-%                  signed_dist_vector = [signed_dist_vector(1:3);signed_dist_vector(4:7)];
-%              end
+             signed_dist_vector = x1-x2;
+%              signed_dist_position = x1(1:3) - x2(1:3); % [X1-X2, Y1-Y2, Z1-Z2]'
+%              signed_dist_quat = x1(4:7) - x2(4:7);
 %              
-%              linear_distance = x1(1:3,1) - x2(1:3,1) ; % [X1-X2, Y1-Y2, Z1-Z2]'
-%              %The relative quaternion so to speak 
-%              % q_rel = q_current * inv(q_nominal)
-%              q_1 = [x1(4) x1(5) x1(6) x1(7)];
-%              q_2 = [x2(4) x2(5) x2(6) x2(7)];
-%              q21 = quatmultiply(q_1,quatinv(q_2)); % relative rotation quaternion from nominal to current
-%              signed_dist_vector = [linear_distance;q21'];
+%              if any(abs(signed_dist_quat) > 1)
+%                  signed_dist_quat = x1(4:7) + x2(4:7);
+%              end
+%              signed_dist_vector = [signed_dist_position;signed_dist_quat];
         end
+        
+        function distance_for_control = compute_distance_for_control(obj,x2)
+             % EST OF ERROR WITH QUAT PRODUCT %
+            x1 = obj.val; % retrieve the value of the state vector
+            if isa(x2,'state'), x2=x2.val; end % retrieve the value of the state vector
+            signed_dist_position = x1(1:3) - x2(1:3); % [X1-X2, Y1-Y2, Z1-Z2]'
+            q_1 = x1(4:7)';
+            q_2 = x2(4:7)';
+            q21 = quatmultiply(q_1,quatinv(q_2)); % relative rotation quaternion from nominal to current
+            signed_dist_vector = [signed_dist_position;q21'];
+            
+            distance_for_control = signed_dist_vector;
+            distance_for_control(4)=0; % For quaternion control, we only need to control q1,q2,q3 because q1 is constrained by the normalization relation
+        
+        end
+        
         function obj = draw(obj, varargin)
             % The full list of properties for this function is:
             % 'RobotShape', 'RobotSize', 'TriaColor', 'color', 'HeadShape',

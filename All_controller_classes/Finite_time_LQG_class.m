@@ -193,6 +193,10 @@ classdef Finite_time_LQG_class < LQG_interface
             obj.lnr_sys = [];
             obj.L_seq = [];
         end
+        function nextHyperBelief = propagateHyperBelief(obj,oldHyperBelief)
+            error('not yet implemented');
+        end
+        
     end
     
 end
