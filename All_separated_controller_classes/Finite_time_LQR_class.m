@@ -10,18 +10,23 @@ classdef Finite_time_LQR_class < LQR_interface
         function obj = Finite_time_LQR_class(lnr_sys_inp, lnr_pts_inp)
             obj.kf = size(lnr_sys_inp, 2);  % period
             obj.lnr_pts = lnr_pts_inp;
-            obj.Feedback_gains = obj.generate_Feedback_gains(lnr_sys_inp);
+            obj.Feedback_gains = obj.generate_feedback_gains(lnr_sys_inp);
         end
         
         function [u , reliable] = generate_feedback_control(obj, b, k)
+            
             xp = obj.lnr_pts(k).x; % planned x (or target point) or linearization point.
             
             est_OF_error = b.est_mean.compute_distance_for_control(xp);
             
             reliable = obj.is_in_valid_linearization_region(est_OF_error);
+            
             feedback_gain = obj.Feedback_gains{k};
+            
             dU = - feedback_gain*est_OF_error;
+            
             up = obj.lnr_pts(k).u; % planned up, which usually (or maybe always) must be zero in stationary LQG setting.
+            
             u = up + dU;
         end
     end

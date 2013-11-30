@@ -12,6 +12,7 @@ classdef Finite_time_LQG_class < LQG_interface
         lnr_sys;
         kf;
         filter_mode; % this can be "EKF" or "LKF"
+        L_seq;
     end
     
     methods
@@ -39,9 +40,9 @@ classdef Finite_time_LQG_class < LQG_interface
                     obj.lnr_pts(k).v = v_zero;
                     obj.lnr_sys(k) = Linear_system_class(obj.lnr_pts(k));
                 end
-                
+                 
                 if strcmpi(obj.filter_mode, 'LKF')
-                    obj.estimator = LKF(obj.lnr_sys);
+                    obj.estimator = LKF;
                 elseif strcmpi(obj.filter_mode, 'EKF')
                     obj.estimator = EKF(obj.lnr_sys);
                 else
@@ -49,6 +50,8 @@ classdef Finite_time_LQG_class < LQG_interface
                 end
                 
                 obj.separated_controller = Finite_time_LQR_class(obj.lnr_sys, obj.lnr_pts);
+                
+                obj.L_seq = obj.separated_controller.Feedback_gains;
                 
             end
         end
@@ -153,7 +156,7 @@ classdef Finite_time_LQG_class < LQG_interface
             next_Hb_particle.Hparticles = next_Hparticles; % in this line we update the "Hparticles" property of the Hbelief_p.
         end
         function next_Hb_Gaussian = propagate_Hb_Gaussian(obj,Hb_G_curr,k)
-            error('This function has not been updated')
+%             error('This function has not been updated')
             % "k" is the current time.
             % Important: Throughout this function "curr" means time step
             % "k" and "next" means time step "k+1".

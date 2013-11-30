@@ -76,15 +76,14 @@ classdef FIRM_edge_class
                     obj.PHb_seq(k) = obj.PHb_seq(k).delete_plot();
                     drawnow
                 end
-                % propagation of GHb (only meaningful for when the filter
-                % is LKF)
+                % propagation of GHb (only meaningful for when the filter is LKF)
                 
                 obj.GHb_seq(k+1) = obj.edge_controller.propagate_Hb_Gaussian(obj.GHb_seq(k),k);
-                if ~user_data_class.par.No_plot
+%                 if ~user_data_class.par.No_plot
                     %                     obj.GHb_seq(k+1) = obj.GHb_seq(k+1).draw();
                     %                     obj.GHb_seq(k) = obj.GHb_seq(k).delete_plot();
                     %                     drawnow
-                end
+%                 end
                 
                 if (user_data_class.par.sim.video == 1 && ~user_data_class.par.No_plot)
                     global vidObj; %#ok<TLEV>
