@@ -10,7 +10,7 @@ classdef Finite_time_LQR_class < LQR_interface
         function obj = Finite_time_LQR_class(lnr_sys_inp, lnr_pts_inp)
             obj.kf = size(lnr_sys_inp, 2);  % period
             obj.lnr_pts = lnr_pts_inp;
-            obj.Feedback_gains = obj.generate_feedback_gains(lnr_sys_inp);
+            obj.Feedback_gains = obj.generate_Feedback_gains(lnr_sys_inp);
         end
         
         function [u , reliable] = generate_feedback_control(obj, b, k)
@@ -32,7 +32,7 @@ classdef Finite_time_LQR_class < LQR_interface
     end
     
     methods (Access = private)
-        function feedbak_gains = generate_feedback_gains(obj, lnr_sys_seq)
+        function feedbak_gains = generate_Feedback_gains(obj, lnr_sys_seq)
             % memory preallocation
             feedbak_gains = cell(1,obj.kf);
             % Solving Backward Riccati to compute Time-varying gains

@@ -16,26 +16,17 @@ classdef Periodic_LQR_class < LQR_interface
             if k==0, k = obj.T; end
             xp = obj.lnr_pts(k).x; % planned x (or target point) or linearization point.
             
-            disp('Periodic LQR Class: Feedback Control only works for 7 dim system!!!!')
-            %%%%%%%%%%%%%%
-            % EST OF ERROR WITH QUAT PRODUCT %
-             x11 = b.est_mean.val; % retrieve the value of the state vector
-             x22 = xp; % retrieve the value of the state vector
-             signed_dist_position = x11(1:3) - x22(1:3); % [X1-X2, Y1-Y2, Z1-Z2]'
-             q_1 = x11(4:7)';
-             q_2 = x22(4:7)';
-             q21 = quatmultiply(q_1,quatinv(q_2)); % relative rotation quaternion from nominal to current
-             signed_dist_vector = [signed_dist_position;q21'];
-
-             est_OF_error = signed_dist_vector;
-             est_OF_error(4)=0;
-            %%%%%%%%%%%%%%
-%             est_OF_error = b.est_mean.signed_element_wise_dist(xp);  % this basically computes the "signed element-wise distance" between "b.est_mean" and "xp"
-
+            est_OF_error = b.est_mean.compute_distance_for_control(xp);
+            disp('Warning--> Periodic LQR Class: Only Aircraft Kinematic model has compute_distance_for_control implemented')
+            
             reliable = obj.is_in_valid_linearization_region(est_OF_error);
+            
             feedback_gain = obj.Feedback_gains(:,:,k);
+            
             dU = - feedback_gain*est_OF_error;
+            
             up = obj.lnr_pts(k).u; % planned up, which usually (or maybe always) must be zero in stationary LQG setting.
+            
             u = up + dU;
         end
     end
