@@ -38,10 +38,13 @@ classdef state_interface
             % this function needs to be written specifically in the child class.
             J = nan;
         end
+        function distance_for_control = compute_distance_for_control(obj,x2)
+            distance_for_control = signed_element_wise_dist(x2);
+        end
     end
     
     methods (Abstract)
-        signed_dist_vector = signed_element_wise_dist(x1,x2) % this function returns the "Signed element-wise distnace" between two states x1 and x2
+        signed_dist_vector = signed_element_wise_dist(obj,x2) % this function returns the "Signed element-wise distnace" between two states x1 and x2
         obj = draw(obj, varargin) % draw state
         obj = delete_plot(obj,varargin) % delete state drawings
         neighb_plot_handle = draw_neighborhood(obj, scale)

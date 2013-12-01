@@ -138,8 +138,10 @@ classdef Finite_time_LQG_class < LQG_interface
             Hparticles = old_Hb_particle.Hparticles;
             % The first particle is the "no-noise" particle.
             disp(['step number ',num2str(k),';  particle  ',num2str(1)])
+            disp(['just for a test !!! Change it now!!!!!!!!!!!!!!!!!!!1  Add no-noise'])
             if ~old_Hb_particle.stopped_particles(1) && ~old_Hb_particle.collided_particles(1) % We propagate the particles only if it has not been stopped or collided already. Indeed since LQG is a choice for edge-controller Not for node-controller, the stopping check on this line seems unnecessary.
-                next_Hparticles(1) = obj.propagate_Hstate(Hparticles(1),k,'No-noise');
+%                 next_Hparticles(1) = obj.propagate_Hstate(Hparticles(1),k,'No-noise');
+                next_Hparticles(1) = obj.propagate_Hstate(Hparticles(1),k);
             else
                 next_Hparticles(1) = Hparticles(1);
             end

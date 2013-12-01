@@ -17,7 +17,9 @@ classdef Periodic_LQR_class < LQR_interface
             xp = obj.lnr_pts(k).x; % planned x (or target point) or linearization point.
             
             est_OF_error = b.est_mean.compute_distance_for_control(xp);
-            disp('Warning--> Periodic LQR Class: Only Aircraft Kinematic model has compute_distance_for_control implemented')
+            if any(abs(est_OF_error(1:3)) > .2)
+                disp(['time ',num2str(k),num2str(est_OF_error')])
+            end
             
             reliable = obj.is_in_valid_linearization_region(est_OF_error);
             

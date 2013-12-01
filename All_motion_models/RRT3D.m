@@ -101,7 +101,7 @@ classdef RRT3D < Navigation
             
             opt.npoints = 1500;
             opt.time = 0.5;
-            opt.range = 5;
+            opt.range = 100;
             opt.start = [0, 0, 0,1,0,0,0]'; % State is a column vector
             opt.steermax = [];
             opt.speed = 1;

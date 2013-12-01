@@ -172,8 +172,10 @@ classdef PLQG_class < LQG_interface
         function next_Hb_particle = propagate_Hb_particle(obj,old_Hb_particle,time_step)
             Hparticles = old_Hb_particle.Hparticles;
             % The first particle is the "no-noise" particle.
+            disp(['just for a test !!! Change it now!!!!!!!!!!!!!!!!!!!1  Add no-noise'])
             if ~old_Hb_particle.collided_particles(1) && ~old_Hb_particle.stopped_particles(1) % We propagate the first particle only if it has not been stopped already and it has not been collided yet.
-                next_Hparticles(1) = obj.propagate_Hstate(Hparticles(1),time_step,'No-noise');
+%                 next_Hparticles(1) = obj.propagate_Hstate(Hparticles(1),time_step,'No-noise');
+                next_Hparticles(1) = obj.propagate_Hstate(Hparticles(1),time_step);
             else
                 next_Hparticles(1) = Hparticles(1);
             end

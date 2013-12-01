@@ -89,7 +89,6 @@ classdef Landmarks_3D_Range_bearing < ObservationModel_interface
             H = nan(od,state.dim); % memory preallocation
             
             q = [x(4) x(5) x(6) x(7)];
-            q = q/norm(q);
             q0 = q(1);
             q1 = q(2);
             q2 = q(3);
@@ -145,8 +144,26 @@ classdef Landmarks_3D_Range_bearing < ObservationModel_interface
                 dz_ib_by_dq2 = dR_by_dq2(3,1)*d_ig(1) + dR_by_dq2(3,2)*d_ig(2) + dR_by_dq2(3,3)*d_ig(3);
                 dz_ib_by_dq3 = dR_by_dq3(3,1)*d_ig(1) + dR_by_dq3(3,2)*d_ig(2) + dR_by_dq3(3,3)*d_ig(3);
                 
-                temp1 = 1 / ( (d_ib(1))^2 + (d_ib(2))^2 );
+                if r_i < 1e-2 
+                    temp1 = 0;
+                    temp2 = 0;
+                else
+                    temp1 = 1 / ( (d_ib(1))^2 + (d_ib(2))^2 );
+                    temp2 =  1 / ( (d_ib(1))^2 + (d_ib(3))^2 );
+                end
                 
+
+                if temp1 > 1
+                    temp1 = 0;
+                end
+                if temp2 > 1
+                    temp2 = 0;
+                end
+                
+%                 if temp1 > 1 | temp2 >1
+                    disp(['Range to Li :',num2str(r_i), '  Temp1 is : ',num2str(temp1),'   Temp2 is : ',  num2str(temp2)]);
+                    disp(['d_ib x:', num2str(d_ib(1)), 'y :', num2str(d_ib(2)), ' z :', num2str(d_ib(3))]);
+%                 end
                 Hi_21 = temp1*(dy_ib_dx*d_ib(1) - dx_ib_dx*d_ib(2)) ;
                 Hi_22 = temp1*(dy_ib_dy*d_ib(1) - dx_ib_dy*d_ib(2)) ;
                 Hi_23 = temp1*(dy_ib_dz*d_ib(1) - dx_ib_dz*d_ib(2)) ;
@@ -155,7 +172,7 @@ classdef Landmarks_3D_Range_bearing < ObservationModel_interface
                 Hi_26 = temp1*(d_ib(1)*dy_ib_by_dq2 -d_ib(2)*dx_ib_by_dq2);
                 Hi_27 = temp1*(d_ib(1)*dy_ib_by_dq3 -d_ib(2)*dx_ib_by_dq3);
                 
-                temp2 =  1 / ( (d_ib(1))^2 + (d_ib(3))^2 );
+                
                 
                 Hi_31 = temp2 *(dz_ib_dx*d_ib(1) - dx_ib_dx*d_ib(3));
                 Hi_32 = temp2 *(dz_ib_dy*d_ib(1) - dx_ib_dy*d_ib(3));

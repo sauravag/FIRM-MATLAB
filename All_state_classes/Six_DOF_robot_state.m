@@ -41,7 +41,6 @@ classdef Six_DOF_robot_state < state_interface
             
             distance_for_control = signed_dist_vector;
             distance_for_control(4)=0; % For quaternion control, we only need to control q1,q2,q3 because q1 is constrained by the normalization relation
-        
         end
         
         function obj = draw(obj, varargin)
@@ -51,7 +50,7 @@ classdef Six_DOF_robot_state < state_interface
             
             % default values
             robot_shape = 'point';
-            robot_size = 0.1;
+            robot_size = 1;
             tria_color = 'b';
             head_color = 'b';
             head_shape = '*';
@@ -85,7 +84,7 @@ classdef Six_DOF_robot_state < state_interface
             end
             x=obj.val;
             obj.head_handle = plot3(x(1),x(2),x(3),'Marker',head_shape,'MarkerSize',head_size,'MarkerEdgeColor',head_color,'MarkerFaceColor',head_color);
-            robot_size = 0.4;
+            robot_size = 1;
             vertices_x=[0,-robot_size,-robot_size,-robot_size,-robot_size/2,-robot_size,-robot_size,0];
             vertices_y=[0,-robot_size/5,0,0,0,0,robot_size/5,0];
             vertices_z=[0,0,0,robot_size/10,0,0,0,0];
@@ -205,7 +204,7 @@ classdef Six_DOF_robot_state < state_interface
             user_or_random = 'user';
             xrange = [0.5 4];
             yrange = [0.5 4];
-            zrange = [0.5 4];
+            zrange = [5 20];
             if strcmp(user_or_random , 'user')
                 [x,y]=ginput(1);
                 if isempty(x)

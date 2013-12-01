@@ -12,8 +12,8 @@ classdef Aircraft_Kinematic < MotionModel_interface
         Max_Roll_Rate = deg2rad(45); % try 45
         Max_Pitch_Rate = deg2rad(45);% try 45
         Max_Yaw_Rate = deg2rad(45);% try 45
-        Max_Velocity = 1.0; % m/s
-        Min_Velocity = 0.25;% m/s
+        Max_Velocity = 5.0; % m/s
+        Min_Velocity = 3.0;% m/s
         zeroNoise = zeros(Aircraft_Kinematic.wDim,1);
         turn_radius_min = Aircraft_Kinematic.Min_Velocity/Aircraft_Kinematic.Max_Yaw_Rate; % indeed we need to define the minimum linear velocity in turnings (on orbits) and then find the minimum radius accordingly. But, we picked the more intuitive way.
         
