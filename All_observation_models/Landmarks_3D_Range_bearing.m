@@ -13,7 +13,7 @@ classdef Landmarks_3D_Range_bearing < ObservationModel_interface
         obsDim = Landmarks_3D_Range_bearing.tmp_prop.obsDim;
         obsNoiseDim = Landmarks_3D_Range_bearing.obsDim; % observation noise dimension. In some other observation models the noise dimension may be different from the observation dimension.
         zeroNoise = zeros(Landmarks_3D_Range_bearing.obsNoiseDim,1); % zero observation noise
-        eta = [0.0;0.0;0.0];%user_data_class.par.observation_model_parameters.eta; 
+        eta = [0.01;deg2rad(0.001);deg2rad(0.001)];%user_data_class.par.observation_model_parameters.eta; 
         sigma_b = [0.02;deg2rad(0.1);deg2rad(0.1)];%user_data_class.par.observation_model_parameters.sigma_b;
     end
     properties
@@ -101,7 +101,7 @@ classdef Landmarks_3D_Range_bearing < ObservationModel_interface
             dR_by_dq1 = 2*[q1,q2,q3;q2,-q1,q0;q3,-q0,-q1];
             
             dR_by_dq2 = 2*[-q2,q1,-q0;q1,q2,q3;q0,q3,-q2];
-          
+            
             dR_by_dq3 = 2*[-q3,q0,q1;-q0,-q3,q2;q1,q2,q3];
             
             for i=1:size(L,2)
@@ -109,84 +109,77 @@ classdef Landmarks_3D_Range_bearing < ObservationModel_interface
                 d_ib = R*d_ig ; % displacement in body frame
                 r_i = norm(d_ig); % scalar distance between landmark 'i' and robot
                 
-                Hi_11 = -d_ig(1) / r_i;
-                Hi_12 = -d_ig(2) / r_i;
-                Hi_13 = -d_ig(3) / r_i;
-                Hi_14 = 0;
-                Hi_15 = 0;
-                Hi_16 = 0;
-                Hi_17 = 0;
+                temp1 = 1 / ( (d_ib(1))^2 + (d_ib(2))^2 );
+                temp2 =  1 / ( (d_ib(1))^2 + (d_ib(3))^2 );
                 
-                dx_ib_dx = -R(1,1);
-                dx_ib_dy = -R(1,2);
-                dx_ib_dz = -R(1,3);
-                
-                dy_ib_dx = -R(2,1);
-                dy_ib_dy = -R(2,2);
-                dy_ib_dz = -R(2,3);
-                
-                dz_ib_dx = -R(3,1);
-                dz_ib_dy = -R(3,2);
-                dz_ib_dz = -R(3,3);
-                
-                dx_ib_by_dq0 = dR_by_dq0(1,1)*d_ig(1) + dR_by_dq0(1,2)*d_ig(2) + dR_by_dq0(1,3)*d_ig(3);
-                dx_ib_by_dq1 = dR_by_dq1(1,1)*d_ig(1) + dR_by_dq1(1,2)*d_ig(2) + dR_by_dq1(1,3)*d_ig(3);
-                dx_ib_by_dq2 = dR_by_dq2(1,1)*d_ig(1) + dR_by_dq2(1,2)*d_ig(2) + dR_by_dq2(1,3)*d_ig(3);
-                dx_ib_by_dq3 = dR_by_dq3(1,1)*d_ig(1) + dR_by_dq3(1,2)*d_ig(2) + dR_by_dq3(1,3)*d_ig(3);
-                
-                dy_ib_by_dq0 = dR_by_dq0(2,1)*d_ig(1) + dR_by_dq0(2,2)*d_ig(2) + dR_by_dq0(2,3)*d_ig(3);
-                dy_ib_by_dq1 = dR_by_dq1(2,1)*d_ig(1) + dR_by_dq1(2,2)*d_ig(2) + dR_by_dq1(2,3)*d_ig(3);
-                dy_ib_by_dq2 = dR_by_dq2(2,1)*d_ig(1) + dR_by_dq2(2,2)*d_ig(2) + dR_by_dq2(2,3)*d_ig(3);
-                dy_ib_by_dq3 = dR_by_dq3(2,1)*d_ig(1) + dR_by_dq3(2,2)*d_ig(2) + dR_by_dq3(2,3)*d_ig(3);
-                
-                dz_ib_by_dq0 = dR_by_dq0(3,1)*d_ig(1) + dR_by_dq0(3,2)*d_ig(2) + dR_by_dq0(3,3)*d_ig(3);
-                dz_ib_by_dq1 = dR_by_dq1(3,1)*d_ig(1) + dR_by_dq1(3,2)*d_ig(2) + dR_by_dq1(3,3)*d_ig(3);
-                dz_ib_by_dq2 = dR_by_dq2(3,1)*d_ig(1) + dR_by_dq2(3,2)*d_ig(2) + dR_by_dq2(3,3)*d_ig(3);
-                dz_ib_by_dq3 = dR_by_dq3(3,1)*d_ig(1) + dR_by_dq3(3,2)*d_ig(2) + dR_by_dq3(3,3)*d_ig(3);
-                
-                if r_i < 1e-2 
-                    temp1 = 0;
-                    temp2 = 0;
-                else
-                    temp1 = 1 / ( (d_ib(1))^2 + (d_ib(2))^2 );
-                    temp2 =  1 / ( (d_ib(1))^2 + (d_ib(3))^2 );
-                end
-                
-
-                if temp1 > 1
-                    temp1 = 0;
-                end
-                if temp2 > 1
-                    temp2 = 0;
-                end
-                
-%                 if temp1 > 1 | temp2 >1
+                if temp1 > 1 | temp2 > 1
                     disp(['Range to Li :',num2str(r_i), '  Temp1 is : ',num2str(temp1),'   Temp2 is : ',  num2str(temp2)]);
                     disp(['d_ib x:', num2str(d_ib(1)), 'y :', num2str(d_ib(2)), ' z :', num2str(d_ib(3))]);
-%                 end
-                Hi_21 = temp1*(dy_ib_dx*d_ib(1) - dx_ib_dx*d_ib(2)) ;
-                Hi_22 = temp1*(dy_ib_dy*d_ib(1) - dx_ib_dy*d_ib(2)) ;
-                Hi_23 = temp1*(dy_ib_dz*d_ib(1) - dx_ib_dz*d_ib(2)) ;
-                Hi_24 = temp1*(d_ib(1)*dy_ib_by_dq0 -d_ib(2)*dx_ib_by_dq0);
-                Hi_25 = temp1*(d_ib(1)*dy_ib_by_dq1 -d_ib(2)*dx_ib_by_dq1);
-                Hi_26 = temp1*(d_ib(1)*dy_ib_by_dq2 -d_ib(2)*dx_ib_by_dq2);
-                Hi_27 = temp1*(d_ib(1)*dy_ib_by_dq3 -d_ib(2)*dx_ib_by_dq3);
+                    
+                    H(3*i-2:3*i,:) = zeros(3,7);
+                else
+                    
+                    Hi_11 = -d_ig(1) / r_i;
+                    Hi_12 = -d_ig(2) / r_i;
+                    Hi_13 = -d_ig(3) / r_i;
+                    Hi_14 = 0;
+                    Hi_15 = 0;
+                    Hi_16 = 0;
+                    Hi_17 = 0;
+                    
+                    dx_ib_dx = -R(1,1);
+                    dx_ib_dy = -R(1,2);
+                    dx_ib_dz = -R(1,3);
+                    
+                    dy_ib_dx = -R(2,1);
+                    dy_ib_dy = -R(2,2);
+                    dy_ib_dz = -R(2,3);
+                    
+                    dz_ib_dx = -R(3,1);
+                    dz_ib_dy = -R(3,2);
+                    dz_ib_dz = -R(3,3);
+                    
+                    dx_ib_by_dq0 = dR_by_dq0(1,1)*d_ig(1) + dR_by_dq0(1,2)*d_ig(2) + dR_by_dq0(1,3)*d_ig(3);
+                    dx_ib_by_dq1 = dR_by_dq1(1,1)*d_ig(1) + dR_by_dq1(1,2)*d_ig(2) + dR_by_dq1(1,3)*d_ig(3);
+                    dx_ib_by_dq2 = dR_by_dq2(1,1)*d_ig(1) + dR_by_dq2(1,2)*d_ig(2) + dR_by_dq2(1,3)*d_ig(3);
+                    dx_ib_by_dq3 = dR_by_dq3(1,1)*d_ig(1) + dR_by_dq3(1,2)*d_ig(2) + dR_by_dq3(1,3)*d_ig(3);
+                    
+                    dy_ib_by_dq0 = dR_by_dq0(2,1)*d_ig(1) + dR_by_dq0(2,2)*d_ig(2) + dR_by_dq0(2,3)*d_ig(3);
+                    dy_ib_by_dq1 = dR_by_dq1(2,1)*d_ig(1) + dR_by_dq1(2,2)*d_ig(2) + dR_by_dq1(2,3)*d_ig(3);
+                    dy_ib_by_dq2 = dR_by_dq2(2,1)*d_ig(1) + dR_by_dq2(2,2)*d_ig(2) + dR_by_dq2(2,3)*d_ig(3);
+                    dy_ib_by_dq3 = dR_by_dq3(2,1)*d_ig(1) + dR_by_dq3(2,2)*d_ig(2) + dR_by_dq3(2,3)*d_ig(3);
+                    
+                    dz_ib_by_dq0 = dR_by_dq0(3,1)*d_ig(1) + dR_by_dq0(3,2)*d_ig(2) + dR_by_dq0(3,3)*d_ig(3);
+                    dz_ib_by_dq1 = dR_by_dq1(3,1)*d_ig(1) + dR_by_dq1(3,2)*d_ig(2) + dR_by_dq1(3,3)*d_ig(3);
+                    dz_ib_by_dq2 = dR_by_dq2(3,1)*d_ig(1) + dR_by_dq2(3,2)*d_ig(2) + dR_by_dq2(3,3)*d_ig(3);
+                    dz_ib_by_dq3 = dR_by_dq3(3,1)*d_ig(1) + dR_by_dq3(3,2)*d_ig(2) + dR_by_dq3(3,3)*d_ig(3);
+                    
+                    
+                    
+                    Hi_21 = temp1*(dy_ib_dx*d_ib(1) - dx_ib_dx*d_ib(2)) ;
+                    Hi_22 = temp1*(dy_ib_dy*d_ib(1) - dx_ib_dy*d_ib(2)) ;
+                    Hi_23 = temp1*(dy_ib_dz*d_ib(1) - dx_ib_dz*d_ib(2)) ;
+                    Hi_24 = temp1*(d_ib(1)*dy_ib_by_dq0 -d_ib(2)*dx_ib_by_dq0);
+                    Hi_25 = temp1*(d_ib(1)*dy_ib_by_dq1 -d_ib(2)*dx_ib_by_dq1);
+                    Hi_26 = temp1*(d_ib(1)*dy_ib_by_dq2 -d_ib(2)*dx_ib_by_dq2);
+                    Hi_27 = temp1*(d_ib(1)*dy_ib_by_dq3 -d_ib(2)*dx_ib_by_dq3);
+                    
+                    
+                    
+                    Hi_31 = temp2 *(dz_ib_dx*d_ib(1) - dx_ib_dx*d_ib(3));
+                    Hi_32 = temp2 *(dz_ib_dy*d_ib(1) - dx_ib_dy*d_ib(3));
+                    Hi_33 = temp2 *(dz_ib_dz*d_ib(1) - dx_ib_dz*d_ib(3));
+                    Hi_34 = temp2*(d_ib(1)*dz_ib_by_dq0 -d_ib(3)*dx_ib_by_dq0);
+                    Hi_35 = temp2*(d_ib(1)*dz_ib_by_dq1 -d_ib(3)*dx_ib_by_dq1);
+                    Hi_36 = temp2*(d_ib(1)*dz_ib_by_dq2 -d_ib(3)*dx_ib_by_dq2);
+                    Hi_37 = temp2*(d_ib(1)*dz_ib_by_dq3 -d_ib(3)*dx_ib_by_dq3);
+                    
+                    
+                    H(3*i-2:3*i,:) = [ Hi_11,Hi_12,Hi_13,Hi_14,Hi_15,Hi_16,Hi_17;
+                        Hi_21,Hi_22,Hi_23,Hi_24,Hi_25,Hi_26,Hi_27;
+                        Hi_31,Hi_32,Hi_33,Hi_34,Hi_35,Hi_36,Hi_37];
+                end
                 
-                
-                
-                Hi_31 = temp2 *(dz_ib_dx*d_ib(1) - dx_ib_dx*d_ib(3));
-                Hi_32 = temp2 *(dz_ib_dy*d_ib(1) - dx_ib_dy*d_ib(3));
-                Hi_33 = temp2 *(dz_ib_dz*d_ib(1) - dx_ib_dz*d_ib(3));
-                Hi_34 = temp2*(d_ib(1)*dz_ib_by_dq0 -d_ib(3)*dx_ib_by_dq0);
-                Hi_35 = temp2*(d_ib(1)*dz_ib_by_dq1 -d_ib(3)*dx_ib_by_dq1);
-                Hi_36 = temp2*(d_ib(1)*dz_ib_by_dq2 -d_ib(3)*dx_ib_by_dq2);
-                Hi_37 = temp2*(d_ib(1)*dz_ib_by_dq3 -d_ib(3)*dx_ib_by_dq3);
-                
-                 
-                H(3*i-2:3*i,:) = [ Hi_11,Hi_12,Hi_13,Hi_14,Hi_15,Hi_16,Hi_17;
-                                   Hi_21,Hi_22,Hi_23,Hi_24,Hi_25,Hi_26,Hi_27;
-                                   Hi_31,Hi_32,Hi_33,Hi_34,Hi_35,Hi_36,Hi_37];
-                                   
             end
         end
         
@@ -268,10 +261,20 @@ classdef Landmarks_3D_Range_bearing < ObservationModel_interface
             end
             for i=1:size(innov,1)/singleObsDim
                 
-                if abs(innov(singleObsDim*i - 1)) > pi/10
+                if innov(singleObsDim*i - 1) > deg2rad(2)
+                    innov(singleObsDim*i - 1) = deg2rad(2);
                     disp('large val in innovation');
                 end
-                if abs(innov(singleObsDim*i)) > pi/10
+                if innov(singleObsDim*i - 1) < -deg2rad(2)
+                    innov(singleObsDim*i - 1) = -deg2rad(2);
+                    disp('large val in innovation');
+                end
+                if innov(singleObsDim*i) > deg2rad(2)
+                    innov(singleObsDim*i) = deg2rad(2)
+                    disp('large val in innovation');
+                end
+                if innov(singleObsDim*i) < -deg2rad(2)
+                    innov(singleObsDim*i) = -deg2rad(2);
                     disp('large val in innovation');
                 end
  

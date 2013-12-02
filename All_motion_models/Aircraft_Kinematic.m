@@ -11,9 +11,9 @@ classdef Aircraft_Kinematic < MotionModel_interface
         P_Wg = [0.2 ; 0.2 ; 0.2 ; 0.1 ; 0.1 ; 0.1 ; 0.1];%user_data_class.par.motion_model_parameters.P_Wg;
         Max_Roll_Rate = deg2rad(45); % try 45
         Max_Pitch_Rate = deg2rad(45);% try 45
-        Max_Yaw_Rate = deg2rad(45);% try 45
-        Max_Velocity = 5.0; % m/s
-        Min_Velocity = 3.0;% m/s
+        Max_Yaw_Rate = deg2rad(25);% try 45
+        Max_Velocity = 4.0; % m/s
+        Min_Velocity = 2.0;% m/s
         zeroNoise = zeros(Aircraft_Kinematic.wDim,1);
         turn_radius_min = Aircraft_Kinematic.Min_Velocity/Aircraft_Kinematic.Max_Yaw_Rate; % indeed we need to define the minimum linear velocity in turnings (on orbits) and then find the minimum radius accordingly. But, we picked the more intuitive way.
         
@@ -35,31 +35,31 @@ classdef Aircraft_Kinematic < MotionModel_interface
     methods (Static = true)
         
         function x_next = f_discrete(x,u,w)
-%             
-%             if u(1)> Aircraft_Kinematic.Max_Velocity
-%                 u(1) = Aircraft_Kinematic.Max_Velocity;
-%             end
-%             if u(1) <  Aircraft_Kinematic.Min_Velocity
-%                 u(1) = Aircraft_Kinematic.Min_Velocity;
-%             end
-%             if u(2)> Aircraft_Kinematic.Max_Roll_Rate
-%                 u(2) = Aircraft_Kinematic.Max_Roll_Rate;
-%             end
-%             if u(2) <  -Aircraft_Kinematic.Max_Roll_Rate
-%                 u(2) = -Aircraft_Kinematic.Max_Roll_Rate;
-%             end
-%             if u(3)> Aircraft_Kinematic.Max_Pitch_Rate
-%                 u(3) = Aircraft_Kinematic.Max_Pitch_Rate;
-%             end
-%             if u(3) <  -Aircraft_Kinematic.Max_Pitch_Rate
-%                 u(3) = -Aircraft_Kinematic.Max_Pitch_Rate;
-%             end
-%             if u(4)> Aircraft_Kinematic.Max_Yaw_Rate
-%                 u(4) = Aircraft_Kinematic.Max_Yaw_Rate;
-%             end
-%             if u(4) <  -Aircraft_Kinematic.Max_Yaw_Rate
-%                 u(4) = -Aircraft_Kinematic.Max_Yaw_Rate;
-%             end
+            
+            if u(1)> Aircraft_Kinematic.Max_Velocity
+                u(1) = Aircraft_Kinematic.Max_Velocity;
+            end
+            if u(1) <  Aircraft_Kinematic.Min_Velocity
+                u(1) = Aircraft_Kinematic.Min_Velocity;
+            end
+            if u(2)> Aircraft_Kinematic.Max_Roll_Rate
+                u(2) = Aircraft_Kinematic.Max_Roll_Rate;
+            end
+            if u(2) <  -Aircraft_Kinematic.Max_Roll_Rate
+                u(2) = -Aircraft_Kinematic.Max_Roll_Rate;
+            end
+            if u(3)> Aircraft_Kinematic.Max_Pitch_Rate
+                u(3) = Aircraft_Kinematic.Max_Pitch_Rate;
+            end
+            if u(3) <  -Aircraft_Kinematic.Max_Pitch_Rate
+                u(3) = -Aircraft_Kinematic.Max_Pitch_Rate;
+            end
+            if u(4)> Aircraft_Kinematic.Max_Yaw_Rate
+                u(4) = Aircraft_Kinematic.Max_Yaw_Rate;
+            end
+            if u(4) <  -Aircraft_Kinematic.Max_Yaw_Rate
+                u(4) = -Aircraft_Kinematic.Max_Yaw_Rate;
+            end
 
 
             

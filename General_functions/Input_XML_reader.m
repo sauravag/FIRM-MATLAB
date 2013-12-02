@@ -158,7 +158,7 @@ elseif strcmpi(par_new.selected_motion_model,'Dynamical planar 8arm manipulator'
     % Hbliefe convergece-related parameters:
     GHb_conv_reg_thresh = tmp_vector*35; % distance threshold for either Xg_mean or Xest_mean_mean; Xdist has to be a column vector
 elseif strcmpi(par_new.selected_motion_model,'FixedWing Aircraft')
-    tmp_vector = repmat( [0.08 ; 0.08 ; 0.08; 1 ; 1 ; 1 ; 1] , 1 , 1);
+    tmp_vector = repmat( [0.1 ; 0.1 ; 0.1; 0.1 ; 0.1 ; 0.1 ; 0.1] , 1 , 1);
     par_new.FIRM_node_parameters.mean_neighborhood_size = tmp_vector*mean_neighb_magnifying_coeff ; % note that the last entry, ie theta's neighborhood, has to be in radian.
     par_new.FIRM_node_parameters.cov_neighborhood_size = tmp_vector*tmp_vector'*cov_neighb_magnifying_coeff ; % note that the last entry, ie theta's neighborhood, has to be in radian. % This is a matrix.
     % Hbliefe convergece-related parameters:
@@ -175,8 +175,8 @@ par_new.FIRM_node_parameters.GHb_conv_BigX_thresh = BigX_thresh; % distance thre
 par_new.FIRM_node_parameters.GHb_conv_Pest_thresh = GHb_conv_reg_thresh*GHb_conv_reg_thresh'; % defines the convergence threshold for Pest
 par_new.FIRM_node_parameters.GHb_conv_BigCov_thresh = BigX_thresh*BigX_thresh'; % defines the convergence threshold for BigCov
 
-%=========== DP Parameters
-par_new.DP_convergence_threshold = 0.001;
+%=========== Dynamic Pogramming Parameters
+par_new.DP_convergence_threshold = 0.01;
 
 %=========== Stabilizer Parameters
 par_new.stabilizer_parameters.max_stopping_time = 250;
