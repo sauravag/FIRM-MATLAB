@@ -176,14 +176,14 @@ par_new.FIRM_node_parameters.GHb_conv_Pest_thresh = GHb_conv_reg_thresh*GHb_conv
 par_new.FIRM_node_parameters.GHb_conv_BigCov_thresh = BigX_thresh*BigX_thresh'; % defines the convergence threshold for BigCov
 
 %=========== Dynamic Pogramming Parameters
-par_new.DP_convergence_threshold = 0.01;
+par_new.DP_convergence_threshold = 1e-3;
 
 %=========== Stabilizer Parameters
 par_new.stabilizer_parameters.max_stopping_time = 250;
 par_new.stabilizer_parameters.draw_cov_centered_on_nominal = 0;
 
 %=========== MonteCarlo Simulation
-par_new.par_n = 1; % number of particles
+par_new.par_n = 5; % number of particles
 
 %=========== (LQR design) Node and Edge controller
 LQR_cost_coef=[0.03*0.1 , 0.03*0.1 , 0.1];  % first entry is the "final state cost coeff". The second is the "state cost coeff", and the third is the "control cost coeff".
@@ -245,6 +245,7 @@ par_new.PRM_parameters.num_nodes_on_orbits = 3; % number of nodes on each orbit
 
 %===========  Dynamic Programming parameters
 par_new.initial_values = 100;
+par_new.initial_value_goal = 200;
 par_new.failure_cost_to_go = 15;
 par_new.selected_nodes_for_plotting_feedback_pi = [ ];%setdiff(1:22, [4,7,19,17,8,20,12,3,6,22]);
 

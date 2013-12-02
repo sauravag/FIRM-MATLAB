@@ -67,7 +67,7 @@ classdef FIRM_graph_interface
                 value_mat = [value_mat,values]; %#ok<AGROW> % just for monitoring value updates. Otherwise, not useful.
                 for i = 1 : size(values,1) % i  is the node number (absolute number)
                     if i == goal_node_ind % The value of the goal node must remain unchanged.
-                        new_values(i) = values(i);
+                        new_values(i) = user_data_class.par.initial_value_goal;
                         feedback_solution(i) = nan;
                     else
                         % s_prime = find(obj.PRM.edges_matrix(i,:)); % s_prime is the list of nodes that i-th node is connected to.
