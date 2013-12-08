@@ -47,24 +47,35 @@ classdef Planning_Problem
                 
 %                 myaa_Ali('FIRM_nodes_figure') % for producing the FIRM nodes figure for a paper
                 
-                start_node_ind = 1;
-                goal_node_ind = 6;
-             
-                text_height = 0.5;
-                text(obj.FIRM_graph.PRM.nodes(start_node_ind).val(1),obj.FIRM_graph.PRM.nodes(start_node_ind).val(2),obj.FIRM_graph.PRM.nodes(start_node_ind).val(3)+text_height,'start','color','r','fontsize',14); % we write "start" next to the start node
-                text(obj.FIRM_graph.PRM.nodes(goal_node_ind).val(1),obj.FIRM_graph.PRM.nodes(goal_node_ind).val(2),obj.FIRM_graph.PRM.nodes(goal_node_ind).val(3)+text_height,'goal','color','r','fontsize',14); % we write "goal" next to the goal node
+                start_node_ind = input('Please input the start node index:  ');
+                goal_node_ind = input('Please input the target node index:  ');
                 
-                obj.FIRM_graph = obj.FIRM_graph.DP_compute_cost_to_go_values(goal_node_ind);
-%                 obj.FIRM_graph.feedback_pi(1)=2;
-%                 obj.FIRM_graph.feedback_pi(5)=12;
-%                 obj.FIRM_graph.feedback_pi(8)=17;
-%                 obj.FIRM_graph.feedback_pi(1)=4;
-%                 
-                ensemble_size = 1;  % The execution phase only works for a single robot. If you need multiple realization, you have to re-run it multiple times.
-                tmp_pHb = obj.FIRM_graph.Nodes(start_node_ind).sample(ensemble_size); % the "sample" function returns a particle-Hb, with a single particle (since "ensemble_size" is 1).
-                initial_Hstate = tmp_pHb.Hparticles(1); % initialization % we retrive the single Hstate (or Hparticle) from the "tmp_pHb"
+                continue_sim = 1;
                 
-                obj.FIRM_graph = obj.FIRM_graph.Execute(initial_Hstate,start_node_ind,goal_node_ind);
+                while continue_sim
+                    
+                    text_height = 0.5;
+                    text(obj.FIRM_graph.PRM.nodes(start_node_ind).val(1),obj.FIRM_graph.PRM.nodes(start_node_ind).val(2),obj.FIRM_graph.PRM.nodes(start_node_ind).val(3)+text_height,'start','color','r','fontsize',14); % we write "start" next to the start node
+                    text(obj.FIRM_graph.PRM.nodes(goal_node_ind).val(1),obj.FIRM_graph.PRM.nodes(goal_node_ind).val(2),obj.FIRM_graph.PRM.nodes(goal_node_ind).val(3)+text_height,'goal','color','r','fontsize',14); % we write "goal" next to the goal node
+                    
+                    obj.FIRM_graph = obj.FIRM_graph.DP_compute_cost_to_go_values(goal_node_ind);
+                    %                 obj.FIRM_graph.feedback_pi(1)=2;
+                    %                 obj.FIRM_graph.feedback_pi(5)=12;
+                    %                 obj.FIRM_graph.feedback_pi(8)=17;
+                    %                 obj.FIRM_graph.feedback_pi(1)=4;
+                    %
+                    ensemble_size = 1;  % The execution phase only works for a single robot. If you need multiple realization, you have to re-run it multiple times.
+                    tmp_pHb = obj.FIRM_graph.Nodes(start_node_ind).sample(ensemble_size); % the "sample" function returns a particle-Hb, with a single particle (since "ensemble_size" is 1).
+                    initial_Hstate = tmp_pHb.Hparticles(1); % initialization % we retrive the single Hstate (or Hparticle) from the "tmp_pHb"
+                    
+                    obj.FIRM_graph = obj.FIRM_graph.Execute(initial_Hstate,start_node_ind,goal_node_ind);
+                    continue_sim = input('Enter 1 to continute, 0 to stop :  ');
+                    if continue_sim
+                        start_node_ind = goal_node_ind;
+                        goal_node_ind = input('Please input a new target node index:  ');
+                    end
+                    
+                end
                 
             end
             if user_data_class.par.sim.video == 1;  close(vidObj);  end
