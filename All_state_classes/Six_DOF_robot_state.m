@@ -84,7 +84,7 @@ classdef Six_DOF_robot_state < state_interface
             end
             x=obj.val;
             obj.head_handle = plot3(x(1),x(2),x(3),'Marker',head_shape,'MarkerSize',head_size,'MarkerEdgeColor',head_color,'MarkerFaceColor',head_color);
-            robot_size = 1;
+            robot_size = 4;
             vertices_x=[0,-robot_size,-robot_size,-robot_size,-robot_size/2,-robot_size,-robot_size,0];
             vertices_y=[0,-robot_size/5,0,0,0,0,robot_size/5,0];
             vertices_z=[0,0,0,robot_size/10,0,0,0,0];
@@ -204,7 +204,7 @@ classdef Six_DOF_robot_state < state_interface
             user_or_random = 'user';
             xrange = [0.5 4];
             yrange = [0.5 4];
-            zrange = [5 20];
+            zrange = user_data_class.par.sim.env_z_limits;
             if strcmp(user_or_random , 'user')
                 [x,y]=ginput(1);
                 if isempty(x)

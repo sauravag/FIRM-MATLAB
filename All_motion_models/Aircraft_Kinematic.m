@@ -6,14 +6,14 @@ classdef Aircraft_Kinematic < MotionModel_interface
         wDim = 4;   % Process noise (W) dimension  % For the generality we also consider the additive noise on kinematics equation (3 dimension), but it most probably will set to zero. The main noise is a 2 dimensional noise which is added to the controls.
         dt = user_data_class.par.motion_model_parameters.dt;
         % base_length = user_data_class.par.motion_model_parameters.base_length;  % distance between robot's rear wheels.
-        sigma_b_u = [4e-3; 6e-04; 6e-04; 6e-04];%user_data_class.par.motion_model_parameters.sigma_b_u_aircraft ;
-        eta_u = [0;deg2rad(0);deg2rad(0);deg2rad(0)];%user_data_class.par.motion_model_parameters.eta_u_aircraft ;
+        sigma_b_u = [0.02; deg2rad(0.25);deg2rad(0.25); deg2rad(0.25)];%user_data_class.par.motion_model_parameters.sigma_b_u_aircraft ;
+        eta_u = [0.005;0.005;0.005;0.005];%user_data_class.par.motion_model_parameters.eta_u_aircraft ;
         P_Wg = [0.2 ; 0.2 ; 0.2 ; 0.1 ; 0.1 ; 0.1 ; 0.1];%user_data_class.par.motion_model_parameters.P_Wg;
         Max_Roll_Rate = deg2rad(45); % try 45
         Max_Pitch_Rate = deg2rad(45);% try 45
         Max_Yaw_Rate = deg2rad(45);% try 45
-        Max_Velocity = 5.0; % m/s
-        Min_Velocity = 3.0;% m/s
+        Max_Velocity = 8.0; % m/s
+        Min_Velocity = 2.5;% m/s
         zeroNoise = zeros(Aircraft_Kinematic.wDim,1);
         turn_radius_min = Aircraft_Kinematic.Min_Velocity/Aircraft_Kinematic.Max_Yaw_Rate; % indeed we need to define the minimum linear velocity in turnings (on orbits) and then find the minimum radius accordingly. But, we picked the more intuitive way.
         
@@ -403,6 +403,11 @@ classdef Aircraft_Kinematic < MotionModel_interface
             x_p(:,1) = [orbit_center.val(1:3) - [0;orbit.radius;0] ; zeroQuaternion']; % initial x
             for k=1:T
                 x_p(:,k+1) = MotionModel_class.f_discrete(x_p(:,k),u_p(:,k),w_zero);
+                tempState = state(x_p(:,k+1));
+                if tempState.is_constraint_violated()
+                    error('The selected orbit is violating constraints');
+                    return
+                end
             end
             orbit.x = x_p(:,1:T);  % "x_p" is of length T+1, but "x_p(:,T+1)" is equal to "x_p(:,1)"
             orbit.u = u_p;  % "u_p" is of length T.

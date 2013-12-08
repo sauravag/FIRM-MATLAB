@@ -13,8 +13,8 @@ classdef Landmarks_3D_Range_bearing < ObservationModel_interface
         obsDim = Landmarks_3D_Range_bearing.tmp_prop.obsDim;
         obsNoiseDim = Landmarks_3D_Range_bearing.obsDim; % observation noise dimension. In some other observation models the noise dimension may be different from the observation dimension.
         zeroNoise = zeros(Landmarks_3D_Range_bearing.obsNoiseDim,1); % zero observation noise
-        eta = [2e-4;deg2rad(5e-3);deg2rad(5e-3)];%user_data_class.par.observation_model_parameters.eta; 
-        sigma_b = [1e-3;deg2rad(0.001);deg2rad(0.001)];%user_data_class.par.observation_model_parameters.sigma_b;
+        eta = [0.01;deg2rad(3/100);deg2rad(3/100)];%user_data_class.par.observation_model_parameters.eta; 
+        sigma_b = [0.03;deg2rad(0.7);deg2rad(0.7)];%[0.03;deg2rad(0.7);deg2rad(0.7)];%user_data_class.par.observation_model_parameters.sigma_b;
     end
     properties
        plot_handle;
@@ -270,7 +270,7 @@ classdef Landmarks_3D_Range_bearing < ObservationModel_interface
                     disp('large val in innovation');
                 end
                 if innov(singleObsDim*i) > deg2rad(2)
-                    innov(singleObsDim*i) = deg2rad(2)
+                    innov(singleObsDim*i) = deg2rad(2);
                     disp('large val in innovation');
                 end
                 if innov(singleObsDim*i) < -deg2rad(2)

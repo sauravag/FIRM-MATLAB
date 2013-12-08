@@ -172,7 +172,7 @@ classdef FIRM_edge_class
                 for k = 1 : obj.kf
                     % note that to compute the filtering cost, we only
                     % consider the edge part not node part.
-                    not_normalized_filtering_cost = not_normalized_filtering_cost + trace(obj.PHb_seq(k).Hparticles(q).b.est_cov);
+                    not_normalized_filtering_cost = not_normalized_filtering_cost + user_data_class.par.cost_gain*trace(obj.PHb_seq(k).Hparticles(q).b.est_cov);
                 end
             end
             if isempty(alive_particles)

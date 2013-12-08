@@ -501,7 +501,7 @@ classdef RRT3D < Navigation
         
         function [nPointsOnSegment, Points] = getPointsOnGuidanceVector(RRT3D)
             
-            vel = (RRT3D.vehicle.Min_Velocity + RRT3D.vehicle.Max_Velocity)/2;
+            vel = RRT3D.vehicle.Max_Velocity;
             nPointsOnSegment = ceil(( norm(RRT3D.goal(1:3)-RRT3D.start(1:3)) )/(vel*RRT3D.sim_time));
             
             Points = zeros(7, nPointsOnSegment+1);
