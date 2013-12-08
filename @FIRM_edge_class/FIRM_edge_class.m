@@ -238,6 +238,9 @@ classdef FIRM_edge_class
 %                 disturbed_Xg.val = [disturbed_Xg.val(1)+rand*1;disturbed_Xg.val(2)-rand*1;delete_ali*2*pi/180];  % I add this to prepare an specific disturbance for the needle steering procedure. You have to remove it.
                 end
         end
+        function edge_drawing_handle = draw_nominal_traj(obj)
+            error('not yet implemented');
+        end
     end
     
 end

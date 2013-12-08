@@ -47,6 +47,11 @@ classdef Planning_Problem
                 
 %                 myaa_Ali('FIRM_nodes_figure') % for producing the FIRM nodes figure for a paper
                 
+                %% Good Experiment
+                % 1 -> 6
+                % 6 -> 9
+                % 9  -> 21
+                %%
                 start_node_ind = input('Please input the start node index:  ');
                 goal_node_ind = input('Please input the target node index:  ');
                 

@@ -115,20 +115,20 @@ classdef FIRM_graph_interface
                 end
             end
             %             % In the following we draw the evolution of node values.
-            %             curr_fig = gcf;
-            %             figure;
-            %             plot(value_mat')
-            %             figure(curr_fig);
-            %             drawnow
+%             curr_fig = gcf;
+%             figure;
+%             plot(value_mat')
+%             figure(curr_fig);
+%             drawnow
             % in the following we draw the arrows on the
             % storing the values and "feedback_pi" in the graph.
             obj.cost_to_go = values;
             obj.feedback_pi = feedback_solution;
-            %             % in the following we plot the feedback pi on the graph.
-            %             selected_nodes = user_data_class.par.selected_nodes_for_plotting_feedback_pi;
-            %             if ~isempty(selected_nodes )
-            %                 obj.plot_handle_feedback_pi = obj.PRM.draw_feedback_pi(obj.feedback_pi, selected_nodes);
-            %             end
+            % in the following we plot the feedback pi on the graph.
+            selected_nodes = user_data_class.par.selected_nodes_for_plotting_feedback_pi;
+%             if ~isempty(selected_nodes )
+            obj.plot_handle_feedback_pi = obj.PRM.draw_feedback_pi(obj.feedback_pi, obj.Edges, selected_nodes);
+%             end
         end
     end
     

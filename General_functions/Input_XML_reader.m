@@ -183,7 +183,7 @@ par_new.stabilizer_parameters.max_stopping_time = 250;
 par_new.stabilizer_parameters.draw_cov_centered_on_nominal = 0;
 
 %=========== MonteCarlo Simulation
-par_new.par_n = 5; % number of particles
+par_new.par_n = 20; % number of particles
 par_new.cost_gain = 10;
 
 %=========== (LQR design) Node and Edge controller
@@ -223,7 +223,7 @@ par_new.No_plot = 0; % this is for plots in construction phase. The execution ph
 par_new.PRM_parameters.neighboring_distance_threshold = 30; %* 1.25 * 1000;% * 0.3;
 par_new.PRM_parameters.PRM_node_text = 1; % if this is one, the number of nodes will be written on the figure.
 par_new.PRM_parameters.PRM_node_plot_properties =  {'RobotShape','triangle','robotSize',0.8};% {'RobotShape','triangle','robotSize',2};
-par_new.PRM_parameters.draw_edges_flag = 1;
+par_new.PRM_parameters.draw_edges_flag = 0;
 
 % =========== Orbit parameters
 % par_new.PRM_parameters.orbit_text_size = 12;  % Default value for "OrbitTextSize" property.
@@ -246,9 +246,9 @@ par_new.PRM_parameters.num_nodes_on_orbits = 3; % number of nodes on each orbit
 
 %===========  Dynamic Programming parameters
 par_new.initial_values = 100;
-par_new.initial_value_goal = 100;
+par_new.initial_value_goal = 500;
 par_new.failure_cost_to_go = 15;
-par_new.selected_nodes_for_plotting_feedback_pi = [ ];%setdiff(1:22, [4,7,19,17,8,20,12,3,6,22]);
+par_new.selected_nodes_for_plotting_feedback_pi = [];%setdiff(1:22, [4,7,19,17,8,20,12,3,6,21]);
 par_new.DP_convergence_threshold = 1e-2;
 
 %===========  Replanning
