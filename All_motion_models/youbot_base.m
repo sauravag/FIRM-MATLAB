@@ -32,7 +32,7 @@ classdef youbot_base < MotionModel_interface
         function x_dot = f_contin(x,u,wg) % Do not call this function from outside of this class!! % The last input in this method should be w, instead of wg. But, since it is a only used in this class, it does not matter so much.
             l1 = youbot_base.l1;
             l2 = youbot_base.l2;
-            gama1= 2/(l1+l2);
+            gama1= 2/(l2-l1);
             x_dot = (1/4)*[1      -1     -1      1;...
                            1       1      1      1;...
                            -gama1 gama1 -gama1 gama1]*u+wg;
