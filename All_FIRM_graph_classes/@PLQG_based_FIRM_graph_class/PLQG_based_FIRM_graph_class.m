@@ -96,9 +96,11 @@ classdef PLQG_based_FIRM_graph_class < FIRM_graph_interface
             end
         end
         function obj = Execute(obj, initial_Hstate, start_node_ind, goal_node_ind)
+            target_orbit_index = floor(goal_node_ind/3);
+            target_nodes = [target_orbit_index*3,target_orbit_index*3-1, target_orbit_index*3-2];
             current_Hstate = initial_Hstate; % initialization
             current_node_ind = start_node_ind;
-            while current_node_ind ~= goal_node_ind
+            while ~any(current_node_ind == target_nodes)
                 next_edge_ind = obj.feedback_pi(current_node_ind); % compute the next edge (next optimal local controller) on the graph using high level feedback "pi" on the graph.
                 [next_Hstate, lost, YesNo_unsuccessful, landed_node_ind] = obj.Edges(next_edge_ind).execute(current_Hstate);
                 if YesNo_unsuccessful

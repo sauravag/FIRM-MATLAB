@@ -48,6 +48,8 @@ classdef kalman_filter_interface < filter_interface
             Xest_next = Xprd+KG*innov;
             Pest_next = Pprd-KG*H*Pprd;
             b = belief(state(Xest_next),Pest_next);
+            bout = b.apply_differentiable_constraints(); % e.g., quaternion norm has to be one
+            b=bout;
         end
     end
 end

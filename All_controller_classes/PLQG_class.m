@@ -1,8 +1,5 @@
 classdef PLQG_class < LQG_interface
     %   PLQG_class encapsulates the Periodic Linear Quadratic Gaussian Controller
-    properties (Constant = true)
-        valid_lnr_domain = user_data_class.par.valid_linearization_domain;
-    end
     properties
         estimator
         separated_controller
@@ -10,7 +7,7 @@ classdef PLQG_class < LQG_interface
         lnr_sys;
         
         T   % period
-%         periodic_belief; % This is actually the "mean" of periodic belief. % This may be removed in future as it is a included already in "Periodic_Gaussian_Hb".
+        % periodic_belief; % This is actually the "mean" of periodic belief. % This may be removed in future as it is a included already in "Periodic_Gaussian_Hb".
         Periodic_Big_lnr_sys;
         Periodic_Gaussian_Hb;
         periodic_belief;
@@ -36,11 +33,6 @@ classdef PLQG_class < LQG_interface
             obj.estimator = PKF(obj.lnr_sys);
             obj.separated_controller = Periodic_LQR_class(obj.lnr_sys, obj.lnr_pts);
             
-            %[K_periodic,~,Pest_periodic] = Kalman_filter.periodic_gain_and_covariances(obj.lnr_sys); % K_periodic is the periodic Kalman filter gain.
-            %obj.Periodic_Kalman_gain = K_periodic;
-            %obj.Periodic_Pest = Pest_periodic;
-            % L_periodic = LQR_class.periodic_gains(obj.lnr_sys); % Lss is the stationary feedback gain.
-            % obj.Periodic_Feedback_gain = L_periodic;
         end
         function Big_system_val = get.Periodic_Big_lnr_sys(obj)
             error('This function has not been changed from stationary to periodic yet')
@@ -110,6 +102,7 @@ classdef PLQG_class < LQG_interface
             
             % generating feedback controls
             [u , reliable] = obj.separated_controller.generate_feedback_control(b,k);
+            if ~reliable, warning('Controller_class: Error is too much; the linearization is not reliable'); end %#ok<WNTAG>
             
             % generating process noises
             if ~exist('noise_mode','var')
@@ -118,6 +111,12 @@ classdef PLQG_class < LQG_interface
             
             % True state propagation
             next_Xg_val = MotionModel_class.f_discrete(Xg.val,u,w);
+            
+            disp('Finite_time_LQG_class: only valid for 7 dof system. Has to be removed After PLQG paper!')
+            if next_Xg_val(4) < 0
+                disp('q0 < 0 !!!');
+                error('q0 went negative in LQG_class propagate');
+            end
             
             % generating observation noise
             if ~exist('noise_mode','var')
@@ -142,26 +141,30 @@ classdef PLQG_class < LQG_interface
             
             next_Hstate = Hstate(state(next_Xg_val),b_next);
         end
-        function [nextBelief, reliable,sim] = executeOneStep(obj,oldBelief,sim,noiseFlag)
-            % propagates the system and belief using Stationary Kalman Filter and
-            % Stationary LQR.
+        function [nextBelief, reliable,sim] = executeOneStep(obj,oldBelief,sim,k,noiseFlag)
+            % propagates the system and belief using periodic Kalman Filter and
+            % periodic LQR. Therefore, the time "k" has to be provided as
+            % an input.
             % "noise_mode" must be the last input argument.
             % output "reliable" is 1 if the current estimate is inside the
             % valid linearization region of LQG. It is 0, otherwise.
 
             % generating feedback controls
-            [u , reliable] = obj.separated_controller.generate_feedback_control(oldBelief);
+            [u , reliable] = obj.separated_controller.generate_feedback_control(oldBelief,k);
             % Apply control
             sim = sim.evolve(u, noiseFlag);
             % sim = sim.refresh();
             % Get observation from simulator
             z = sim.getObservation(noiseFlag);
             
-            % Note that since we are using SKF, we only need to pass one 
-            % linear system to the estimation procedure, becuase the linear system
-            % used for "prediction" is the same as the linear system used
-            % for "update".
-            nextBelief = obj.estimator.estimate(oldBelief, u, z, obj.lnr_sys, obj.lnr_sys);
+            % Estimation procedure
+            k = mod(k,obj.T); % This line is a crucial line, and makes the time periodic by the period "T".
+            if k==0, k = obj.T; end
+            next_k = k+1;
+            next_k = mod(next_k, obj.T); % This line is a crucial line, and makes the time periodic by the period "T".
+            if next_k == 0, next_k = obj.T; end
+            
+            nextBelief = obj.estimator.estimate(oldBelief, u, z, obj.lnr_sys(k), obj.lnr_sys(next_k));
         end
         function nextHb = propagateHyperBelief(obj,oldHb)
             error('not yet implemented');
@@ -169,8 +172,10 @@ classdef PLQG_class < LQG_interface
         function next_Hb_particle = propagate_Hb_particle(obj,old_Hb_particle,time_step)
             Hparticles = old_Hb_particle.Hparticles;
             % The first particle is the "no-noise" particle.
+%             disp(['just for a test !!! Change it now!!!!!!!!!!!!!!!!!!!1  Add no-noise'])
             if ~old_Hb_particle.collided_particles(1) && ~old_Hb_particle.stopped_particles(1) % We propagate the first particle only if it has not been stopped already and it has not been collided yet.
                 next_Hparticles(1) = obj.propagate_Hstate(Hparticles(1),time_step,'No-noise');
+%                 next_Hparticles(1) = obj.propagate_Hstate(Hparticles(1),time_step);
             else
                 next_Hparticles(1) = Hparticles(1);
             end
@@ -262,9 +267,6 @@ classdef PLQG_class < LQG_interface
             Xg_mean = state(obj.lnr_pts.x);
             Xest_MeanOfMean = Xg_mean; % in the stationary Hbelief, the mean of Xg and the mean of Xest_mean are equal.
             stGHb = Hbelief_G(Xg_mean, Xest_MeanOfMean, Pest_ss,BigCov_better);
-        end
-        function YesNo = is_in_valid_linearization_region(obj,est_OF_error)
-            YesNo = all(abs(est_OF_error) < obj.valid_lnr_domain); % never forget the "absolute value operator" in computing distances.
         end
     end
 end

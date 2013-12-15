@@ -29,8 +29,8 @@ classdef obstacles_class < handle
             temporary_props.face_color = [.6,.2 0];
             temporary_props.edge_color =  temporary_props.face_color*0.5;
             temporary_props.edge_width = 0.5;
-            temporary_props.top_height_3D = 3; % hight of the top of 3D obstacles
-            temporary_props.bottom_height_3D = -temporary_props.top_height_3D; % hight of the bottom of 3D obstacles
+            temporary_props.top_height_3D = user_data_class.par.sim.top_obstacle_height_3D; % hight of the top of 3D obstacles
+            temporary_props.bottom_height_3D = user_data_class.par.sim.bottom_obstacle_height_3D; % hight of the bottom of 3D obstacles
             temporary_props.face_light = 'phong';
             temporary_props.edge_light = 'phong';
             temporary_props.obst_2D_color = temporary_props.face_color; % this is only used when 2D obstacles are drawn (for example when user is importing them)

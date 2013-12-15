@@ -55,14 +55,15 @@ classdef Orbit_PRM_class < PRM_interface
             end
             
             % drawing orbit_edges
-            for i = 1 : size(obj.orbit_edges_trajectory,1)
-                for j = 1 : size(obj.orbit_edges_trajectory,2)
-                    if ~isempty(obj.orbit_edges_trajectory(i,j).x)
-                        traj_plot_handle = MotionModel_class.draw_nominal_traj(obj.orbit_edges_trajectory(i,j), node_to_orbit_trajectories_flag);
+            if user_data_class.par.PRM_parameters.draw_edges_flag
+                for i = 1 : size(obj.orbit_edges_trajectory,1)
+                    for j = 1 : size(obj.orbit_edges_trajectory,2)
+                        if ~isempty(obj.orbit_edges_trajectory(i,j).x)
+                            traj_plot_handle = MotionModel_class.draw_nominal_traj(obj.orbit_edges_trajectory(i,j), node_to_orbit_trajectories_flag);
+                        end
                     end
                 end
             end
-            
             obj.reset_figure(old_prop);
         end
         function obj = delete_plot(obj)
@@ -120,63 +121,70 @@ classdef Orbit_PRM_class < PRM_interface
                 YesNo = 0;
             end
         end
-        function feedback_plot_handle = draw_feedback_pi(obj, feedback_pi, selected_node_indices)
-            error('This function has not been updated from PRM to PNPRM, yet.')
+        function feedback_plot_handle = draw_feedback_pi(obj, feedback_pi, firm_edges, selected_node_indices)
+            
             % the selected nodes are a set of nodes that the feedback pi is
             % only drawn for them. This is for uncluttering the figure.
-            if ~exist('selected_node_indices', 'var') % if there is no "selected nodes", we draw the "feedback pi" for all nodes.
+            if ~exist('selected_node_indices', 'var') | isempty(selected_node_indices)  % if there is no "selected nodes", we draw the "feedback pi" for all nodes.
                 selected_node_indices = 1:obj.num_nodes;
             elseif isvector(selected_node_indices) % the "selected_node_indices" has to be a row vector. So, here we make the code robust to column vector as well.
                 selected_node_indices = reshape(selected_node_indices,1,length(selected_node_indices));
             end
             feedback_plot_handle = [];
-            num_2Dorbit_edges = length(obj.orbit_edges_2D_list);
-            feedback_text_handle = zeros(1,num_2Dorbit_edges);
+            num_2Dorbit_edges = length(obj.orbit_edges_list);
             for i = selected_node_indices
-                start = obj.nodes(i).val(1:2); % from now on, in this function, we only consider 2D position of the nodes.
-                j = feedback_pi(i); % j is the next node for node i, based on "feedback pi".
-                if isnan(j) % the feedback_pi on the goal node return "nan"
-                    continue
+                edge_num = feedback_pi(i);
+                if ~isnan(edge_num)
+                    start_node =  firm_edges(edge_num).start_node.number;
+                    start_orbit = [];
+                    if floor(start_node/3) == start_node/3
+                        start_orbit = start_node/3;
+                    else
+                        start_orbit = floor(start_node/3) +1;
+                    end
+                    goal_orbit = firm_edges(edge_num).possible_end_node_indices(3)/3;
+                    traj_plot_handle = MotionModel_class.draw_nominal_traj(obj.orbit_edges_trajectory(start_orbit,goal_orbit), 0);
+                    feedback_plot_handle = [feedback_plot_handle, traj_plot_handle];
                 end
-                [~,orbit_edge_num] = intersect(obj.orbit_edges_list,[i,j],'rows'); % this function returns the number of orbit_edge, whose start and end nodes are i and j, respectively.
-                orbit_edge_num =obj.corresponding_2D_orbit_edges(orbit_edge_num); % this line returns the number of corresponding 2D orbit_edge.
-                % in the following we draw a paraller line to the orbit_edge,
-                % through which we want to illustrate the feedback "pi".
-                final = obj.nodes(j).val(1:2);
-                parallel_vector_normalized = (final - start)/norm(final - start);
-                perpendicular_vector_normalized = [ parallel_vector_normalized(2); - parallel_vector_normalized(1)];
-                shiftet_dist = 1;
-                length_of_parallel =  norm(final - start)/3;    % length of the dotted parallel line
-                offset_from_start = (norm(final - start) - length_of_parallel)/2;
-                start_new = start + shiftet_dist * perpendicular_vector_normalized + offset_from_start  * parallel_vector_normalized;
-                final_new = final + shiftet_dist * perpendicular_vector_normalized - offset_from_start  * parallel_vector_normalized;
-                plot([start_new(1), final_new(1)],[start_new(2), final_new(2)], '--r');
-                
-                % in the following we plot the small triangle (called arrow
-                % here) on the dotted parallel line
-                middle = (start_new + final_new)/2;
-                arrow_size = length_of_parallel/5;
-                arrow_head = middle + parallel_vector_normalized*arrow_size/2;
-                bottom_mid = middle - parallel_vector_normalized*arrow_size/2;
-                bottom_vertices_outer = bottom_mid + perpendicular_vector_normalized*arrow_size/4;
-                bottom_vertices_inner = bottom_mid - perpendicular_vector_normalized*arrow_size/4;
-                verts = [arrow_head';bottom_vertices_outer';bottom_vertices_inner'];
-                faces = [1  2 3]; % this tells the number of vertices in the patch object. In our case, we have only three vertices and all of them are among the patch vertices.
-                patch_handle = patch('Faces',faces,'Vertices',verts,'FaceColor','g','EdgeColor','r');
-                feedback_plot_handle = [feedback_plot_handle, patch_handle]; %#ok<AGROW>
-                
-                % in the following, we write the number of the node on the
-                % corresponding parallel lines.
-                text_dist = shiftet_dist/2;
-                text_position = bottom_vertices_outer + text_dist*perpendicular_vector_normalized;
-                text_position(1) = text_position(1) - 0.45; % for some reason MATLAB shifts the starting point of the text a little bit to the right. So, here we return it back.
-                if feedback_text_handle (orbit_edge_num) ~= 0 % which means some text has already been written for this orbit_edge
-                    current_text = get(feedback_text_handle (orbit_edge_num), 'String');
-                    set(feedback_text_handle (orbit_edge_num), 'String', [current_text, ', ', num2str(i)])
-                else
-                    feedback_text_handle (orbit_edge_num) = text(text_position(1), text_position(2), num2str(i), 'fontsize',10,'color','r','EdgeColor','g');
-                    feedback_plot_handle = [feedback_plot_handle, feedback_text_handle (orbit_edge_num)]; %#ok<AGROW>
+
+            end
+%             selected_node_indices_longest_path = 3*[1,4,5,3]; % i.e. worst information wise
+%             if ~isempty(selected_node_indices_longest_path)
+%              for i = selected_node_indices_longest_path
+%                 edge_num = feedback_pi(i);
+%                 if ~isnan(edge_num)
+%                     start_node =  firm_edges(edge_num).start_node.number;
+%                     start_orbit = [];
+%                     if floor(start_node/3) == start_node/3
+%                         start_orbit = start_node/3;
+%                     else
+%                         start_orbit = floor(start_node/3) +1;
+%                     end
+%                     goal_orbit = firm_edges(edge_num).possible_end_node_indices(3)/3;
+%                     longest_path_plot_handle = MotionModel_class.draw_nominal_traj(obj.orbit_edges_trajectory(start_orbit,goal_orbit), 2);
+%                     feedback_plot_handle = [feedback_plot_handle, longest_path_plot_handle];
+%                 end
+% 
+%              end
+%             end
+            selected_node_indices_shortest_path = 3*[3,12,9,8];%[1,3*[7,8,10,16,15]]; % i.e. best information wise
+            if ~isempty(selected_node_indices_shortest_path)
+             for i = selected_node_indices_shortest_path
+                edge_num = feedback_pi(i);
+                if ~isnan(edge_num)
+                    start_node =  firm_edges(edge_num).start_node.number;
+                    start_orbit = [];
+                    if floor(start_node/3) == start_node/3
+                        start_orbit = start_node/3;
+                    else
+                        start_orbit = floor(start_node/3) +1;
+                    end
+                    goal_orbit = firm_edges(edge_num).possible_end_node_indices(3)/3;
+                    shortest_path_plot_handle = MotionModel_class.draw_nominal_traj(obj.orbit_edges_trajectory(start_orbit,goal_orbit), 3);
+                    feedback_plot_handle = [feedback_plot_handle, shortest_path_plot_handle];
                 end
+
+             end
             end
         end
         function nearest_orbit_ind = compute_nearest_orbit_ind(obj,current_node_ind)
@@ -310,8 +318,13 @@ classdef Orbit_PRM_class < PRM_interface
                 first_discrete_step_on_orbit = ceil(end_edge_step_number_rational);
                 fraction = first_discrete_step_on_orbit - end_edge_step_number_rational;
                 post_edge_traj.x = [entering_point, end_orbit.x(:,first_discrete_step_on_orbit:T)];
-                if first_discrete_step_on_orbit == 1, first_discrete_step_on_orbit = T+1; end
-                post_edge_traj.u = [end_orbit.u(:,first_discrete_step_on_orbit-1)*fraction, end_orbit.u(:,first_discrete_step_on_orbit:T-1),end_orbit.u(:,T)]; % the separation of T from 0:T-1 is just for clarity.
+%                 if first_discrete_step_on_orbit == 1, first_discrete_step_on_orbit = T+1; end
+%                 post_edge_traj.u = [end_orbit.u(:,first_discrete_step_on_orbit-1)*fraction, end_orbit.u(:,first_discrete_step_on_orbit:T-1),end_orbit.u(:,T)]; % the separation of T from 0:T-1 is just for clarity.
+                if first_discrete_step_on_orbit == 1
+                    post_edge_traj.u = [end_orbit.u(:,T)*fraction, end_orbit.u(:,first_discrete_step_on_orbit:T-1),end_orbit.u(:,T)];
+                else
+                    post_edge_traj.u = [end_orbit.u(:,first_discrete_step_on_orbit-1)*fraction, end_orbit.u(:,first_discrete_step_on_orbit:T-1),end_orbit.u(:,T)]; % the separation of T from 0:T-1 is just for clarity.
+                end
             end
             
             

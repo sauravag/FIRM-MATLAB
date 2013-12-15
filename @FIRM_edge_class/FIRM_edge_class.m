@@ -33,7 +33,7 @@ classdef FIRM_edge_class
                 obj.nominal_trajectory = nominal_PRM_edge_traj;
                 obj.possible_end_node_indices =possible_end_node_indices_inp;
                 % obj.edge_controller = target_node_stabilizer_inp.controller; % If this line is uncommented, it means we assume the edge controller is the same as the stationary_LQG designed for end_node.
-                obj.edge_controller = LQG_class('LKF',obj.nominal_trajectory);
+                obj.edge_controller = Finite_time_LQG_class(obj.nominal_trajectory,'LKF');
                 obj.kf = obj.edge_controller.kf;
             end
         end
@@ -76,15 +76,14 @@ classdef FIRM_edge_class
                     obj.PHb_seq(k) = obj.PHb_seq(k).delete_plot();
                     drawnow
                 end
-                % propagation of GHb (only meaningful for when the filter
-                % is LKF)
+                % propagation of GHb (only meaningful for when the filter is LKF)
                 
                 obj.GHb_seq(k+1) = obj.edge_controller.propagate_Hb_Gaussian(obj.GHb_seq(k),k);
-                if ~user_data_class.par.No_plot
+%                 if ~user_data_class.par.No_plot
                     %                     obj.GHb_seq(k+1) = obj.GHb_seq(k+1).draw();
                     %                     obj.GHb_seq(k) = obj.GHb_seq(k).delete_plot();
                     %                     drawnow
-                end
+%                 end
                 
                 if (user_data_class.par.sim.video == 1 && ~user_data_class.par.No_plot)
                     global vidObj; %#ok<TLEV>
@@ -173,7 +172,7 @@ classdef FIRM_edge_class
                 for k = 1 : obj.kf
                     % note that to compute the filtering cost, we only
                     % consider the edge part not node part.
-                    not_normalized_filtering_cost = not_normalized_filtering_cost + trace(obj.PHb_seq(k).Hparticles(q).b.est_cov);
+                    not_normalized_filtering_cost = not_normalized_filtering_cost + user_data_class.par.cost_gain*trace(obj.PHb_seq(k).Hparticles(q).b.est_cov);
                 end
             end
             if isempty(alive_particles)
@@ -238,6 +237,9 @@ classdef FIRM_edge_class
                 if delete_ali<15
 %                 disturbed_Xg.val = [disturbed_Xg.val(1)+rand*1;disturbed_Xg.val(2)-rand*1;delete_ali*2*pi/180];  % I add this to prepare an specific disturbance for the needle steering procedure. You have to remove it.
                 end
+        end
+        function edge_drawing_handle = draw_nominal_traj(obj)
+            error('not yet implemented');
         end
     end
     

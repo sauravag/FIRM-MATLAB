@@ -1,5 +1,5 @@
 classdef SLQG_class < LQG_interface
-    %   LQG_stationary_class encapsulates the Stationary Linear Quadratic Gaussian Controller
+    %   SLQG_class encapsulates the Stationary Linear Quadratic Gaussian Controller
     properties
         estimator
         separated_controller
@@ -74,7 +74,8 @@ classdef SLQG_class < LQG_interface
             
             % generating feedback controls
             [u , reliable] = obj.separated_controller.generate_feedback_control(b);
-            
+            if ~reliable, warning('Controller_class: Error is too much; the linearization is not reliable'); end %#ok<WNTAG>
+
             % generating process noises
             if ~exist('noise_mode','var')
                 w = MotionModel_class.generate_process_noise(Xg.val,u);
@@ -93,9 +94,8 @@ classdef SLQG_class < LQG_interface
             
             % Since "StationaryKF_estimate" leads to unsymmetric estimation
             % covariances, we use the LKF instead.
-            % b_next = Kalman_filter.StationaryKF_estimate(b,up+dU,Zg,obj.lnr_sys,obj.Stationary_Kalman_gain);
             
-            % Note that if we use LKF in "Stationary_LQG" the linear system
+            % Note that to use LKF in "Stationary_LQG" the linear system
             % used for "prediction" is the same as the linear system used
             % for "update".
             b_next = obj.estimator.estimate(b,u,Zg,obj.lnr_sys,obj.lnr_sys);
@@ -223,9 +223,6 @@ classdef SLQG_class < LQG_interface
             Xg_mean = state(obj.lnr_pts.x);
             Xest_MeanOfMean = Xg_mean; % in the stationary Hbelief, the mean of Xg and the mean of Xest_mean are equal.
             stGHb = Hbelief_G(Xg_mean, Xest_MeanOfMean, Pest_ss,BigCov_better);
-        end
-        function YesNo = is_in_valid_linearization_region(obj,est_OF_error)
-            YesNo = all(abs(est_OF_error) < obj.valid_lnr_domain); % never forget the "absolute value operator" in computing distances.
         end
     end
 end

@@ -62,12 +62,12 @@ classdef FIRM_graph_interface
             
             value_mat = []; % just for monitoring value updates. Otherwise, not useful.
             new_values = ones(obj.num_nodes,1)*user_data_class.par.initial_values; % initializing node values.
-            while norm(values-new_values)>0.01
+            while norm(values-new_values)>user_data_class.par.DP_convergence_threshold
                 values = new_values;
                 value_mat = [value_mat,values]; %#ok<AGROW> % just for monitoring value updates. Otherwise, not useful.
                 for i = 1 : size(values,1) % i  is the node number (absolute number)
                     if i == goal_node_ind % The value of the goal node must remain unchanged.
-                        new_values(i) = values(i);
+                        new_values(i) = user_data_class.par.initial_value_goal;
                         feedback_solution(i) = nan;
                     else
                         % s_prime = find(obj.PRM.edges_matrix(i,:)); % s_prime is the list of nodes that i-th node is connected to.
@@ -115,20 +115,20 @@ classdef FIRM_graph_interface
                 end
             end
             %             % In the following we draw the evolution of node values.
-            %             curr_fig = gcf;
-            %             figure;
-            %             plot(value_mat')
-            %             figure(curr_fig);
-            %             drawnow
+%             curr_fig = gcf;
+%             figure;
+%             plot(value_mat')
+%             figure(curr_fig);
+%             drawnow
             % in the following we draw the arrows on the
             % storing the values and "feedback_pi" in the graph.
             obj.cost_to_go = values;
             obj.feedback_pi = feedback_solution;
-            %             % in the following we plot the feedback pi on the graph.
-            %             selected_nodes = user_data_class.par.selected_nodes_for_plotting_feedback_pi;
-            %             if ~isempty(selected_nodes )
-            %                 obj.plot_handle_feedback_pi = obj.PRM.draw_feedback_pi(obj.feedback_pi, selected_nodes);
-            %             end
+            % in the following we plot the feedback pi on the graph.
+            selected_nodes = user_data_class.par.selected_nodes_for_plotting_feedback_pi;
+%             if ~isempty(selected_nodes )
+            obj.plot_handle_feedback_pi = obj.PRM.draw_feedback_pi(obj.feedback_pi, obj.Edges, selected_nodes);
+%             end
         end
     end
     

@@ -143,10 +143,10 @@ classdef stabilizer_class < Stabilizer_interface
                     next_Hstate = next_Hstate.draw('robotshape','triangle','XgtriaColor','g','XestTriaColor','r','XgColor','g','XestColor','r');
                     current_Hstate = current_Hstate.delete_plot(); %#ok<NASGU>
                 end
+                T = obj.PRM_orbit.period;
                 if user_data_class.par.replanning == 1
                     % Here, we check if we lie in the valid linearization
                     % region of node controller or not
-                    T = obj.PRM_orbit.period;
                     cyclic_kPlus1 = mod(k+1,T)+(T*(mod(k+1,T)==0));
                     nominal_x = state(obj.controller.lnr_pts(cyclic_kPlus1).x);
                     signed_elem_wise_difference = next_Hstate.b.est_mean.signed_element_wise_dist(nominal_x);

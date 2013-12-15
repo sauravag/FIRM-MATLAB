@@ -9,7 +9,7 @@ classdef PKF < kalman_filter_interface
         end
         function b_next = estimate(obj,b,U,Zg,lnr_sys_for_prd,lnr_sys_for_update)
             if nargin < 5
-                error('Ali: The linearized systems has to be provided for LKF.')
+                error('Ali: The linearized systems has to be provided for PKF.')
             end
             b_prd = obj.predict(b,U,lnr_sys_for_prd);
             b_next = obj.update(b_prd,Zg,lnr_sys_for_update);
