@@ -9,8 +9,8 @@ classdef youbot_base < MotionModel_interface
         zeroControl = zeros(youbot_base.ctDim,1);
         zeroNoise = zeros(youbot_base.wDim,1);
         dt = user_data_class.par.motion_model_parameters.dt;
-        l_1 = user_data_class.par.motion_model_parameters.distBetweenFrontWheels; % the distance between front wheels in cm
-        l_2 =  user_data_class.par.motion_model_parameters.distBetweenFrontAndBackWheels; % the distance between front and back wheels in the same side in cm
+        l1 = 0.158*2; %
+        l2 =  0.228*2; %
 
         sigma_b_u = user_data_class.par.motion_model_parameters.sigma_b_u_KukaBase;
         eta_u = user_data_class.par.motion_model_parameters.eta_u_KukaBase;
