@@ -9,9 +9,10 @@ startup_rvc;
 user_data = user_data_class; % The object user_data will never be used. This line only cause the "Constant" properties of the "user_data_class" class to be initialized.
 
 robot_init = [0 0 0];
-% sim = Simulator();
-% sim = sim.initialize();
-% sim = sim.setRobot(robot_init);
+sim = Simulator();
+sim = sim.initialize();
+sim = sim.setRobot(robot_init);
+
 
 if user_data_class.par.Cancel_Run ~= 1
     % instantiate the simulator

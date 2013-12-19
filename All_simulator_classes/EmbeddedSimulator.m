@@ -102,7 +102,12 @@ classdef EmbeddedSimulator < SimulatorInterface
             disp('Simulation Stopped')
         end
         % evolve : evolve robot
-        function obj = evolve(obj,u,noiseMode)
+        function obj = evolve(obj,u,varargin)
+            if nargin==3
+                noiseMode = varargin{1};
+            else
+                noiseMode = 1; % by default we add noise 
+            end
             if noiseMode
                 w = MotionModel_class.generate_process_noise(obj.robot.val,u);
             else
