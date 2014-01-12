@@ -1,4 +1,4 @@
-classdef youbot_base < MotionModel_interface
+classdef MotionModel_class < MotionModel_interface
     % Note that because the class is defined as a handle class, the
     % properties must be defined such that they are do not change from an
     % object to another one.
@@ -6,12 +6,12 @@ classdef youbot_base < MotionModel_interface
         stDim = state.dim; % state dimension
         ctDim = 4;  % control vector dimension
         wDim = 7;   % Process noise (W) dimension
-        zeroControl = zeros(youbot_base.ctDim,1);
-        zeroNoise = zeros(youbot_base.wDim,1);
+        zeroControl = zeros(MotionModel_class.ctDim,1);
+        zeroNoise = zeros(MotionModel_class.wDim,1);
         dt = user_data_class.par.motion_model_parameters.dt;
-        l1 = 0.158*2; % (meter) distance between right and left wheel 
-        l2 =  0.228*2; % (meter) distance between front and rear wheel
-        vMax = 0.8 % m/s maximum speed for individual wheels and max base velocity
+        l_1 = user_data_class.par.motion_model_parameters.distBetweenFrontWheels; % the distance between front wheels in cm
+        l_2 =  user_data_class.par.motion_model_parameters.distBetweenFrontAndBackWheels; % the distance between front and back wheels in the same side in cm
+
         sigma_b_u = user_data_class.par.motion_model_parameters.sigma_b_u_KukaBase;
         eta_u = user_data_class.par.motion_model_parameters.eta_u_KukaBase;
         P_Wg = user_data_class.par.motion_model_parameters.P_Wg;
@@ -24,34 +24,42 @@ classdef youbot_base < MotionModel_interface
     
     methods (Static)
         function x_next = f_discrete(x,u,w)
-            Un = w(1:youbot_base.ctDim); % The size of Un may be different from ctDim in some other model.
-            Wg = w(youbot_base.ctDim+1 : youbot_base.wDim); % The size of Wg may be different from stDim in some other model.
-            Wc = youbot_base.f_contin(x,Un,Wg);
-            x_next = x+youbot_base.f_contin(x,u,0)*youbot_base.dt+Wc*sqrt(youbot_base.dt);
+            Un = w(1:MotionModel_class.ctDim); % The size of Un may be different from ctDim in some other model.
+            Wg = w(MotionModel_class.ctDim+1 : MotionModel_class.wDim); % The size of Wg may be different from stDim in some other model.
+            Wc = MotionModel_class.f_contin(x,Un,Wg);
+            x_next = x+MotionModel_class.f_contin(x,u,0)*MotionModel_class.dt+Wc*sqrt(MotionModel_class.dt);
         end
         function x_dot = f_contin(x,u,wg) % Do not call this function from outside of this class!! % The last input in this method should be w, instead of wg. But, since it is a only used in this class, it does not matter so much.
-            B = youbot_base.df_du_func(x,u,wg);
-            x_dot = B*u+wg;
+            l1 = MotionModel_class.l1;
+            l2 = MotionModel_class.l2;
+            gama1= 2/(l1+l2);
+            x_dot = (1/4)*[1      -1     -1      1;...
+                           1       1      1      1;...
+                           -gmam1 gama1 -gama1 gama1]*u+wg;
         end
         function A = df_dx_func(x,u,w)
-            un = w(1:youbot_base.ctDim); % The size of Un may be different from ctDim in some other model.
-            wg = w(youbot_base.ctDim+1 : youbot_base.wDim); % The size of Wg may be different from stDim in some other model.
-            A = eye(youbot_base.stDim) ...
-                + youbot_base.df_contin_dx(x,u,zeros(youbot_base.stDim,1))*youbot_base.dt ...
-                + youbot_base.df_contin_dx(x,un,wg)*sqrt(youbot_base.dt);
+            un = w(1:MotionModel_class.ctDim); % The size of Un may be different from ctDim in some other model.
+            wg = w(MotionModel_class.ctDim+1 : MotionModel_class.wDim); % The size of Wg may be different from stDim in some other model.
+            A = eye(MotionModel_class.stDim) ...
+                + MotionModel_class.df_contin_dx(x,u,zeros(MotionModel_class.stDim,1))*MotionModel_class.dt ...
+                + MotionModel_class.df_contin_dx(x,un,wg)*sqrt(MotionModel_class.dt);
         end
         function Acontin = df_contin_dx(x,u,w) %#ok<INUSD>
             Acontin = zeros(3,3);
         end
         function B = df_du_func(x,u,w) %#ok<INUSD>
-            gama1= 2/(youbot_base.l2-youbot_base.l1);
-            B     = (1/4)*[-1      1      1      -1;...
+            l1 = MotionModel_class.l1;
+            l2 = MotionModel_class.l2;
+            gama1= 2/(l1+l2);
+            B     = (1/4)*[1      -1     -1      1;...
                            1       1      1      1;...
-                           gama1 -gama1 gama1 -gama1]; %% this is the B for the continous system 
+                           -gmam1 gama1 -gama1 gama1]*MotionModel_class.dt;
             end
         function G = df_dw_func(x,u,w) %#ok<INUSD>
-            B = youbot_base.df_du_func(x,u,w);
-            G = [B*youbot_base.dt,eye(youbot_base.stDim)]*sqrt(youbot_base.dt); % this calculation is for the discrete system
+            B     = (1/4)*[1      -1     -1      1;...
+                           1       1      1      1;...
+                           -gmam1 gama1 -gama1 gama1]*MotionModel_class.dt;
+            G = [B,eye(MotionModel_class.stDim)]*sqrt(MotionModel_class.dt);
         end
         function w = generate_process_noise(x,u) %#ok<INUSD>
             [Un,Wg] = generate_control_and_indep_process_noise(u);
@@ -59,28 +67,73 @@ classdef youbot_base < MotionModel_interface
         end
         function Q_process_noise = process_noise_cov(x,u) %#ok<INUSD>
             P_Un = control_noise_covariance(u);
-            Q_process_noise = blkdiag(P_Un,youbot_base.P_Wg);
+            Q_process_noise = blkdiag(P_Un,MotionModel_class.P_Wg);
         end
         function nominal_traj = generate_open_loop_point2point_traj(X_initial,X_final) % generates open-loop trajectories between two start and goal states
             if isa(X_initial,'state'), X_initial=X_initial.val; end % retrieve the value of the state vector
             if isa(X_final,'state'), X_final=X_final.val; end % retrieve the value of the state vector
-            B = youbot_base.df_du_func(0,0,0); %% B matrix in the youbot robot does not depend on current state or input
-            youbot_base.dt;
-            deltaX = X_final - X_initial;
+            % parameters
+            omega_path=user_data_class.par.motion_model_parameters.omega_const_path; % constant rotational velocity during turnings
+            dt=MotionModel_class.dt;
+            V_path=user_data_class.par.motion_model_parameters.V_const_path; % constant translational velocity during straight movements
+            stDim = MotionModel_class.stDim;
+            ctDim=MotionModel_class.ctDim;
+            r=MotionModel_class.robot_link_length;
             
-            t_interval = 0.8*max(deltaX)/youbot_base.vMax; % we move by 80 percent of the maxmimum velocity
-            kf = t_interval/ youbot_base.dt; % number of steps needed to follow the trajectory 
-            uStar = (1/t_interval)*B'*inv(B*B')*deltaX;  %  
+            th_p = atan2( X_final(2)-X_initial(2)  ,  X_final(1)-X_initial(1)  ); % the angle of edge % note that "th_p" is already between -pi and pi, since it is the output of "atan2"
+            %-------------- Rotation number of steps
+            if abs(X_initial(3))>pi, X_initial(3)=(X_initial(3)-sign(X_initial(3))*2*pi); end % Here, we bound the initial angle "X_initial(3)" between -pi and pi
+            if abs(X_final(3))>pi, X_final(3)=(X_final(3)-sign(X_final(3)*2*pi)); end % Here, we bound the final angle "X_final(3)" between -pi and pi
+            delta_th_p = X_final(3) - X_initial(3); % turning angle
+            if abs(delta_th_p)>pi, delta_th_p=(delta_th_p-sign(delta_th_p)*2*pi); end % Here, we bound "pre_delta_th_p" between -pi and pi
+            rotation_steps = abs( delta_th_p/(omega_path*dt) );
+            %--------------Translation number of steps
+            delta_disp = norm( X_final(1:2) - X_initial(1:2) );
+            translation_steps = abs(delta_disp/(V_path*dt));
+            %--------------Total number of steps
+            kf_rational = max([rotation_steps , translation_steps]);
+            kf = floor(kf_rational)+1;  % note that in all following lines you cannot replace "floor(something)+1" by "ceil(something)", as it may be  a whole number.
+            
+            %=====================Rotation steps of the path
+            delta_theta_const = omega_path*sign(delta_th_p)*dt;
+            delta_theta_nominal(: , 1:floor(rotation_steps)) =  repmat( delta_theta_const , 1 , floor(rotation_steps));
+            delta_theta_const_end = omega_path*sign(delta_th_p)*dt*(rotation_steps-floor(rotation_steps));
+            delta_theta_nominal(:,floor(rotation_steps)+1) = delta_theta_const_end; % note that you cannot replace "floor(pre_rotation_steps)+1" by "ceil(pre_rotation_steps)", as it may be  a whole number.
+            delta_theta_nominal = [delta_theta_nominal , zeros(1 , kf - size(delta_theta_nominal,2))]; % augment zeros to the end of "delta_theta_nominal", to make its length equal to "kf".
+            
+%             u_const = ones(3,1)*r*omega_path*sign(delta_th_p);
+%             u_p_rot(: , 1:floor(rotation_steps)) = repmat( u_const,1,floor(rotation_steps) );
+%             u_const_end = ones(3,1)*r*omega_path*sign(delta_th_p)*(rotation_steps-floor(rotation_steps));
+%             u_p_rot(:,floor(rotation_steps)+1)=u_const_end; % note that you cannot replace "floor(pre_rotation_steps)+1" by "ceil(pre_rotation_steps)", as it may be  a whole number.
+            
+            %=====================Translations
+             delta_xy_const = [V_path*cos(th_p);V_path*sin(th_p)]*dt;
+             delta_xy_nominal( : , 1:floor(translation_steps) ) = repmat( delta_xy_const , 1 , floor(translation_steps));
+             delta_xy_const_end = [V_path*cos(th_p);V_path*sin(th_p)]*dt*(translation_steps - floor(translation_steps));
+             delta_xy_nominal( : , floor(translation_steps)+1 ) = delta_xy_const_end;
+            delta_xy_nominal = [delta_xy_nominal , zeros(2 , kf - size(delta_xy_nominal,2))]; % augment zeros to the end of "delta_xy_nominal", to make its length equal to "kf".
+            
+            
+            delta_state_nominal = [delta_xy_nominal;delta_theta_nominal];
             
             %=====================Nominal control and state trajectory generation
-            x_p = zeros(youbot_base.stDim,kf+1);
-            u_p = zeros(youbot_base.ctDim,kf);
+            x_p = zeros(stDim,kf+1);
+            theta = zeros(1,kf+1);
+            u_p = zeros(stDim,kf);
             
             x_p(:,1) = X_initial;
-           
+            theta(1) = X_initial(3);
             for k = 1:kf
-                u_p(:,k) = uStar;  % "T_inv_k" maps the "velocities in body coordinate" to the control signal
-                x_p(:,k+1) = youbot_base.f_discrete(x_p(:,k),u_p(:,k) ,zeros(youbot_base.wDim,1)); % generaating the trajectory 
+                theta(:,k+1) = theta(:,k) + delta_state_nominal(3,k);
+                th_k = theta(:,k);
+                T_inv_k = [-sin(th_k),     cos(th_k)       ,r;
+                 -sin(pi/3-th_k),-cos(pi/3-th_k) ,r;
+                 sin(pi/3+th_k) ,-cos(pi/3+th_k) ,r];
+             
+                delta_body_velocities_k = delta_state_nominal(:,k)/dt; % x,y,and theta velocities in body coordinate at time step k
+                u_p(:,k) = T_inv_k*delta_body_velocities_k;  % "T_inv_k" maps the "velocities in body coordinate" to the control signal
+             
+                x_p(:,k+1) = x_p(:,k) + delta_state_nominal(:,k);
             end
             
             % noiselss motion  % for debug: if you uncomment the following
@@ -88,7 +141,7 @@ classdef youbot_base < MotionModel_interface
             %             x_p_copy = zeros(stDim,kf+1);
             %             x_p_copy(:,1) = X_initial;
             %             for k = 1:kf
-            %                 x_p_copy(:,k+1) = youbot_base.f_discrete(x_p_copy(:,k),u_p(:,k),zeros(youbot_base.wDim,1));
+            %                 x_p_copy(:,k+1) = MotionModel_class.f_discrete(x_p_copy(:,k),u_p(:,k),zeros(MotionModel_class.wDim,1));
             %             end
             
             nominal_traj.x = x_p;
@@ -99,11 +152,11 @@ classdef youbot_base < MotionModel_interface
             if isa(X_final,'state'), X_final=X_final.val; end % retrieve the value of the state vector
             % parameters
             omega_path=user_data_class.par.motion_model_parameters.omega_const_path; % constant rotational velocity during turnings
-            dt=youbot_base.dt;
+            dt=MotionModel_class.dt;
             V_path=user_data_class.par.motion_model_parameters.V_const_path; % constant translational velocity during straight movements
-            stDim = youbot_base.stDim;
-            ctDim=youbot_base.ctDim;
-            r=youbot_base.robot_link_length;
+            stDim = MotionModel_class.stDim;
+            ctDim=MotionModel_class.ctDim;
+            r=MotionModel_class.robot_link_length;
             
             th_p = atan2( X_final(2)-X_initial(2)  ,  X_final(1)-X_initial(1)  ); % the angle of edge % note that "th_p" is already between -pi and pi, since it is the output of "atan2"
             %-------------- Rotation number of steps
@@ -169,7 +222,7 @@ classdef youbot_base < MotionModel_interface
             %             x_p_copy = zeros(stDim,kf+1);
             %             x_p_copy(:,1) = X_initial;
             %             for k = 1:kf
-            %                 x_p_copy(:,k+1) = youbot_base.f_discrete(x_p_copy(:,k),u_p(:,k),zeros(youbot_base.wDim,1));
+            %                 x_p_copy(:,k+1) = MotionModel_class.f_discrete(x_p_copy(:,k),u_p(:,k),zeros(MotionModel_class.wDim,1));
             %             end
             
             nominal_traj.x = x_p;
@@ -227,9 +280,9 @@ classdef youbot_base < MotionModel_interface
             omega_path=user_data_class.par.motion_model_parameters.omega_const_path; % constant rotational velocity during turnings
             dt=user_data_class.par.motion_model_parameters.dt;
             V_path=user_data_class.par.motion_model_parameters.V_const_path; % constant translational velocity during straight movements
-            stDim = youbot_base.stDim;
-            ctDim=youbot_base.ctDim;
-            r=youbot_base.robot_link_length;
+            stDim = MotionModel_class.stDim;
+            ctDim=MotionModel_class.ctDim;
+            r=MotionModel_class.robot_link_length;
             
             th_p = atan2( X_final(2)-X_initial(2)  ,  X_final(1)-X_initial(1)  ); % the angle of edge % note that "th_p" is already between -pi and pi, since it is the output of "atan2"
             %--------------Pre-Rotation number of steps
@@ -277,7 +330,7 @@ classdef youbot_base < MotionModel_interface
             x_p = zeros(stDim,kf+1);
             x_p(:,1) = X_initial;
             for k = 1:kf
-                x_p(:,k+1) = youbot_base.f_discrete(x_p(:,k),u_p(:,k),zeros(youbot_base.wDim,1));
+                x_p(:,k+1) = MotionModel_class.f_discrete(x_p(:,k),u_p(:,k),zeros(MotionModel_class.wDim,1));
             end
             
             nominal_traj.x = x_p;
@@ -289,13 +342,13 @@ end
 
 function [Un,Wg] = generate_control_and_indep_process_noise(U)
 % generate Un
-indep_part_of_Un = randn(youbot_base.ctDim,1);
+indep_part_of_Un = randn(MotionModel_class.ctDim,1);
 P_Un = control_noise_covariance(U);
 Un = indep_part_of_Un.*diag(P_Un.^(1/2));
 % generate Wg
-Wg = mvnrnd(zeros(youbot_base.stDim,1),youbot_base.P_Wg)';
+Wg = mvnrnd(zeros(MotionModel_class.stDim,1),MotionModel_class.P_Wg)';
 end
 function P_Un = control_noise_covariance(U)
-u_std=(youbot_base.eta_u).*U+(youbot_base.sigma_b_u);
+u_std=(MotionModel_class.eta_u).*U+(MotionModel_class.sigma_b_u);
 P_Un=diag(u_std.^2);
 end

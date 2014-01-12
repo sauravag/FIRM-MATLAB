@@ -30,7 +30,7 @@ classdef Point_PRM_class < PRM_interface
             N_nodes=obj.num_nodes;
             % draw edges
             for i = 1:size(obj.edges_list , 1)
-                %obj = obj.draw_edge(i);
+                obj = obj.draw_edge(i);
             end
             % Draw Nodes
             for p=1:N_nodes

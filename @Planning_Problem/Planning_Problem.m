@@ -60,8 +60,8 @@ classdef Planning_Problem
                 while continue_sim
                     
                     text_height = 0.5;
-                    text(obj.FIRM_graph.PRM.nodes(start_node_ind).val(1),obj.FIRM_graph.PRM.nodes(start_node_ind).val(2),obj.FIRM_graph.PRM.nodes(start_node_ind).val(3)+text_height,'start','color','r','fontsize',14); % we write "start" next to the start node
-                    text(obj.FIRM_graph.PRM.nodes(goal_node_ind).val(1),obj.FIRM_graph.PRM.nodes(goal_node_ind).val(2),obj.FIRM_graph.PRM.nodes(goal_node_ind).val(3)+text_height,'goal','color','r','fontsize',14); % we write "goal" next to the goal node
+%                     text(obj.FIRM_graph.PRM.nodes(start_node_ind).val(1)-5,obj.FIRM_graph.PRM.nodes(start_node_ind).val(2),obj.FIRM_graph.PRM.nodes(start_node_ind).val(3)+text_height,'start','color','r','fontsize',14); % we write "start" next to the start node
+%                     text(obj.FIRM_graph.PRM.nodes(goal_node_ind).val(1)+5,obj.FIRM_graph.PRM.nodes(goal_node_ind).val(2),obj.FIRM_graph.PRM.nodes(goal_node_ind).val(3)+text_height,'goal','color','r','fontsize',14); % we write "goal" next to the goal node
                     
                     obj.FIRM_graph = obj.FIRM_graph.DP_compute_cost_to_go_values(goal_node_ind);
                     %                 obj.FIRM_graph.feedback_pi(1)=2;

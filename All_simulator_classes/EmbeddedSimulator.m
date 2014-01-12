@@ -42,7 +42,8 @@ classdef EmbeddedSimulator < SimulatorInterface
             % video making
             if obj.par.video == 1;
                 global vidObj; %#ok<TLEV>
-                vidObj = VideoWriter([obj.par.video_directory,'\OnlinePhase_video.avi']);
+                [file,path] = uiputfile('OnlinePhaseVideo.avi','Save the runtime video as');
+                vidObj = VideoWriter(fullfile(path,file));
                 vidObj.Quality = obj.par.video_quality;
                 vidObj.FrameRate = obj.par.FrameRate;
                 open(vidObj);
@@ -102,7 +103,12 @@ classdef EmbeddedSimulator < SimulatorInterface
             disp('Simulation Stopped')
         end
         % evolve : evolve robot
-        function obj = evolve(obj,u,noiseMode)
+        function obj = evolve(obj,u,varargin)
+            if nargin==3
+                noiseMode = varargin{1};
+            else
+                noiseMode = 1; % by default we add noise 
+            end
             if noiseMode
                 w = MotionModel_class.generate_process_noise(obj.robot.val,u);
             else

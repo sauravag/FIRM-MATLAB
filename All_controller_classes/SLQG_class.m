@@ -36,7 +36,7 @@ classdef SLQG_class < LQG_interface
                 Hn = obj.lnr_sys.H;
                 Mn = obj.lnr_sys.M;
                 Rn = obj.lnr_sys.R;
-                Ln = obj.separated_controller.Lss;
+                Ln = obj.separated_controller.Feedback_gains;
                 Kn = obj.estimator.stationaryGain;
                 % Following lines changes the "obj" because the class is a subclass of the "handle" class.
                 % Otherwise, we had to output the "obj".

@@ -68,6 +68,9 @@ classdef SKF < kalman_filter_interface
             Rss = lnr_sys.R;
             
             [Pprd_ss,eig_ss,Kss_wrong,report] = dare(Ass',Hss',Gss*Qss*Gss',Rss);  %#ok<ASGLU,NASGU> % Look at the footnote in page 194 at Dan Simon's book to see why this K matrix is wrong.
+            if report == -1
+                error('Something is wrong with your linear system. Make sure the (A,H) pair is observable. Make sure GQG has all positive (nonzero) eigen-values, and make sure (A,chol(GQG)) is controllable. (Check the accurate conditions in the FIRM paper)');
+            end
             Kss_correct=(Pprd_ss*Hss')/(Hss*Pprd_ss*Hss'+Rss);
             Pest_ss=Pprd_ss-(Pprd_ss*Hss')*inv(Hss*Pprd_ss*Hss'+Rss)*Hss*Pprd_ss;  %#ok<MINV>, Here, we use Joseph form to ensure the symmetricity of the covariance matrix.
             % In the following we check if we converge to the same covariance or not. It is just a test

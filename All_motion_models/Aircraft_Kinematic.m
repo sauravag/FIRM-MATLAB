@@ -16,21 +16,8 @@ classdef Aircraft_Kinematic < MotionModel_interface
         Min_Velocity = 2.5;% m/s
         zeroNoise = zeros(Aircraft_Kinematic.wDim,1);
         turn_radius_min = Aircraft_Kinematic.Min_Velocity/Aircraft_Kinematic.Max_Yaw_Rate; % indeed we need to define the minimum linear velocity in turnings (on orbits) and then find the minimum radius accordingly. But, we picked the more intuitive way.
-        
     end
     
-    %% Methods
-    %   methods (Access = private)  %used by this class only
-    %         function transition_quat = f_transquat(dt , u ,w) % to calculate transition quaternion
-    %             u_res = u + w; % noisy input
-    %             u_bar = Quaternion(u_res);
-    %             u_mod = norm(u_bar);%making a normalized quaternion
-    %             q_scalar = cos((u_mod * dt)/2);
-    %             q_common = sin((u_mod * dt)/2)/u_mod;
-    %             q_vector = u_res * q_common;
-    %             transition_quat = Quaternion(q_scalar,q_vector);%returning transition quaternion
-    %         end
-    %     end
     
     methods (Static = true)
         
@@ -400,7 +387,7 @@ classdef Aircraft_Kinematic < MotionModel_interface
             
             % defining state steps on the orbit
             zeroQuaternion = state.zeroQuaternion; % The robot's angle in the start of orbit is zero
-            x_p(:,1) = [orbit_center.val(1:3) - [0;orbit.radius;0] ; zeroQuaternion']; % initial x
+            x_p(:,1) = [orbit_center.val(1:3) - [0;orbit.radius;0] ; zeroQuaternion]; % initial x
             for k=1:T
                 x_p(:,k+1) = MotionModel_class.f_discrete(x_p(:,k),u_p(:,k),w_zero);
                 tempState = state(x_p(:,k+1));
@@ -491,17 +478,45 @@ classdef Aircraft_Kinematic < MotionModel_interface
                 for k = 1 : size(nominal_traj.x , 2)
                     tmp_Xstate = state (nominal_traj.x(:,k) );
                     tmp_Xstate.draw();
-                    %                     tmp_Xstate.draw('RobotShape','triangle','robotsize',1);%,'TriaColor',color(cycles));
+                    % tmp_Xstate.draw('RobotShape','triangle','robotsize',1);%,'TriaColor',color(cycles));
                     %traj_plot_handle(k:k+2) =
                     %[tmp_Xstate.head_handle,tmp_Xstate.text_handle,tmp_Xstate.tria_handle];
                 end
-            else
-                tmp_handle = plot3(nominal_traj.x(1,:) , nominal_traj.x(2,:) , nominal_traj.x(3,:));
-                traj_plot_handle = [traj_plot_handle , tmp_handle];
+            elseif traj_flag == 2
+                tmp_handle = plot3(nominal_traj.x(1,:) , nominal_traj.x(2,:) , nominal_traj.x(3,:), 'LineWidth',4, 'color','g');
+%                 traj_plot_handle = [traj_plot_handle , tmp_handle];
                 len = size( nominal_traj.x , 2);
-                tmp_Xstate = state( nominal_traj.x(:,floor(len/2)) ); % to plot the direction of the line.
-                %                 tmp_Xstate = tmp_Xstate.draw('RobotShape','triangle','robotsize',2);
-                %                 traj_plot_handle = [traj_plot_handle , tmp_Xstate.plot_handle , tmp_Xstate.head_handle , tmp_Xstate.tria_handle , tmp_Xstate.text_handle ];
+                [yaw,pitch,roll] = quat2angle(nominal_traj.x(4:7,floor(len/2))');
+                pitch =0;
+                roll =0;
+                new_quat = angle2quat(yaw,pitch,roll);
+                tmp_Xstate = state( [nominal_traj.x(1:3,floor(len/2)) ; new_quat']); % to plot the direction of the line.
+                tmp_Xstate = tmp_Xstate.draw('RobotShape','triangle','robotsize',2);
+                traj_plot_handle = [traj_plot_handle , tmp_Xstate.plot_handle , tmp_Xstate.head_handle , tmp_Xstate.tria_handle , tmp_Xstate.text_handle ];
+                drawnow
+            elseif traj_flag == 3
+                tmp_handle = plot3(nominal_traj.x(1,:) , nominal_traj.x(2,:) , nominal_traj.x(3,:), 'LineWidth',4, 'color','r');
+                %                 traj_plot_handle = [traj_plot_handle , tmp_handle];
+                len = size( nominal_traj.x , 2);
+                [yaw,pitch,roll] = quat2angle(nominal_traj.x(4:7,floor(len/2))');
+                pitch =0;
+                roll =0;
+                new_quat = angle2quat(yaw,pitch,roll);
+                tmp_Xstate = state( [nominal_traj.x(1:3,floor(len/2)) ; new_quat']); % to plot the direction of the line.
+                tmp_Xstate = tmp_Xstate.draw('RobotShape','triangle','robotsize',2);
+                traj_plot_handle = [traj_plot_handle , tmp_Xstate.plot_handle , tmp_Xstate.head_handle , tmp_Xstate.tria_handle , tmp_Xstate.text_handle ];
+                drawnow
+            else
+                tmp_handle = plot3(nominal_traj.x(1,:) , nominal_traj.x(2,:) , nominal_traj.x(3,:), 'LineWidth',2);
+%                 traj_plot_handle = [traj_plot_handle , tmp_handle];
+                len = size( nominal_traj.x , 2);
+                [yaw,pitch,roll] = quat2angle(nominal_traj.x(4:7,floor(len/2))');
+                pitch =0;
+                roll =0;
+                new_quat = angle2quat(yaw,pitch,roll);
+                tmp_Xstate = state( [nominal_traj.x(1:3,floor(len/2)) ; new_quat']); % to plot the direction of the line.
+                tmp_Xstate = tmp_Xstate.draw('RobotShape','triangle','robotsize',2);
+                traj_plot_handle = [traj_plot_handle , tmp_Xstate.plot_handle , tmp_Xstate.head_handle , tmp_Xstate.tria_handle , tmp_Xstate.text_handle ];
                 drawnow
             end
         end

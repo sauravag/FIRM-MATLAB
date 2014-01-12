@@ -1,12 +1,10 @@
-function par_new = Input_XML_reader(old_par, par_new_from_GUI, new_output_directory)
+function par_new = Input_XML_reader(old_par, par_new_from_GUI)
 
 %  Parameters (they have to go into an XML)
 %=======================================================================================
 par_new = par_new_from_GUI;   % first we copy the newly provided parameters from GUI
 
 %=========== Simulator Parameters
-warning('off', 'MATLAB:rmpath:DirNotFound'); % In the next line when we remove the paths, some warning may occur, if those path does not exist. So, we supress that warning here.
-rmpath( genpath('All_simulator_classes')); % This line remove all paths below the "All_state_classes" directory, which have been possibly added in the last run of the program.
 if strcmpi(par_new.selected_simulator,'Embedded Simulator')
     typeDef('EmbeddedSimulator' , 'Simulator')
 elseif strcmpi(par_new.selected_simulator,'V-Rep Simulator')
@@ -23,12 +21,11 @@ x_offset = 35;y_offset = 55;
 ratio = 0.8;
 par_new.sim.figure_position = [main_monitor_pos(1)+x_offset  ,  main_monitor_pos(2)+y_offset  ,  main_monitor_pos(3)*ratio  ,  main_monitor_pos(4)*ratio]; % if this variable is empty, figure size will be the default value.
 par_new.sim.video = 0;
-par_new.sim.video_directory = new_output_directory;
 par_new.sim.video_quality = 100;
 par_new.sim.interactive_disturbance_allowed = 0 ;
 par_new.sim.draw_at_every_n_steps = 4;
 par_new.sim.FrameRate = 5;
-par_new.sim.env_limits = [0 100 0 100]; %[-3.75 , 100 , -23.75 , 80]; %[-3 155 -3 155]; %[-10 10 -10 10];%[-6 104 -28 85];%[-5 265 -5 225];%[-6 104 -28 85];
+par_new.sim.env_limits = [0 100 -5 100]; %[-3.75 , 100 , -23.75 , 80]; %[-3 155 -3 155]; %[-10 10 -10 10];%[-6 104 -28 85];%[-5 265 -5 225];%[-6 104 -28 85];
 par_new.sim.env_z_limits = [5 20];
 par_new.sim.top_obstacle_height_3D = 25;
 par_new.sim.bottom_obstacle_height_3D = 0;
@@ -79,6 +76,10 @@ elseif strcmpi(par_new.selected_motion_model,'Kuka YouBot Base')
     typeDef('planar_robot_XYTheta_state' , 'state')
     typeDef('planar_robot_XYTheta_belief' , 'belief')
     typeDef('youbot_base' , 'MotionModel_class')
+elseif strcmpi(par_new.selected_motion_model,'Quadrotor')
+    typeDef('Quadrotor_state' , 'state')
+    typeDef('Quadrotor_belief' , 'belief')
+    typeDef('Quadrotor_MM' , 'MotionModel_class')
 end
 
 [par_new.motion_model_parameters , par_new.state_parameters] = gather_state_and_motion_model_parameters(old_par, par_new.selected_motion_model);
@@ -106,6 +107,8 @@ elseif strcmpi(par_new.selected_observation_model,'Dynamical n-arm Manipulator')
     typeDef('Dyn_manipulator_wall_sensing_deadzone','ObservationModel_class');
 elseif strcmpi(par_new.selected_observation_model,'3D Landmark (range and bearing)')
     typeDef('Landmarks_3D_Range_bearing','ObservationModel_class');
+elseif strcmpi(par_new.selected_observation_model,'Full state information, additive Gaussian noise')    
+    typeDef('Full_state_additive_Gaussian','ObservationModel_class');
 end
 % typeDef('Landmarks_3D_Range_bearing','ObservationModel_class');
 par_new.observation_model_parameters = gather_observation_model_parameters(old_par, par_new.observation_model_parameters, par_new.selected_observation_model);
@@ -166,6 +169,12 @@ elseif strcmpi(par_new.selected_motion_model,'FixedWing Aircraft')
     par_new.FIRM_node_parameters.cov_neighborhood_size = tmp_vector*tmp_vector'*cov_neighb_magnifying_coeff ; % note that the last entry, ie theta's neighborhood, has to be in radian. % This is a matrix.
     % Hbliefe convergece-related parameters:
     GHb_conv_reg_thresh = tmp_vector*35; % distance threshold for either Xg_mean or Xest_mean_mean; Xdist has to be a column vector
+elseif strcmpi(par_new.selected_motion_model,'Quadrotor')
+    tmp_vector = [1 ; 1 ; 1; 20*pi/180 ; 20*pi/180 ; 20*pi/180 ; inf ; inf ; inf ; inf ; inf ; inf];
+    par_new.FIRM_node_parameters.mean_neighborhood_size = tmp_vector*mean_neighb_magnifying_coeff ; % note that the last entry, ie theta's neighborhood, has to be in radian.
+    par_new.FIRM_node_parameters.cov_neighborhood_size = tmp_vector*tmp_vector'*cov_neighb_magnifying_coeff ; % note that the last entry, ie theta's neighborhood, has to be in radian. % This is a matrix.
+    % Hbliefe convergece-related parameters:
+    GHb_conv_reg_thresh = tmp_vector*35; % distance threshold for either Xg_mean or Xest_mean_mean; Xdist has to be a column vector
 else
     par_new.FIRM_node_parameters.mean_neighborhood_size = [0.08 ; 0.08 ; 3 *pi/180 ]*mean_neighb_magnifying_coeff ; % this only works for 3D state spaces % note that the last entry, ie theta's neighborhood, has to be in radian.
     par_new.FIRM_node_parameters.cov_neighborhood_size = [0.08 ; 0.08 ; 3 *pi/180 ]*[0.08 ; 0.08 ; 3 *pi/180 ]'*cov_neighb_magnifying_coeff ; % this only works for 3D state spaces % note that the last entry, ie theta's neighborhood, has to be in radian. % This is a matrix.
@@ -183,7 +192,7 @@ par_new.stabilizer_parameters.max_stopping_time = 250;
 par_new.stabilizer_parameters.draw_cov_centered_on_nominal = 0;
 
 %=========== MonteCarlo Simulation
-par_new.par_n = 20; % number of particles
+par_new.par_n = 2; % number of particles
 par_new.cost_gain = 10;
 
 %=========== (LQR design) Node and Edge controller
@@ -202,7 +211,9 @@ elseif strcmpi(par_new.selected_motion_model,'Revolute joint 8arm manipulator')
 elseif strcmpi(par_new.selected_motion_model,'Dynamical planar 8arm manipulator')
     par_new.valid_linearization_domain = [ones(par_new.state_parameters.stateDim/2 , 1)*75*pi/180; ones(par_new.state_parameters.stateDim/2 , 1)*1000*pi/180];
 elseif strcmpi(par_new.selected_motion_model, 'FixedWing Aircraft')
-    par_new.valid_linearization_domain = repmat([3;3;3;1;1;1;1]*3 , 1 , 1);
+    par_new.valid_linearization_domain = [3;3;3;1;1;1;1]*3;
+elseif strcmpi(par_new.selected_motion_model,'Quadrotor')
+    par_new.valid_linearization_domain = [3;3;3;75*pi/180;75*pi/180;75*pi/180;inf;inf;inf;inf;inf;inf];
 else
     par_new.valid_linearization_domain = [3;3;75*pi/180]*3;
 end
@@ -223,7 +234,7 @@ par_new.No_plot = 0; % this is for plots in construction phase. The execution ph
 par_new.PRM_parameters.neighboring_distance_threshold = 30; %* 1.25 * 1000;% * 0.3;
 par_new.PRM_parameters.PRM_node_text = 1; % if this is one, the number of nodes will be written on the figure.
 par_new.PRM_parameters.PRM_node_plot_properties =  {'RobotShape','triangle','robotSize',0.8};% {'RobotShape','triangle','robotSize',2};
-par_new.PRM_parameters.draw_edges_flag = 0;
+par_new.PRM_parameters.draw_edges_flag = 1;
 
 % =========== Orbit parameters
 % par_new.PRM_parameters.orbit_text_size = 12;  % Default value for "OrbitTextSize" property.
@@ -324,6 +335,8 @@ elseif strcmpi(selected_motion_model,'Dynamical planar 8arm manipulator')
     state_parameters.sup_norm_weights_nonNormalized = ones(n , 1); % You can think of the right-most vector (in the denominator) as the ractangular neighborhood used in finding neighbor nodes in constructing PRM graph. Note that this must be a column vector.
     motion_model_parameters.controlDim = n/2;
 elseif strcmpi(selected_motion_model,'FixedWing Aircraft')
+    addpath('./external/rvctools/'); % We need rvctoolbox to run RRT
+    startup_rvc; % We need to run this to set of the rvctoolbox
     state_parameters.stateDim = 7;
     state_parameters.sup_norm_weights_nonNormalized = ones(state_parameters.stateDim , 1); 
     disp('state norm for aircraft model needs to be fixed')
@@ -338,12 +351,21 @@ elseif strcmpi(selected_motion_model,'Kuka YouBot Base')
     state_parameters.sup_norm_weights_nonNormalized = 1./[1 ; 1 ; inf]; % You can think of the right-most vector (in the denominator) as the ractangular neighborhood used in finding neighbor nodes in constructing PRM graph. Note that this must be a column vector.
     motion_model_parameters.controlDim = 4;
     motion_model_parameters.dt = 0.1;
-    motion_model_parameters.eta_u_KukaBase = [0; 0; 0; 0];  %str2num(get(handles.edit_eta_u_omni,'String'))'; %#ok<ST2NM> % note that eta_u in this case is a three by one vector, reprensing eta for velocity of each of omni-dir wheels.
-    motion_model_parameters.sigma_b_u_KukaBase = [0; 0; 0; 0];  % note that sigma_b_u in this case is a three by one vector, reprensing sigma_b (bias variance) for linear velocity and angular velocity.
+    motion_model_parameters.eta_u_KukaBase = [0; 0; 0; 0]; 
+    motion_model_parameters.sigma_b_u_KukaBase = [0; 0; 0; 0];  
     P_rootsqaure_Wg_diags=[0.2 ; 0.2 ; 4*pi/180]*2;
     motion_model_parameters.P_Wg=diag(P_rootsqaure_Wg_diags.^2);
     motion_model_parameters.distBetweenFrontWheels = 0.158*2; % from YouBot datasheet
     motion_model_parameters.distBetweenFrontAndBackWheels = 0.228*2; % from YouBot datasheet
+elseif strcmpi(selected_motion_model,'Quadrotor')
+    state_parameters.stateDim = 12;
+    state_parameters.sup_norm_weights_nonNormalized = 1./[1 ; 1 ; 1; inf(9,1)]; % You can think of the right-most vector (in the denominator) as the ractangular neighborhood used in finding neighbor nodes in constructing PRM graph. Note that this must be a column vector.
+    motion_model_parameters.controlDim = 4;
+    motion_model_parameters.dt = 0.1;
+    motion_model_parameters.eta_u_quadrotor = [0; 0; 0; 0];  % str2num(get(handles.eta_u_quadrotor,'String'))'; %#ok<ST2NM> % note that eta_u in this case is a four by one vector, reprensing the dependence of control noise on the magnitude of the control vector.
+    motion_model_parameters.sigma_b_u_quadrotor = [0; 0; 0; 0];  % note that sigma_b_u in this case is a four by one vector, reprensing sigma_b (bias variance) for the control-independent part of the control noise.
+    P_rootsqaure_Wg_diags=[0.2 ; 0.2 ; 0.2 ; 0.001 ; 0.001 ; 0.001; 4*pi/180 ; 4*pi/180 ; 4*pi/180 ; 0.001 ; 0.001 ; 0.001];
+    motion_model_parameters.P_Wg=diag(P_rootsqaure_Wg_diags.^2);
 else
     error('SFMP algorithm: The selected motion model does not match with the existing database');
 end

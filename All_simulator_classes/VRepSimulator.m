@@ -25,6 +25,7 @@ classdef VRepSimulator < SimulatorInterface
         
         %Scene Properties
         scene;
+        floor;
         obstacles;
         numberOfObjects=1;
         
@@ -112,24 +113,24 @@ classdef VRepSimulator < SimulatorInterface
             % Loading the pre-customized environments and obstacles based on user choice
             if(obj.planner==1)
                 if(strcmp(obj.robotModel,'dr12'))
-                    obj.scene = fullfile(pwd,'laser_test_dr12_with_control.ttt');
+                    obj.scene = fullfile(fullfile(fileparts(which('Main.m')),'All_simulator_classes','v_rep_models'),'laser_test_dr12_with_control.ttt');
                 elseif(strcmp(obj.robotModel,'dr20'))
-                    obj.scene = fullfile(pwd,'laser_test_dr20_with_control.ttt');
+                    obj.scene = fullfile(fullfile(fileparts(which('Main.m')),'All_simulator_classes','v_rep_models'),'laser_test_dr20_with_control.ttt');
                     
                 elseif(strcmp(obj.robotModel,'youbot'))
-                    %                     obj.scene = fullfile(pwd,'laser_test_youbot_with_control.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
-                    obj.scene = fullfile(pwd,'youbot_test_w_laser.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
+                    %                     obj.scene = fullfile(fullfile(fileparts(which('Main.m')),'All_simulator_classes','v_rep_models'),'laser_test_youbot_with_control.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
+                    obj.scene = fullfile(fullfile(fileparts(which('Main.m')),'All_simulator_classes','v_rep_models'),'youbot_test_wo_laser.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
                     
                 end
                 
             elseif(obj.planner==0)
                 if(strcmp(obj.robotModel,'dr12'))
-                    obj.scene = fullfile(pwd,'laser_test_dr12.ttt');
+                    obj.scene = fullfile(fullfile(fileparts(which('Main.m')),'All_simulator_classes','v_rep_models'),'laser_test_dr12.ttt');
                 elseif(strcmp(obj.robotModel,'dr20'))
-                    obj.scene = fullfile(pwd,'env_fourthfloor.ttt');
+                    obj.scene = fullfile(fullfile(fileparts(which('Main.m')),'All_simulator_classes','v_rep_models'),'env_fourthfloor.ttt');
                 elseif(strcmp(obj.robotModel,'youbot'))
-                    %                     obj.scene = fullfile(pwd,'laser_test_youbot_with_control.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
-                    obj.scene = fullfile(pwd,'youbot_test_wo_laser.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
+                    %                     obj.scene = fullfile(fullfile(fileparts(which('Main.m')),'All_simulator_classes','v_rep_models'),'laser_test_youbot_with_control.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
+                    obj.scene = fullfile(fullfile(fileparts(which('Main.m')),'All_simulator_classes','v_rep_models'),'youbot_test_wo_laser.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
                     
                 end
             end
@@ -170,6 +171,9 @@ classdef VRepSimulator < SimulatorInterface
             %Handles for various parts of robot
             [res(8), obj.robot_joints] = obj.vrep.simxGetObjects(obj.clientID, obj.vrep.sim_object_joint_type,obj.vrep.simx_opmode_oneshot_wait);
             
+            %Handle for the floor
+            [res(21),obj.floor] = obj.vrep.simxGetObjectHandle(obj.clientID,'DefaultFloor',obj.vrep.simx_opmode_oneshot_wait);
+            
             %Intializing the Environment
             [res(20)] = obj.vrep.simxStartSimulation(obj.clientID, obj.vrep.simx_opmode_oneshot);
             
@@ -206,7 +210,7 @@ classdef VRepSimulator < SimulatorInterface
         %% Setting up the Robot
         function obj = setRobot(obj,position)
             if isa(position,'state'), position = position.val; end
-
+            
             %Setting position of the robot
             % remember to convert position[1] to position.val[1] and do so
             % when trying to use the full closed loop problem
@@ -218,8 +222,12 @@ classdef VRepSimulator < SimulatorInterface
                 [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[position(1),position(2), 0.1517],obj.vrep.simx_opmode_oneshot);
                 [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,-1,[0,0,position(3)],obj.vrep.simx_opmode_oneshot);
             elseif (strcmp(obj.robotModel,'youbot'))
+                %                 [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[position(1),position(2), 0.0957],obj.vrep.simx_opmode_oneshot);
+                %                 [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,obj.floor,[0,0,position(3)],obj.vrep.simx_opmode_oneshot);
+                obj = obj.getRobot();
+                turn = (pi*position(3)/180) - obj.robot_orientation(3);
                 [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[position(1),position(2), 0.0957],obj.vrep.simx_opmode_oneshot);
-                [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,-1,[0,0,position(3)],obj.vrep.simx_opmode_oneshot);
+                [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,obj.robot,[turn,0,0],obj.vrep.simx_opmode_oneshot);
                 
             end
         end

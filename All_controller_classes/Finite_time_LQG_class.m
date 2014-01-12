@@ -83,12 +83,6 @@ classdef Finite_time_LQG_class < LQG_interface
             % True state propagation
             next_Xg_val = MotionModel_class.f_discrete(Xg.val,u,w);
             
-            disp('Finite_time_LQG_class: only valid for 7 dof system. Has to be removed After PLQG paper!')
-            if next_Xg_val(4) < 0
-                disp('q0 < 0 !!!');
-                error('q0 went negative in LQG_class propagate');
-            end
-            
             % generating observation noise
             if ~exist('noise_mode','var')
                 Vg = ObservationModel_class.generate_observation_noise(next_Xg_val);

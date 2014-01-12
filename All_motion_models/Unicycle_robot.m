@@ -152,7 +152,7 @@ classdef Unicycle_robot < MotionModel_interface
             w_zero = zeros(Unicycle_robot.wDim,1); % no noise
             x_pre(:,1) = x_initial;
             for k=1:kf_pre
-                x_pre(:,k+1) = MotionModel_class.f_discrete(x_pre(:,k),u_pre(:,k),w_zero);
+                x_pre(:,k+1) = Unicycle_robot.f_discrete(x_pre(:,k),u_pre(:,k),w_zero);
                 %                 tmp = state(x_pre(:,k+1));tmp.draw(); % FOR DEBUGGING
             end
             % Line part
@@ -165,7 +165,7 @@ classdef Unicycle_robot < MotionModel_interface
             u_line = [V_line;omega_line];
             x_line(:,1) = x_pre(:,kf_pre+1);
             for k=1:kf_line
-                x_line(:,k+1) = MotionModel_class.f_discrete(x_line(:,k),u_line(:,k),w_zero);
+                x_line(:,k+1) = Unicycle_robot.f_discrete(x_line(:,k),u_line(:,k),w_zero);
                 %                 tmp = state(x_line(:,k+1));tmp.draw(); % FOR DEBUGGING
             end
             % Turn part on the final circle
@@ -177,7 +177,7 @@ classdef Unicycle_robot < MotionModel_interface
             u_post = [V_post ; omega_post];
             x_post(:,1) = x_line(:,kf_line+1);
             for k=1:kf_post
-                x_post(:,k+1) = MotionModel_class.f_discrete(x_post(:,k),u_post(:,k),w_zero);
+                x_post(:,k+1) = Unicycle_robot.f_discrete(x_post(:,k),u_post(:,k),w_zero);
                 %                 tmp = state(x_post(:,k+1));tmp.draw(); % FOR DEBUGGING
             end
             
@@ -230,7 +230,7 @@ classdef Unicycle_robot < MotionModel_interface
             w_zero = zeros(Unicycle_robot.wDim,1); % no noise
             x_pre(:,1) = x_initial;
             for k=1:kf_pre
-                x_pre(:,k+1) = MotionModel_class.f_discrete(x_pre(:,k),u_pre(:,k),w_zero);
+                x_pre(:,k+1) = Unicycle_robot.f_discrete(x_pre(:,k),u_pre(:,k),w_zero);
                 tmp = state(x_pre(:,k+1)); if tmp.is_constraint_violated, nominal_traj =[]; return; end
                 %                 tmp.draw(); % FOR DEBUGGING
             end
@@ -244,7 +244,7 @@ classdef Unicycle_robot < MotionModel_interface
             u_line = [V_line;omega_line];
             x_line(:,1) = x_pre(:,kf_pre+1);
             for k=1:kf_line
-                x_line(:,k+1) = MotionModel_class.f_discrete(x_line(:,k),u_line(:,k),w_zero);
+                x_line(:,k+1) = Unicycle_robot.f_discrete(x_line(:,k),u_line(:,k),w_zero);
                 tmp = state(x_line(:,k+1));%% if tmp.is_constraint_violated, nominal_traj =[]; return; end
                 %                 tmp.draw(); % FOR DEBUGGING
             end
@@ -267,7 +267,7 @@ classdef Unicycle_robot < MotionModel_interface
             u_post = [V_post ; omega_post];
             x_post(:,1) = x_line(:,kf_line+1);
             for k=1:kf_post
-                x_post(:,k+1) = MotionModel_class.f_discrete(x_post(:,k),u_post(:,k),w_zero);
+                x_post(:,k+1) = Unicycle_robot.f_discrete(x_post(:,k),u_post(:,k),w_zero);
                 tmp = state(x_post(:,k+1)); if tmp.is_constraint_violated, nominal_traj =[]; return; end
                 %                 tmp.draw(); % FOR DEBUGGING
             end
@@ -324,7 +324,7 @@ classdef Unicycle_robot < MotionModel_interface
             % defining state steps on the orbit
             x_p(:,1) = [orbit_center.val(1:2) - [0;orbit.radius] ; 0*pi/180]; % initial x
             for k=1:T
-                x_p(:,k+1) = MotionModel_class.f_discrete(x_p(:,k),u_p(:,k),w_zero);
+                x_p(:,k+1) = Unicycle_robot.f_discrete(x_p(:,k),u_p(:,k),w_zero);
             end
             orbit.x = x_p(:,1:T);  % "x_p" is of length T+1, but "x_p(:,T+1)" is equal to "x_p(:,1)"
             orbit.u = u_p;  % "u_p" is of length T.
@@ -418,11 +418,11 @@ classdef Unicycle_robot < MotionModel_interface
             omega_p = 0;
             u_p_single = [V_p;omega_p];
             u_p = repmat(u_p_single ,1,edge_steps);
-            w_zero = zeros(MotionModel_class.wDim , 1); % no noise
+            w_zero = zeros(Unicycle_robot.wDim , 1); % no noise
             
             x_p(:,1) = tmp_traj_start;
             for k =1:edge_steps
-                x_p(:,k+1) = MotionModel_class.f_discrete(x_p(:,k),u_p(:,k),w_zero);
+                x_p(:,k+1) = Unicycle_robot.f_discrete(x_p(:,k),u_p(:,k),w_zero);
                 tmp = state(x_p(:,k+1)); if tmp.is_constraint_violated, nominal_traj =[]; return; end
                 %                 tmp.draw(); % FOR DEBUGGING
             end

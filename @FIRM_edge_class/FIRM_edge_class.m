@@ -122,7 +122,7 @@ classdef FIRM_edge_class
             current_Hstate = init_hstate;
             xlabel(['Edge controller of edge ',num2str(obj.number),' starting from node ',num2str(obj.start_node.number),' is working']);
             % edge part
-            draw_at_every_n_steps = user_data_class.par.draw_at_every_n_steps;
+            draw_at_every_n_steps = user_data_class.par.sim.draw_at_every_n_steps;
             for k = 1 : obj.kf
                 % propagation of a single robot (or an Hstate)
                 k
