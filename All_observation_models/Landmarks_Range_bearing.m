@@ -34,9 +34,10 @@ classdef Landmarks_Range_bearing < ObservationModel_interface
             old_prop = Landmarks_Range_bearing.set_figure();
             i=0;
             title({'Please mark Landmarks'},'fontsize',14)
-            while true
+button = 0;
+            while button~=3
                 i=i+1;
-                [Lx_temp,Ly_temp]=ginput(1);
+                [Lx_temp,Ly_temp,button]=ginput(1);
                 if isempty(Lx_temp) && i<3
                     title({'You have to choose at least 3 landmarks to have an observable system'},'fontsize',14)
                     i=i-1;

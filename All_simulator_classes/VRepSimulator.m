@@ -119,7 +119,7 @@ classdef VRepSimulator < SimulatorInterface
                     
                 elseif(strcmp(obj.robotModel,'youbot'))
                     %                     obj.scene = fullfile(fullfile(fileparts(which('Main.m')),'All_simulator_classes','v_rep_models'),'laser_test_youbot_with_control.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
-                    obj.scene = fullfile(fullfile(fileparts(which('Main.m')),'All_simulator_classes','v_rep_models'),'youbot_test_wo_laser.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
+                    obj.scene = fullfile(fullfile(fileparts(which('Main.m')),'All_simulator_classes','v_rep_models'),'youbot_test_w_laser.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
                     
                 end
                 
@@ -130,7 +130,7 @@ classdef VRepSimulator < SimulatorInterface
                     obj.scene = fullfile(fullfile(fileparts(which('Main.m')),'All_simulator_classes','v_rep_models'),'env_fourthfloor.ttt');
                 elseif(strcmp(obj.robotModel,'youbot'))
                     %                     obj.scene = fullfile(fullfile(fileparts(which('Main.m')),'All_simulator_classes','v_rep_models'),'laser_test_youbot_with_control.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
-                    obj.scene = fullfile(fullfile(fileparts(which('Main.m')),'All_simulator_classes','v_rep_models'),'youbot_test_wo_laser.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
+                    obj.scene = fullfile(fullfile(fileparts(which('Main.m')),'All_simulator_classes','v_rep_models'),'youbot_test_w_laser.ttt');%'C:\Users\Ajinkya\Documents\GitHub\FIRM-MATLAB\Aji_V-rep\laser_test_20.ttt';
                     
                 end
             end
@@ -164,29 +164,76 @@ classdef VRepSimulator < SimulatorInterface
                 
                 %                 [res, obj.robot] = obj.vrep.simxGetObjectHandle(obj.clientID,'youBot#0',obj.vrep.simx_opmode_oneshot_wait);
                 [res, obj.robot] = obj.vrep.simxGetObjectHandle(obj.clientID,'youBot',obj.vrep.simx_opmode_oneshot_wait);
+                %% obtaining the handles for the
+                [res, obj.robot_joints.rollingJoint_fl] = obj.vrep.simxGetObjectHandle(obj.clientID,'rollingJoint_fl',obj.vrep.simx_opmode_oneshot_wait); %1-->1
+                [res, obj.robot_joints.rollingJoint_fr] = obj.vrep.simxGetObjectHandle(obj.clientID,'rollingJoint_fr',obj.vrep.simx_opmode_oneshot_wait); %4-->2
+                [res, obj.robot_joints.rollingJoint_rl] = obj.vrep.simxGetObjectHandle(obj.clientID,'rollingJoint_rl',obj.vrep.simx_opmode_oneshot_wait); %2-->3
+                [res, obj.robot_joints.rollingJoint_rr] = obj.vrep.simxGetObjectHandle(obj.clientID,'rollingJoint_rr',obj.vrep.simx_opmode_oneshot_wait); %3-->4
                 
             end
             
             
             %Handles for various parts of robot
-            [res(8), obj.robot_joints] = obj.vrep.simxGetObjects(obj.clientID, obj.vrep.sim_object_joint_type,obj.vrep.simx_opmode_oneshot_wait);
-            
+            if ~(strcmp(obj.robotModel,'youbot'))
+                [res(8), obj.robot_joints] = obj.vrep.simxGetObjects(obj.clientID, obj.vrep.sim_object_joint_type,obj.vrep.simx_opmode_oneshot_wait);
+            end
             %Handle for the floor
             [res(21),obj.floor] = obj.vrep.simxGetObjectHandle(obj.clientID,'DefaultFloor',obj.vrep.simx_opmode_oneshot_wait);
             
             %Intializing the Environment
             [res(20)] = obj.vrep.simxStartSimulation(obj.clientID, obj.vrep.simx_opmode_oneshot);
-            
+            pause(2);
             
             % checking for controlType
             if(obj.planner==1)
                 %                 fprintf('Enter the control mode type\nEnter "1" for Kinematic or "2" for Dynamic\n');
                 %                 mode = input('Enter Choice :');
-                fprintf('mode "2" for Dynamic\n');
-                mode = 2;
+                fprintf('mode "1" for Dynamic\n');
+                mode = 1;
                 
                 if(mode==1)
                     obj.controlType = 'kinematic';
+                    % making the robot dynamic setting
+                    nLoopToBreak = 1;
+                    while obj.vrep.simxSetModelProperty( obj.clientID, obj.robot, int32(0),obj.vrep.simx_opmode_oneshot_wait)~=obj.vrep.sim_script_no_error
+                        nLoopToBreak =nLoopToBreak+1 ;
+                        if nLoopToBreak>=10
+                            break
+                            disp('ERROR: could not make the robot dynamic')
+                        end
+                        
+                    end
+                    if nLoopToBreak<10
+                        
+                        [ errorCode]=obj.vrep.simxSetModelProperty( obj.clientID, obj.robot, int32(0),obj.vrep.simx_opmode_oneshot_wait)
+                        %making sure that the joint velocities are zero at the
+                        %beginning
+                        obj.vrep.simxPauseCommunication(obj.clientID,1); %% pause the communication temporariliy
+                        [res_fl] = obj.vrep.simxSetJointTargetVelocity(obj.clientID,  obj.robot_joints.rollingJoint_fl,0,obj.vrep.simx_opmode_oneshot);%1-->1
+                        [res_fr] = obj.vrep.simxSetJointTargetVelocity(obj.clientID,  obj.robot_joints.rollingJoint_fr, 0,obj.vrep.simx_opmode_oneshot);%4-->2
+                        [res_rl] = obj.vrep.simxSetJointTargetVelocity(obj.clientID,  obj.robot_joints.rollingJoint_rl,0,obj.vrep.simx_opmode_oneshot);%2-->3
+                        [res_rr] = obj.vrep.simxSetJointTargetVelocity(obj.clientID,  obj.robot_joints.rollingJoint_rr, 0,obj.vrep.simx_opmode_oneshot);%3-->4
+                        obj.vrep.simxPauseCommunication(obj.clientID,0); %% resume the communication
+                        
+                    end
+                    nLoopToBreak = 1;
+                    while obj.vrep.simxSetModelProperty( obj.clientID, obj.robot, obj.vrep.sim_modelproperty_not_dynamic,obj.vrep.simx_opmode_oneshot_wait)~=obj.vrep.sim_script_no_error
+                        nLoopToBreak =nLoopToBreak+1 ;
+                        if nLoopToBreak>=10
+                            break
+                            disp('ERROR: could not make the robot static')
+                        end
+                        
+                    end
+                    
+                    
+                    [res]  = obj.vrep.simxGetJointPosition(obj.clientID,obj.robot_joints.rollingJoint_fl,obj.vrep.simx_opmode_streaming);
+                    [res]  = obj.vrep.simxGetJointPosition(obj.clientID,obj.robot_joints.rollingJoint_fr,obj.vrep.simx_opmode_streaming);
+                    [res]  = obj.vrep.simxGetJointPosition(obj.clientID,obj.robot_joints.rollingJoint_rl,obj.vrep.simx_opmode_streaming);
+                    [res]  = obj.vrep.simxGetJointPosition(obj.clientID,obj.robot_joints.rollingJoint_rr,obj.vrep.simx_opmode_streaming);
+                    [res] = obj.vrep.simxGetObjectPosition(obj.clientID, obj.robot,-1, obj.vrep.simx_opmode_streaming);
+                    [res] = obj.vrep.simxGetObjectOrientation(obj.clientID, obj.robot, -1,obj.vrep.simx_opmode_streaming);
+                    
                 elseif(mode==2)
                     obj.controlType = 'dynamic';
                     %                     [res(14)] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, obj.robot_joints(2), 0,obj.vrep.simx_opmode_streaming);
@@ -224,18 +271,26 @@ classdef VRepSimulator < SimulatorInterface
             elseif (strcmp(obj.robotModel,'youbot'))
                 %                 [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[position(1),position(2), 0.0957],obj.vrep.simx_opmode_oneshot);
                 %                 [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,obj.floor,[0,0,position(3)],obj.vrep.simx_opmode_oneshot);
-                obj = obj.getRobot();
-                turn = (pi*position(3)/180) - obj.robot_orientation(3);
-                [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[position(1),position(2), 0.0957],obj.vrep.simx_opmode_oneshot);
-                [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,obj.robot,[turn,0,0],obj.vrep.simx_opmode_oneshot);
+%                 obj = obj.getRobot();
+                %                 turn = (pi*position(3)/180) - obj.robot_orientation(3);
+                %                 orientation = obj.robot_orientation(3);
+                % making the object static
+                %                 [ errorCode]=obj.vrep.simxSetModelProperty( obj.clientID, obj.robot, obj.vrep.sim_modelproperty_not_dynamic,obj.vrep.simx_opmode_oneshot_wait)
+                
+                [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[position(1),position(2), 0.0957],obj.vrep.simx_opmode_oneshot_wait);
+                [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,-1,[-pi/2,position(3),-pi/2],obj.vrep.simx_opmode_oneshot_wait);
+                % returning to dynamic setting
+                %                 [ errorCode]=obj.vrep.simxSetModelProperty( obj.clientID, obj.robot, int32(0),obj.vrep.simx_opmode_oneshot_wait)
                 
             end
         end
         
         %% Acquiring the Position of Data
         function obj = getRobot(obj)
-            [res(11),obj.robot_position] = obj.vrep.simxGetObjectPosition(obj.clientID, obj.robot,-1, obj.vrep.simx_opmode_oneshot_wait);
-            [res(12),obj.robot_orientation] = obj.vrep.simxGetObjectOrientation(obj.clientID, obj.robot, -1,obj.vrep.simx_opmode_oneshot_wait);
+            [res(11),obj.robot_position] = obj.vrep.simxGetObjectPosition(obj.clientID, obj.robot,-1, obj.vrep.simx_opmode_buffer);
+            [res(12),obj.robot_orientation] = obj.vrep.simxGetObjectOrientation(obj.clientID, obj.robot, -1,obj.vrep.simx_opmode_buffer);
+            obj.robot_position = reshape(obj.robot_position,length(obj.robot_position),1); % making sure that the vector is in column format
+            obj.robot_orientation = reshape(obj.robot_orientation,length(obj.robot_orientation),1); % making sure that the vector is in column format
         end
         
         %% Refreshing the Scene but we don't need to do this for V-Rep
@@ -280,8 +335,6 @@ classdef VRepSimulator < SimulatorInterface
                     elseif(strcmp(obj.controlType,'kinematic'))
                         
                         % Getting the joint positions
-                        [res(14),p]  = obj.vrep.simxGetJointPosition(obj.clientID,obj.robot_joints(2),obj.vrep.simx_opmode_streaming);
-                        [res(14),q]  = obj.vrep.simxGetJointPosition(obj.clientID,obj.robot_joints(3),obj.vrep.simx_opmode_streaming);
                         
                         [res(14),p]  = obj.vrep.simxGetJointPosition(obj.clientID,obj.robot_joints(2),obj.vrep.simx_opmode_buffer);
                         [res(14),q]  = obj.vrep.simxGetJointPosition(obj.clientID,obj.robot_joints(3),obj.vrep.simx_opmode_buffer);
@@ -356,14 +409,8 @@ classdef VRepSimulator < SimulatorInterface
                 elseif(strcmp(obj.robotModel,'youbot'))
                     wheelDiameter = 0.085;
                     % Converting control signals to wheel velocities
-                    obj.leftJointVelocity = 0.2;%(linear_velocity - ((obj.interWheelDistance*ang_velocity)/2))*(2/wheelDiameter);
-                    obj.rightJointVelocity = 0.2;%(linear_velocity + ((obj.interWheelDistance*ang_velocity)/2))*(2/wheelDiameter);
                     
                     if(strcmp(obj.controlType,'dynamic'))
-                        [res, rollingJoint_fl] = obj.vrep.simxGetObjectHandle(obj.clientID,'rollingJoint_fl',obj.vrep.simx_opmode_oneshot_wait); %1-->1
-                        [res, rollingJoint_fr] = obj.vrep.simxGetObjectHandle(obj.clientID,'rollingJoint_fr',obj.vrep.simx_opmode_oneshot_wait); %4-->2
-                        [res, rollingJoint_rl] = obj.vrep.simxGetObjectHandle(obj.clientID,'rollingJoint_rl',obj.vrep.simx_opmode_oneshot_wait); %2-->3
-                        [res, rollingJoint_rr] = obj.vrep.simxGetObjectHandle(obj.clientID,'rollingJoint_rr',obj.vrep.simx_opmode_oneshot_wait); %3-->4
                         
                         
                         %% Set the joint velocities
@@ -371,28 +418,35 @@ classdef VRepSimulator < SimulatorInterface
                         vel_w_fr = control(2);
                         vel_w_rl = control(3);
                         vel_w_rr = control(4);
-                        
-                        [res_fl] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, rollingJoint_fl,vel_w_fl,obj.vrep.simx_opmode_oneshot_wait);%1-->1
-                        [res_fr] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, rollingJoint_fr, vel_w_fr,obj.vrep.simx_opmode_oneshot_wait);%4-->2
-                        [res_rl] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, rollingJoint_rl,vel_w_rl,obj.vrep.simx_opmode_oneshot_wait);%2-->3
-                        [res_rr] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, rollingJoint_rr, vel_w_rr,obj.vrep.simx_opmode_oneshot_wait);%3-->4
+                        obj.vrep.simxPauseCommunication(obj.clientID,1); %% pause the communication temporariliy
+                        [res_fl] = obj.vrep.simxSetJointTargetVelocity(obj.clientID,  obj.robot_joints.rollingJoint_fl,vel_w_fl,obj.vrep.simx_opmode_oneshot_wait);%1-->1
+                        [res_fr] = obj.vrep.simxSetJointTargetVelocity(obj.clientID,  obj.robot_joints.rollingJoint_fr, vel_w_fr,obj.vrep.simx_opmode_oneshot_wait);%4-->2
+                        [res_rl] = obj.vrep.simxSetJointTargetVelocity(obj.clientID,  obj.robot_joints.rollingJoint_rl,vel_w_rl,obj.vrep.simx_opmode_oneshot_wait);%2-->3
+                        [res_rr] = obj.vrep.simxSetJointTargetVelocity(obj.clientID,  obj.robot_joints.rollingJoint_rr, vel_w_rr,obj.vrep.simx_opmode_oneshot_wait);%3-->4
+                        obj.vrep.simxPauseCommunication(obj.clientID,1); %% resume the communication
                         
                     elseif(strcmp(obj.controlType,'kinematic'))
                         
                         % Getting the joint positions
-                        [res(14),p]  = obj.vrep.simxGetJointPosition(obj.clientID,obj.robot_joints(2),obj.vrep.simx_opmode_streaming);
-                        [res(14),q]  = obj.vrep.simxGetJointPosition(obj.clientID,obj.robot_joints(3),obj.vrep.simx_opmode_streaming);
                         
-                        [res(14),p]  = obj.vrep.simxGetJointPosition(obj.clientID,obj.robot_joints(2),obj.vrep.simx_opmode_buffer);
-                        [res(14),q]  = obj.vrep.simxGetJointPosition(obj.clientID,obj.robot_joints(3),obj.vrep.simx_opmode_buffer);
+                        [res(14),rollingJoint_fl]  = obj.vrep.simxGetJointPosition(obj.clientID,obj.robot_joints.rollingJoint_fl,obj.vrep.simx_opmode_buffer);
+                        [res(14),rollingJoint_fr]  = obj.vrep.simxGetJointPosition(obj.clientID,obj.robot_joints.rollingJoint_fr,obj.vrep.simx_opmode_buffer);
+                        [res(14),rollingJoint_rl]  = obj.vrep.simxGetJointPosition(obj.clientID,obj.robot_joints.rollingJoint_rl,obj.vrep.simx_opmode_buffer);
+                        [res(14),rollingJoint_rr]  = obj.vrep.simxGetJointPosition(obj.clientID,obj.robot_joints.rollingJoint_rr,obj.vrep.simx_opmode_buffer);
+                        currentPosition = [obj.getRobot().robot_position(1);obj.getRobot().robot_position(2);obj.getRobot().robot_orientation(2)];
+                        newPosition = MotionModel_class.f_discrete(currentPosition,control,zeros(MotionModel_class.wDim,1));
                         
-                        linMov = obj.dt*linear_velocity;
-                        rotMov = obj.dt*ang_velocity;
-                        obj = obj.getRobot();
-                        xDir = [cos(obj.robot_orientation(3)),sin(obj.robot_orientation(3)),0.0];
-                        obj.robot_position(1) = obj.robot_position(1) + xDir(1)*linMov;
-                        obj.robot_position(2) = obj.robot_position(2) + xDir(2)*linMov;
-                        obj.robot_orientation(3) = obj.robot_orientation(3) + rotMov;
+                        
+                        obj.robot_position(1) = newPosition(1);
+                        obj.robot_position(2) = newPosition(2);
+                        obj.robot_orientation(3) = newPosition(3);
+                        
+                        
+                                               % Setting robot's position
+                        [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[obj.robot_position(1),obj.robot_position(2),  0.0957],obj.vrep.simx_opmode_oneshot_wait);
+                        [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,-1,[-pi/2,obj.robot_orientation(3),-pi/2],obj.vrep.simx_opmode_oneshot_wait);
+      
+                        
                         
                         % Updating the joint position with time
                         [res(16)] = obj.vrep.simxPauseCommunication(obj.clientID,1);
@@ -400,13 +454,22 @@ classdef VRepSimulator < SimulatorInterface
                         % simulataneous application of the following
                         % commands.
                         
-                        % Updating Joints' position
-                        [res(15)] = obj.vrep.simxSetJointPosition(obj.clientID,obj.robot_joints(2),(p+((obj.leftJointVelocity*obj.dt*2)/wheelDiameter)),obj.vrep.simx_opmode_oneshot);
-                        [res(15)] = obj.vrep.simxSetJointPosition(obj.clientID,obj.robot_joints(3),(q+((obj.rightJointVelocity*obj.dt*2)/wheelDiameter)),obj.vrep.simx_opmode_oneshot);
+%                         % Setting robot's position
+%                         [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[obj.robot_position(1),obj.robot_position(2),  0.0957],obj.vrep.simx_opmode_oneshot);
+%                         [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,-1,[-pi/2,obj.robot_orientation(3),-pi/2],obj.vrep.simx_opmode_oneshot);
+%                         
                         
-                        % Setting robot's position
-                        [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[obj.robot_position(1),obj.robot_position(2), 0.1517],obj.vrep.simx_opmode_oneshot);
-                        [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,-1,[0,0,obj.robot_orientation(3)],obj.vrep.simx_opmode_oneshot);
+                        % Updating Joints' position
+                        vel_w_fl = control(1);
+                        vel_w_fr = control(2);
+                        vel_w_rl = control(3);
+                        vel_w_rr = control(4);
+                        [res(15)] = obj.vrep.simxSetJointPosition(obj.clientID,obj.robot_joints.rollingJoint_fl,(rollingJoint_fl+((vel_w_fl*obj.dt*2)/wheelDiameter)),obj.vrep.simx_opmode_oneshot);
+                        [res(15)] = obj.vrep.simxSetJointPosition(obj.clientID,obj.robot_joints.rollingJoint_fr,(rollingJoint_fr+((vel_w_fr*obj.dt*2)/wheelDiameter)),obj.vrep.simx_opmode_oneshot);
+                        [res(15)] = obj.vrep.simxSetJointPosition(obj.clientID,obj.robot_joints.rollingJoint_rl,(rollingJoint_rl+((vel_w_rl*obj.dt*2)/wheelDiameter)),obj.vrep.simx_opmode_oneshot);
+                        [res(15)] = obj.vrep.simxSetJointPosition(obj.clientID,obj.robot_joints.rollingJoint_rr,(rollingJoint_rr+((vel_w_rr*obj.dt*2)/wheelDiameter)),obj.vrep.simx_opmode_oneshot);
+                        
+                        
                         [res(16)] = obj.vrep.simxPauseCommunication(obj.clientID,0);% Resuming communication between MATLAB and V-rep
                     end
                     

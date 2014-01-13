@@ -127,7 +127,7 @@ classdef FIRM_graph_interface
             % in the following we plot the feedback pi on the graph.
             selected_nodes = user_data_class.par.selected_nodes_for_plotting_feedback_pi;
 %             if ~isempty(selected_nodes )
-            obj.plot_handle_feedback_pi = obj.PRM.draw_feedback_pi(obj.feedback_pi, obj.Edges, selected_nodes);
+%             obj.plot_handle_feedback_pi = obj.PRM.draw_feedback_pi(obj.feedback_pi, obj.Edges, selected_nodes);
 %             end
         end
     end
