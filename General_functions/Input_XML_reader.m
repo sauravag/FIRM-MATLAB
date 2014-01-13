@@ -227,7 +227,7 @@ par_new.alpha_for_HBRM_cost = [0.01,0.1,1]; % respectively, corresponding to "st
 %=========== Roadmap Type and Construction
 par_new.RoadMap = 'FIRM'; % This parameter can be HBRM or FIRM
 par_new.No_history = 1;
-par_new.No_plot = 0; % this is for plots in construction phase. The execution phase plots are different.
+par_new.No_plot = 1; % this is for plots in construction phase. The execution phase plots are different.
 
 %=========== PRM parameters
 

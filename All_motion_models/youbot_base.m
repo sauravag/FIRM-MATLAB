@@ -9,7 +9,7 @@ classdef youbot_base < MotionModel_interface
         zeroControl = zeros(youbot_base.ctDim,1);
         zeroNoise = zeros(youbot_base.wDim,1);
         dt = user_data_class.par.motion_model_parameters.dt;
-        l1 = 0.158*2; % (meter) distance between right and left wheel 
+        l1 = 0.1585*2; % (meter) distance between right and left wheel 
         l2 =  0.228*2; % (meter) distance between front and rear wheel
         vMax = 0.8 % m/s maximum speed for individual wheels and max base velocity
         sigma_b_u = user_data_class.par.motion_model_parameters.sigma_b_u_KukaBase;
@@ -47,11 +47,11 @@ classdef youbot_base < MotionModel_interface
             gama1= 2/(youbot_base.l2-youbot_base.l1);
             B     = (1/4)*[-1      1      1      -1;...
                            1       1      1      1;...
-                           gama1 -gama1 gama1 -gama1]; %% this is the B for the continous system 
+                           gama1 -gama1 gama1 -gama1]*youbot_base.dt; %% this is the B for the continous system 
             end
         function G = df_dw_func(x,u,w) %#ok<INUSD>
             B = youbot_base.df_du_func(x,u,w);
-            G = [B*youbot_base.dt,eye(youbot_base.stDim)]*sqrt(youbot_base.dt); % this calculation is for the discrete system
+            G = [B,eye(youbot_base.stDim)]*sqrt(youbot_base.dt); % this calculation is for the discrete system
         end
         function w = generate_process_noise(x,u) %#ok<INUSD>
             [Un,Wg] = generate_control_and_indep_process_noise(u);
@@ -64,12 +64,12 @@ classdef youbot_base < MotionModel_interface
         function nominal_traj = generate_open_loop_point2point_traj(X_initial,X_final) % generates open-loop trajectories between two start and goal states
             if isa(X_initial,'state'), X_initial=X_initial.val; end % retrieve the value of the state vector
             if isa(X_final,'state'), X_final=X_final.val; end % retrieve the value of the state vector
-            B = youbot_base.df_du_func(0,0,0); %% B matrix in the youbot robot does not depend on current state or input
-            youbot_base.dt;
-            deltaX = X_final - X_initial;
+            B = youbot_base.df_du_func(0,0,0)/youbot_base.dt;; %% B matrix in the youbot robot does not depend on current state or input
+            
+            deltaX = abs(X_final - X_initial);
             
             t_interval = 0.8*max(deltaX)/youbot_base.vMax; % we move by 80 percent of the maxmimum velocity
-            kf = t_interval/ youbot_base.dt; % number of steps needed to follow the trajectory 
+            kf = ceil(t_interval/ youbot_base.dt); % number of steps needed to follow the trajectory 
             uStar = (1/t_interval)*B'*inv(B*B')*deltaX;  %  
             
             %=====================Nominal control and state trajectory generation
@@ -81,6 +81,7 @@ classdef youbot_base < MotionModel_interface
             for k = 1:kf
                 u_p(:,k) = uStar;  % "T_inv_k" maps the "velocities in body coordinate" to the control signal
                 x_p(:,k+1) = youbot_base.f_discrete(x_p(:,k),u_p(:,k) ,zeros(youbot_base.wDim,1)); % generaating the trajectory 
+
             end
             
             % noiselss motion  % for debug: if you uncomment the following
@@ -97,71 +98,24 @@ classdef youbot_base < MotionModel_interface
         function nominal_traj = generate_VALID_open_loop_point2point_traj(X_initial,X_final) % generates open-loop trajectories between two start and goal states
             if isa(X_initial,'state'), X_initial=X_initial.val; end % retrieve the value of the state vector
             if isa(X_final,'state'), X_final=X_final.val; end % retrieve the value of the state vector
-            % parameters
-            omega_path=user_data_class.par.motion_model_parameters.omega_const_path; % constant rotational velocity during turnings
-            dt=youbot_base.dt;
-            V_path=user_data_class.par.motion_model_parameters.V_const_path; % constant translational velocity during straight movements
-            stDim = youbot_base.stDim;
-            ctDim=youbot_base.ctDim;
-            r=youbot_base.robot_link_length;
+            B = youbot_base.df_du_func(0,0,0)/ youbot_base.dt;; %% B matrix in the youbot robot does not depend on current state or input
+           
+            deltaX = abs(X_final - X_initial);
             
-            th_p = atan2( X_final(2)-X_initial(2)  ,  X_final(1)-X_initial(1)  ); % the angle of edge % note that "th_p" is already between -pi and pi, since it is the output of "atan2"
-            %-------------- Rotation number of steps
-            if abs(X_initial(3))>pi, X_initial(3)=(X_initial(3)-sign(X_initial(3))*2*pi); end % Here, we bound the initial angle "X_initial(3)" between -pi and pi
-            if abs(X_final(3))>pi, X_final(3)=(X_final(3)-sign(X_final(3)*2*pi)); end % Here, we bound the final angle "X_final(3)" between -pi and pi
-            delta_th_p = X_final(3) - X_initial(3); % turning angle
-            if abs(delta_th_p)>pi, delta_th_p=(delta_th_p-sign(delta_th_p)*2*pi); end % Here, we bound "pre_delta_th_p" between -pi and pi
-            rotation_steps = abs( delta_th_p/(omega_path*dt) );
-            %--------------Translation number of steps
-            delta_disp = norm( X_final(1:2) - X_initial(1:2) );
-            translation_steps = abs(delta_disp/(V_path*dt));
-            %--------------Total number of steps
-            kf_rational = max([rotation_steps , translation_steps]);
-            kf = floor(kf_rational)+1;  % note that in all following lines you cannot replace "floor(something)+1" by "ceil(something)", as it may be  a whole number.
-            
-            %=====================Rotation steps of the path
-            delta_theta_const = omega_path*sign(delta_th_p)*dt;
-            delta_theta_nominal(: , 1:floor(rotation_steps)) =  repmat( delta_theta_const , 1 , floor(rotation_steps));
-            delta_theta_const_end = omega_path*sign(delta_th_p)*dt*(rotation_steps-floor(rotation_steps));
-            delta_theta_nominal(:,floor(rotation_steps)+1) = delta_theta_const_end; % note that you cannot replace "floor(pre_rotation_steps)+1" by "ceil(pre_rotation_steps)", as it may be  a whole number.
-            delta_theta_nominal = [delta_theta_nominal , zeros(1 , kf - size(delta_theta_nominal,2))]; % augment zeros to the end of "delta_theta_nominal", to make its length equal to "kf".
-            
-%             u_const = ones(3,1)*r*omega_path*sign(delta_th_p);
-%             u_p_rot(: , 1:floor(rotation_steps)) = repmat( u_const,1,floor(rotation_steps) );
-%             u_const_end = ones(3,1)*r*omega_path*sign(delta_th_p)*(rotation_steps-floor(rotation_steps));
-%             u_p_rot(:,floor(rotation_steps)+1)=u_const_end; % note that you cannot replace "floor(pre_rotation_steps)+1" by "ceil(pre_rotation_steps)", as it may be  a whole number.
-            
-            %=====================Translations
-             delta_xy_const = [V_path*cos(th_p);V_path*sin(th_p)]*dt;
-             delta_xy_nominal( : , 1:floor(translation_steps) ) = repmat( delta_xy_const , 1 , floor(translation_steps));
-             delta_xy_const_end = [V_path*cos(th_p);V_path*sin(th_p)]*dt*(translation_steps - floor(translation_steps));
-             delta_xy_nominal( : , floor(translation_steps)+1 ) = delta_xy_const_end;
-            delta_xy_nominal = [delta_xy_nominal , zeros(2 , kf - size(delta_xy_nominal,2))]; % augment zeros to the end of "delta_xy_nominal", to make its length equal to "kf".
-            
-            
-            delta_state_nominal = [delta_xy_nominal;delta_theta_nominal];
+            t_interval = 0.8*max(deltaX)/youbot_base.vMax; % we move by 80 percent of the maxmimum velocity
+            kf = ceil(t_interval/ youbot_base.dt); % number of steps needed to follow the trajectory 
+            uStar = (1/t_interval)*B'*inv(B*B')*deltaX;  %  
             
             %=====================Nominal control and state trajectory generation
-            x_p = zeros(stDim,kf+1);
-            theta = zeros(1,kf+1);
-            u_p = zeros(stDim,kf);
+            x_p = zeros(youbot_base.stDim,kf+1);
+            u_p = zeros(youbot_base.ctDim,kf);
             
             x_p(:,1) = X_initial;
-            theta(1) = X_initial(3);
+           
             for k = 1:kf
-                theta(:,k+1) = theta(:,k) + delta_state_nominal(3,k);
-                th_k = theta(:,k);
-                T_inv_k = [-sin(th_k),     cos(th_k)       ,r;
-                 -sin(pi/3-th_k),-cos(pi/3-th_k) ,r;
-                 sin(pi/3+th_k) ,-cos(pi/3+th_k) ,r];
-             
-                delta_body_velocities_k = delta_state_nominal(:,k)/dt; % x,y,and theta velocities in body coordinate at time step k
-                u_p(:,k) = T_inv_k*delta_body_velocities_k;  % "T_inv_k" maps the "velocities in body coordinate" to the control signal
-             
-                x_p(:,k+1) = x_p(:,k) + delta_state_nominal(:,k);
-                %                 tmp.draw(); % FOR DEBUGGING
-                tmp = state(x_p(:,k+1)); if tmp.is_constraint_violated, nominal_traj =[]; return; end
-            
+                u_p(:,k) = uStar;  % "T_inv_k" maps the "velocities in body coordinate" to the control signal
+                x_p(:,k+1) = youbot_base.f_discrete(x_p(:,k),u_p(:,k) ,zeros(youbot_base.wDim,1)); % generaating the trajectory 
+%                 tmp = state(x_p(:,k+1)); if tmp.is_constraint_violated(), nominal_traj =[]; return; end
             end
             
             % noiselss motion  % for debug: if you uncomment the following

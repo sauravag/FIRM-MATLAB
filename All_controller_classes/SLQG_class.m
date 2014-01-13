@@ -7,6 +7,7 @@ classdef SLQG_class < LQG_interface
         lnr_sys;
         
         Big_lnr_sys;
+        Stationary_belief;
         Stationary_Gaussian_Hb;
     end
     
@@ -56,6 +57,21 @@ classdef SLQG_class < LQG_interface
                 obj.Stationary_Gaussian_Hb = stationGHb_val; % This line works because the class is a subclass of the "handle" class. Otherwise, we had to output the "obj".
             else
                 stationGHb_val = obj.Stationary_Gaussian_Hb;
+            end
+        end
+        function stationary_belief_val = get.Stationary_belief(obj)
+            error('This function has not been changed from periodic to stationary yet')
+            % the property "periodic_belief" is computed only once, the
+            % first time it is needed.
+            if isempty(obj.periodic_belief)
+                periodic_belief_val = belief.empty;
+                periodic_pest = obj.estimator.periodicCov;
+                for k = 1 : obj.T
+                    periodic_belief_val(k) = belief( state(obj.lnr_pts(k).x) , periodic_pest(:,:,k) );
+                end
+                obj.periodic_belief = periodic_belief_val; % this line works because the class is a subclass of the "handle" class. otherwise, we had to output the "obj".
+            else
+                periodic_belief_val = obj.periodic_belief;
             end
         end
         function [next_Hstate, reliable] = propagate_Hstate(obj,old_Hstate,noise_mode)
