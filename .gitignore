@@ -1,5 +1,6 @@
 Top_runs/
-output/
+output/current_parameters.mat
+output/Constructed_FIRM.mat
 *.asv
 *.pdf
 All_state_classes/state.m
