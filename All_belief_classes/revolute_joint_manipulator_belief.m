@@ -1,9 +1,9 @@
-classdef revolute_joint_manipulator_belief < belief_interface
+classdef revolute_joint_manipulator_belief < Gaussian_belief_interface
     % This class encapsulates the Gaussian belief concept.
 
     methods
         function obj = revolute_joint_manipulator_belief(varargin)
-            obj = obj@belief_interface(varargin{:});
+            obj = obj@Gaussian_belief_interface(varargin{:});
         end
         function obj = draw(obj, varargin)
             % The full list of properties for this function is:
