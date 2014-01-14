@@ -37,13 +37,6 @@ par_new.sim.initialZoomRatio = 1.2;%2.5;
 par_new.sim.verboseFlag = 1; % (0: suppresses the inermediate code messages intended for debugging purposes | 1: simulator will display messages  )
 
 %=========== Motion Model Parameters
-warning('off', 'MATLAB:rmpath:DirNotFound'); % In the next line when we remove the paths, some warning may occur, if those path does not exist. So, we supress that warning here.
-rmpath( genpath('All_state_classes')); % This line remove all paths below the "All_state_classes" directory, which have been possibly added in the last run of the program.
-addpath('All_state_classes'); % However, we still want the "All_state_classes" folder path to be on the Matlab path (Not its subdirectories though).
-rmpath( genpath('All_belief_classes')); % This line remove all paths below the "All_belief_classes" directory, which have been possibly added in the last run of the program.
-addpath('All_belief_classes'); % However, we still want the "All_belief_classes" folder path to be on the Matlab path (Not its subdirectories though).
-rmpath( genpath('All_motion_models')); % This line remove all paths below the "All_motion_models" directory, which have been possibly added in the last run of the program.
-addpath('All_motion_models'); % However, we still want the "All_motion_models" folder path to be on the Matlab path (Not its subdirectories though).
 if strcmpi(par_new.selected_motion_model,'Multi RandomWalk robots')
     typeDef('multi_robot_positional_state' , 'state')
     typeDef('multi_robot_positional_belief' , 'belief')
@@ -85,9 +78,6 @@ end
 [par_new.motion_model_parameters , par_new.state_parameters] = gather_state_and_motion_model_parameters(old_par, par_new.selected_motion_model);
 
 %=========== Observation Model Parameters
-warning('off', 'MATLAB:rmpath:DirNotFound'); % In the next line when we remove the paths, some warning may occur, if those path does not exist. So, we supress that warning here.
-rmpath( genpath('All_observation_models')); % This line remove all paths below the "All_observation_models" directory, which have been possibly added in the last run of the program.
-addpath('All_observation_models'); % However, we still want the "All_observation_models" folder path to be on the Matlab path (Not its subdirectories though).
 if strcmpi(par_new.selected_observation_model,'Three robot good-poor GPS no comm')
         typeDef('Three_robot_good_poor_GPS_no_comm','ObservationModel_class')
 elseif strcmpi(par_new.selected_observation_model,'Three robot good-poor GPS with comm')

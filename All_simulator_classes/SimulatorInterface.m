@@ -27,5 +27,7 @@ classdef SimulatorInterface
         obj = simStop(obj)  
         % evolve : evolve robot
         x_new = evolve(u)
+        % reocrd video
+        obj = recordVideo(obj)  
     end
 end

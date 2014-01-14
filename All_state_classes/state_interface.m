@@ -40,15 +40,12 @@ classdef state_interface
         end
         function distance_for_control = compute_distance_for_control(obj,x2)
             distance_for_control = obj.signed_element_wise_dist(x2);
-<<<<<<< Updated upstream
         end
     end
     
      methods (Static)
         function origin = SpaceOrigin()
             origin = zeros(state.dim,1); % note that the "state" class will be generated on the fly (using TypeDef) function.
-=======
->>>>>>> Stashed changes
         end
     end
     

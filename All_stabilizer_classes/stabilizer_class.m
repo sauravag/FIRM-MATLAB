@@ -1,5 +1,3 @@
- % This is a dummy class. It is ''typedefed'' from the oringinal class ''Point_stabilizer_SLQG_class''.
-% If you want to make any changes you need to change the original class.
 classdef stabilizer_class < Stabilizer_interface
     % Point_stabilizer_SLQG_class encapsulates the belief point stabilizer
     % concept in FIRM node, which is implemented using stationary LQG
@@ -212,5 +210,4 @@ classdef stabilizer_class < Stabilizer_interface
             end
         end
     end
-end % This is a dummy class. It is ''typedefed'' from the oringinal class ''Point_stabilizer_SLQG_class''.
-% If you want to make any changes you need to change the original class.
+end

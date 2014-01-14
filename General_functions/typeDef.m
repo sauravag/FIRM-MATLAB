@@ -16,9 +16,9 @@ modified_text_content = strrep(modified_text_content, ['''', old_type, ''''], ['
 %TextEndOfEachLine = sprintf([' %% =====']);
 %modified_text_content = strrep(modified_text_content, sprintf('\n  '), TextEndOfEachLine); % To put the above text at the end of each line in this file.
 
-TextBeginningOfFile = sprintf([' %% This is a dummy class. It is ''''typedefed'''' from the oringinal class ''''', old_type, '''''.\n%% If you want to make any changes you need to change the original class.\n']);
-TextEndOfFile = sprintf([' %% This is a dummy class. It is ''''typedefed'''' from the oringinal class ''''', old_type, '''''.\n%% If you want to make any changes you need to change the original class.\n']);
-modified_text_content = [TextBeginningOfFile, modified_text_content, TextEndOfFile];
+% TextBeginningOfFile = sprintf([' %% This is a dummy class. It is ''''typedefed'''' from the oringinal class ''''', old_type, '''''.\n%% If you want to make any changes you need to change the original class.\n']);
+% TextEndOfFile = sprintf([' %% This is a dummy class. It is ''''typedefed'''' from the oringinal class ''''', old_type, '''''.\n%% If you want to make any changes you need to change the original class.\n']);
+% modified_text_content = [TextBeginningOfFile, modified_text_content, TextEndOfFile];
 
 new_file_id = fopen(new_file_address,'w');
 fwrite(new_file_id, modified_text_content);
