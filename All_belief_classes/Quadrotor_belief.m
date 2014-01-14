@@ -1,9 +1,9 @@
-classdef Quadrotor_belief < belief_interface
+classdef Quadrotor_belief < Gaussian_belief_interface
     % This class encapsulates the Gaussian belief concept.
 
     methods
         function obj = Quadrotor_belief(varargin)
-            obj = obj@belief_interface(varargin{:});
+            obj = obj@Gaussian_belief_interface(varargin{:});
         end
         function obj = draw(obj, varargin)
         end
