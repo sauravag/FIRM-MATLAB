@@ -83,7 +83,10 @@ classdef VRepSimulator < SimulatorInterface
             fprintf('Simulation Ended\n');
         end
         
-        
+        function obj = recordVideo(obj)
+        end
+        function obj = checkCollision(obj)
+        end
         %% Setting up the environment
         function obj = initialize(obj)
             % Transfer the .obj file (take the path from .obj file generator)

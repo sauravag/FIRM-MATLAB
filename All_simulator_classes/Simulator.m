@@ -1,5 +1,3 @@
- % This is a dummy class. It is ''typedefed'' from the oringinal class ''EmbeddedSimulator''.
-% If you want to make any changes you need to change the original class.
 classdef Simulator < SimulatorInterface
     properties
         sceneHierarchy %% an structure containing Scene Hierarchy (objects in the scene like floor , walls) and their children and properties
@@ -67,12 +65,17 @@ classdef Simulator < SimulatorInterface
         end
         % SetRobot : change robot parameters
         function obj = setRobot(obj,robot)
+            
             if ~isfield(obj.robot,'plot_handle') || isempty(obj.robot.plot_handle) % if this is empty, it shows that the robot field is not initialized yet or we have deleted
                 % its handle that is we want to dreaw ir wirh a new handle
+                if ~isa(robot, 'state'), robot = state(robot); end
+
                 obj.robot = robot;
             else
                 % otherwose just update the value
-                obj.robot.val = robot.val;
+                if ~isa(robot, 'state'), newVal = state(robot); end
+
+                obj.robot.val = newVal.val;
             end
         end
         % GetRobot : get robot parameters
@@ -83,8 +86,8 @@ classdef Simulator < SimulatorInterface
         function obj = refresh(obj)
             obj.robot = obj.robot.delete_plot();
             obj.robot = obj.robot.draw();
-%             obj.belief = obj.belief.delete_plot();
-%             obj.belief = obj.belief.draw();
+            %             obj.belief = obj.belief.delete_plot();
+            %             obj.belief = obj.belief.draw();
         end
         function b = getBelief(obj)
             b=obj.belief;
@@ -109,7 +112,7 @@ classdef Simulator < SimulatorInterface
             if nargin==3
                 noiseMode = varargin{1};
             else
-                noiseMode = 1; % by default we add noise 
+                noiseMode = 1; % by default we add noise
             end
             if noiseMode
                 w = MotionModel_class.generate_process_noise(obj.robot.val,u);
@@ -157,5 +160,3 @@ classdef Simulator < SimulatorInterface
     end
     
 end
- % This is a dummy class. It is ''typedefed'' from the oringinal class ''EmbeddedSimulator''.
-% If you want to make any changes you need to change the original class.

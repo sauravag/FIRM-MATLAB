@@ -82,7 +82,6 @@ classdef Finite_time_LQG_class < LQG_interface
             
             % True state propagation
             next_Xg_val = MotionModel_class.f_discrete(Xg.val,u,w);
-            
             % generating observation noise
             if ~exist('noise_mode','var')
                 Vg = ObservationModel_class.generate_observation_noise(next_Xg_val);

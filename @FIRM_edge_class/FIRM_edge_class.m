@@ -79,11 +79,11 @@ classdef FIRM_edge_class
                 % propagation of GHb (only meaningful for when the filter is LKF)
                 
                 obj.GHb_seq(k+1) = obj.edge_controller.propagate_Hb_Gaussian(obj.GHb_seq(k),k);
-%                 if ~user_data_class.par.No_plot
-                    %                     obj.GHb_seq(k+1) = obj.GHb_seq(k+1).draw();
-                    %                     obj.GHb_seq(k) = obj.GHb_seq(k).delete_plot();
-                    %                     drawnow
-%                 end
+                %                 if ~user_data_class.par.No_plot
+                %                     obj.GHb_seq(k+1) = obj.GHb_seq(k+1).draw();
+                %                     obj.GHb_seq(k) = obj.GHb_seq(k).delete_plot();
+                %                     drawnow
+                %                 end
                 
                 if (user_data_class.par.sim.video == 1 && ~user_data_class.par.No_plot)
                     global vidObj; %#ok<TLEV>
@@ -114,38 +114,35 @@ classdef FIRM_edge_class
                 disp('Here, we have to delete the data inside the "edge_controller" object to free the memory.')
             end
         end
-        function [next_Hstate, lost, YesNo_unsuccessful, landed_node_ind] = execute(obj,init_hstate)
+        function [next_belief, lost, YesNo_unsuccessful, landed_node_ind] = execute(obj,sim,init_belief)
             % This function executes the feedback plan for a single robot (hstate). Also, in case the "replanning flag" is turned on by the user, then if it
             % deviates from the nominal path significantly, the function
             % returns "lost = 1".
             
-            current_Hstate = init_hstate;
+            current_belief = init_belief;
             xlabel(['Edge controller of edge ',num2str(obj.number),' starting from node ',num2str(obj.start_node.number),' is working']);
             % edge part
             draw_at_every_n_steps = user_data_class.par.sim.draw_at_every_n_steps;
             for k = 1 : obj.kf
                 % propagation of a single robot (or an Hstate)
                 k
+                noiseFlag =1;
+                
+                [nextBelief, reliable,sim] = obj.edge_controller.executeOneStep(init_belief,sim,noiseFlag);
+                
                 if user_data_class.par.replanning == 1
-                    [next_Hstate, in_lnr_reg] = obj.edge_controller.propagate_Hstate(current_Hstate,k);
-                    lost = ~in_lnr_reg;
+                    lost = ~reliable;
                 else
-                    next_Hstate = obj.edge_controller.propagate_Hstate(current_Hstate,k);
                     lost = 0;
                 end
-                next_Hstate.Xg = obj.apply_disturbance(next_Hstate.Xg); % this function applies the disturbance on the "Xg", if mouse is clicked on the axes.
                 if mod(k,draw_at_every_n_steps)==0
-                    next_Hstate = next_Hstate.draw();
+%                     sim = sim.setBelief(nextBelief);
+                    sim = sim.refresh();
                 end
-                current_Hstate = current_Hstate.delete_plot();
-                drawnow
                 if mod(k,draw_at_every_n_steps)==0
                     % making video of run-time simulation
-                    if user_data_class.par.sim.video == 1
-                        global vidObj; %#ok<TLEV>
-                        currFrame = getframe(gcf);
-                        writeVideo(vidObj,currFrame);
-                    end
+                    % 
+                    sim = sim.recordVideo();
                 end
                 % collision check
                 YesNo_unsuccessful = current_Hstate.Xg.is_constraint_violated();
@@ -232,11 +229,11 @@ classdef FIRM_edge_class
                 last_click_position = current_click_position;
             end
             persistent delete_ali
-                if isempty(delete_ali), delete_ali = 1; else, delete_ali = delete_ali + 1; 
-                end
-                if delete_ali<15
-%                 disturbed_Xg.val = [disturbed_Xg.val(1)+rand*1;disturbed_Xg.val(2)-rand*1;delete_ali*2*pi/180];  % I add this to prepare an specific disturbance for the needle steering procedure. You have to remove it.
-                end
+            if isempty(delete_ali), delete_ali = 1; else, delete_ali = delete_ali + 1;
+            end
+            if delete_ali<15
+                %                 disturbed_Xg.val = [disturbed_Xg.val(1)+rand*1;disturbed_Xg.val(2)-rand*1;delete_ali*2*pi/180];  % I add this to prepare an specific disturbance for the needle steering procedure. You have to remove it.
+            end
         end
         function edge_drawing_handle = draw_nominal_traj(obj)
             error('not yet implemented');
