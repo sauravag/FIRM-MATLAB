@@ -139,7 +139,7 @@ classdef Simulator < SimulatorInterface
             % constructing ground truth observation
             z = ObservationModel_class.h_func(obj.robot.val,v);
         end
-        function isCollided = checkCollision()
+        function isCollided = checkCollision(obj)
             isCollided = 0;
         end
         

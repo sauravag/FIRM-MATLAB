@@ -26,8 +26,14 @@ startBelief = belief(startNode.val, eye(state.dim));
 % design stabilizer for the target node
 controller = SLQG_class(targetNode);
 
+b_init=belief(startNode,eye(state.dim))
+
+sim = sim.setRobot(startNode)
 stab_b = Point_stabilizer_SLQG_class(targetNode);
- [next_belief, lost, YesNo_unsuccessful, landed_node_ind, sim] = stab_b.execute(startBelief, 0, sim, 0);
+stab_b = construct_reachable_FIRM_nodes(stab_b)
+[next_belief, lost, YesNo_unsuccessful, landed_node_ind, sim] = stab_b.execute( b_init, 0, sim, 0)
+% [next_belief, lost, YesNo_unsuccessful, landed_node_ind, sim] = execute(obj, current_belief, convergence_time, sim, noiseFlag)
+% stab_b.execute(
 
 prob_inst = Planning_Problem(sim);
 prob_inst = prob_inst.solve();
