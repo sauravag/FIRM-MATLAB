@@ -1,7 +1,7 @@
 clear classes;clear variables;close all;clc;
 
 %% Add FIRM toolbox to the Matlab path
-addpath('C:\Ali\Dropbox\GIT_FIRM\FIRM-MATLAB')
+addpath(genpath('C:\Ali\Dropbox\GIT_FIRM\FIRM-MATLAB'))
 add_external_toolboxes()
 
 %% Parameters
@@ -21,15 +21,13 @@ startNode = state.sample_a_valid_state();
 startNode = startNode.draw();
 targetNode = state.sample_a_valid_state();
 targetNode = targetNode.draw();
+% start Belief
+startBelief = belief(startNode.val, eye(state.dim));
 % design stabilizer for the target node
 controller = SLQG_class(targetNode);
 
-
-
-
 stab_b = Point_stabilizer_SLQG_class(targetNode);
-
-% stab_b.execute(
+ [next_belief, lost, YesNo_unsuccessful, landed_node_ind, sim] = stab_b.execute(startBelief, 0, sim, 0);
 
 prob_inst = Planning_Problem(sim);
 prob_inst = prob_inst.solve();
