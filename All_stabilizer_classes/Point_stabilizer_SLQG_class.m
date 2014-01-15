@@ -129,7 +129,7 @@ classdef Point_stabilizer_SLQG_class < Stabilizer_interface
             lost = 0; % initialization % only needed if the "replanning flag" is turned on by user.
             while ~stop_flag
                 disp(['Step ',num2str(k),' of point stabilizer ',num2str(obj.stabilizer_number),'. convergence time is ',num2str(convergence_time),'.']);
-                [next_belief, sim] = obj.controller.executeOneStep(current_belief, sim, noiseFlag);
+                [next_belief,reliable, sim] = obj.controller.executeOneStep(current_belief, sim, noiseFlag);
                 if obj.par.draw_cov_centered_on_nominal == 1 % in this case, we do NOT draw estimation covariance centered at estimation mean. BUT we draw estimation covariance centered at nominal state locations, to illustrate the covariance convergence.
                     nominal_x = obj.PRM_node;
                     next_belief = next_belief.draw_CovOnNominal(nominal_x);
@@ -141,9 +141,9 @@ classdef Point_stabilizer_SLQG_class < Stabilizer_interface
                 if user_data_class.par.replanning == 1
                     % Here, we check if we lie in the valid linearization
                     % region of node controller or not
-            
+                    
                     signed_elem_wise_difference = next_belief.est_mean.signed_element_wise_dist(obj.PRM_node);
-
+                    
                     is_in_end_node_lnr_domain = all(abs(signed_elem_wise_difference) < user_data_class.par.valid_linearization_domain); % never forget the "absolute value operator" in computing distances.
                     lost = ~is_in_end_node_lnr_domain;
                 else
@@ -153,7 +153,7 @@ classdef Point_stabilizer_SLQG_class < Stabilizer_interface
                 candidate_FIRM_node = obj.reachable_FIRM_nodes; % In this "class", we only have a single reachable node, so we put it in "candidate_FIRM_node".
                 YesNo_reached = candidate_FIRM_node.is_reached(next_belief); % Here, we check if the belief enters the stopping region or not.
                 YesNo_timeout = (k+1-convergence_time > obj.par.max_stopping_time);
-                YesNo_collision = sim.collision();
+                YesNo_collision = sim.checkCollision();
                 stop_flag = YesNo_reached || YesNo_timeout || YesNo_collision || lost;
                 if show_just_once == 1 % we do not want to update the xlabel at each step.
                     xlabel('Stabilizer is driving the belief to the FIRM node...')
@@ -162,11 +162,7 @@ classdef Point_stabilizer_SLQG_class < Stabilizer_interface
                 end
                 drawnow
                 % making a video of runtime
-                if user_data_class.par.sim.video == 1
-                    global vidObj; %#ok<TLEV>
-                    currFrame = getframe(gcf);
-                    writeVideo(vidObj,currFrame);
-                end
+                sim = sim.recordVideo();
                 % update the ensemble and GHb
                 current_belief = next_belief;
                 k = k+1;
