@@ -5,15 +5,15 @@ classdef user_data_class < handle
 end
 
 function par_new = call_GUI_helper_function()
-MainFolderAddress = fullfile(fileparts(which('Main.m')));
-addpath(genpath(MainFolderAddress));
+ToolboxAddress = fullfile(fileparts(which('info.xml')));
+addpath(genpath(ToolboxAddress));
 %List_of_folders = dir (fullfile(MainFolderAddress,'output')); % provides the list of folders in the output directory.
 %last_folder_name = List_of_folders(end).name;  % retrieves the name of last saved folder, which contains the parameteres of last run of program.
 global New_LoadFileName; % This is defined as a global variable and the "user_GUI" will have access to that.
-if exist(fullfile(MainFolderAddress,'output','current_parameters.mat'))
-    New_LoadFileName = fullfile(MainFolderAddress,'output','current_parameters.mat'); % The name of file, from which we want to load the parameters.
+if exist(fullfile(ToolboxAddress,'output','current_parameters.mat'))
+    New_LoadFileName = fullfile(ToolboxAddress,'output','current_parameters.mat'); % The name of file, from which we want to load the parameters.
 else
-    New_LoadFileName = fullfile(MainFolderAddress,'output','default_parameters.mat'); % The name of file, from which we want to load the parameters.
+    New_LoadFileName = fullfile(ToolboxAddress,'output','default_parameters.mat'); % The name of file, from which we want to load the parameters.
 end
 load(New_LoadFileName,'par')
 old_par = par;
@@ -30,7 +30,7 @@ if ~strcmpi(OkCancel,'Cancel') % if the user press Ok button
     par_new.Cancel_Run = par_new_from_GUI.Cancel_Run;
 %     par_new.output_directory = new_output_directory;
 %     par_new.environmentFile = fullfile(fileparts(which('Main.m')),'Environment_Construction','environment_forth_floor.obj');
-    par_new.environmentFile = fullfile(MainFolderAddress,'output','obstacle_map.obj');
+    par_new.environmentFile = fullfile(ToolboxAddress,'output','obstacle_map.obj');
     %par_new.SaveFileName = fullfile(par_new.output_directory,'parameters.mat');
     par_new.SaveFileName = New_LoadFileName;
     

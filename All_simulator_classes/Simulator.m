@@ -6,6 +6,7 @@ classdef Simulator < SimulatorInterface
         obstacle
         simulatorName = 'Embedded';
         belief
+        videoObj
     end
     
     methods
@@ -41,12 +42,12 @@ classdef Simulator < SimulatorInterface
             
             % video making
             if obj.par.video == 1;
-                global vidObj; %#ok<TLEV>
                 [file,path] = uiputfile('OnlinePhaseVideo.avi','Save the runtime video as');
                 vidObj = VideoWriter(fullfile(path,file));
                 vidObj.Quality = obj.par.video_quality;
                 vidObj.FrameRate = obj.par.FrameRate;
                 open(vidObj);
+                obj.videoObj = vidObj;
             end
             %obj = Environment_construction(obj); % Construct the environment (obstacles, landmarks, PRM)
             if ~strcmpi(obj.par.env_background_image_address,'none') % check to see if the environment has any background picuture or not
@@ -69,12 +70,12 @@ classdef Simulator < SimulatorInterface
             if ~isfield(obj.robot,'plot_handle') || isempty(obj.robot.plot_handle) % if this is empty, it shows that the robot field is not initialized yet or we have deleted
                 % its handle that is we want to dreaw ir wirh a new handle
                 if ~isa(robot, 'state'), robot = state(robot); end
-
+                
                 obj.robot = robot;
             else
                 % otherwose just update the value
                 if ~isa(robot, 'state'), newVal = state(robot); end
-
+                
                 obj.robot.val = newVal.val;
             end
         end
@@ -88,6 +89,12 @@ classdef Simulator < SimulatorInterface
             obj.robot = obj.robot.draw();
             %             obj.belief = obj.belief.delete_plot();
             %             obj.belief = obj.belief.draw();
+        end
+        function obj = recordVideo(obj)
+            if user_data_class.par.sim.video == 1
+                currFrame = getframe(gcf);
+                writeVideo(obj.videoObj ,currFrame);
+            end
         end
         function b = getBelief(obj)
             b=obj.belief;
@@ -132,7 +139,9 @@ classdef Simulator < SimulatorInterface
             % constructing ground truth observation
             z = ObservationModel_class.h_func(obj.robot.val,v);
         end
-        
+        function isCollided = checkCollision()
+            isCollided = 0;
+        end
         
     end
     

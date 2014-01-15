@@ -116,7 +116,7 @@ classdef Point_stabilizer_SLQG_class < Stabilizer_interface
                 axis(old_zoom);
             end
         end
-        function [next_Hstate, lost, YesNo_unsuccessful, landed_node_ind] = execute(obj, current_Hstate, convergence_time)
+        function [next_belief, lost, YesNo_unsuccessful, landed_node_ind, sim] = execute(obj, current_belief, convergence_time, sim, noiseFlag)
             % This function stabilizes the belief in a runtime and
             % terminates if replanning is needed (if the user has turned "on" the replanning flag).
             
@@ -129,20 +129,20 @@ classdef Point_stabilizer_SLQG_class < Stabilizer_interface
             lost = 0; % initialization % only needed if the "replanning flag" is turned on by user.
             while ~stop_flag
                 disp(['Step ',num2str(k),' of point stabilizer ',num2str(obj.stabilizer_number),'. convergence time is ',num2str(convergence_time),'.']);
-                next_Hstate = obj.controller.propagate_Hstate(current_Hstate);
+                [next_belief, sim] = obj.controller.executeOneStep(current_belief, sim, noiseFlag);
                 if obj.par.draw_cov_centered_on_nominal == 1 % in this case, we do NOT draw estimation covariance centered at estimation mean. BUT we draw estimation covariance centered at nominal state locations, to illustrate the covariance convergence.
                     nominal_x = obj.PRM_node;
-                    next_Hstate = next_Hstate.draw_CovOnNominal(nominal_x);
-                    current_Hstate = current_Hstate.delete_plot(); %#ok<NASGU>
+                    next_belief = next_belief.draw_CovOnNominal(nominal_x);
+                    current_belief = current_belief.delete_plot(); %#ok<NASGU>
                 else  % This is the normal case, where we draw the estimation covariance centered at estimation mean.
-                    next_Hstate = next_Hstate.draw();
-                    current_Hstate = current_Hstate.delete_plot(); %#ok<NASGU>
+                    next_belief = next_belief.draw();
+                    current_belief = current_belief.delete_plot(); %#ok<NASGU>
                 end
                 if user_data_class.par.replanning == 1
                     % Here, we check if we lie in the valid linearization
                     % region of node controller or not
             
-                    signed_elem_wise_difference = next_Hstate.b.est_mean.signed_element_wise_dist(obj.PRM_node);
+                    signed_elem_wise_difference = next_belief.est_mean.signed_element_wise_dist(obj.PRM_node);
 
                     is_in_end_node_lnr_domain = all(abs(signed_elem_wise_difference) < user_data_class.par.valid_linearization_domain); % never forget the "absolute value operator" in computing distances.
                     lost = ~is_in_end_node_lnr_domain;
@@ -150,15 +150,14 @@ classdef Point_stabilizer_SLQG_class < Stabilizer_interface
                     lost = 0; % By this, we indeed disable the replanning
                 end
                 
-                bel = next_Hstate.b;
                 candidate_FIRM_node = obj.reachable_FIRM_nodes; % In this "class", we only have a single reachable node, so we put it in "candidate_FIRM_node".
-                YesNo_reached = candidate_FIRM_node.is_reached(bel); % Here, we check if the belief enters the stopping region or not.
+                YesNo_reached = candidate_FIRM_node.is_reached(next_belief); % Here, we check if the belief enters the stopping region or not.
                 YesNo_timeout = (k+1-convergence_time > obj.par.max_stopping_time);
-                YesNo_collision = next_Hstate.Xg.is_constraint_violated();
+                YesNo_collision = sim.collision();
                 stop_flag = YesNo_reached || YesNo_timeout || YesNo_collision || lost;
                 if show_just_once == 1 % we do not want to update the xlabel at each step.
-                    xlabel('Hbelief has converged. Particles  are trying to reach stopping region...')
-                    disp('Hbelief has converged. Particles are trying to reach stopping region...')
+                    xlabel('Stabilizer is driving the belief to the FIRM node...')
+                    disp('Stabilizer is driving the belief to the FIRM node...')
                     show_just_once = 0;
                 end
                 drawnow
@@ -169,7 +168,7 @@ classdef Point_stabilizer_SLQG_class < Stabilizer_interface
                     writeVideo(vidObj,currFrame);
                 end
                 % update the ensemble and GHb
-                current_Hstate = next_Hstate;
+                current_belief = next_belief;
                 k = k+1;
             end
             YesNo_unsuccessful =  YesNo_timeout || YesNo_collision;

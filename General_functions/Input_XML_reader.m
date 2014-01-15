@@ -325,8 +325,6 @@ elseif strcmpi(selected_motion_model,'Dynamical planar 8arm manipulator')
     state_parameters.sup_norm_weights_nonNormalized = ones(n , 1); % You can think of the right-most vector (in the denominator) as the ractangular neighborhood used in finding neighbor nodes in constructing PRM graph. Note that this must be a column vector.
     motion_model_parameters.controlDim = n/2;
 elseif strcmpi(selected_motion_model,'FixedWing Aircraft')
-    addpath('./external/rvctools/'); % We need rvctoolbox to run RRT
-    startup_rvc; % We need to run this to set of the rvctoolbox
     state_parameters.stateDim = 7;
     state_parameters.sup_norm_weights_nonNormalized = ones(state_parameters.stateDim , 1); 
     disp('state norm for aircraft model needs to be fixed')
