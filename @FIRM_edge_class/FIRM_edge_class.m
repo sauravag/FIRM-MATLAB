@@ -114,8 +114,8 @@ classdef FIRM_edge_class
                 disp('Here, we have to delete the data inside the "edge_controller" object to free the memory.')
             end
         end
-        function [next_belief, lost, YesNo_unsuccessful, landed_node_ind] = execute(obj,sim,init_belief)
-            % This function executes the feedback plan for a single robot (hstate). Also, in case the "replanning flag" is turned on by the user, then if it
+        function [next_belief, lost, YesNo_unsuccessful, landed_node_ind] = execute(obj,init_belief,sim)
+            % This function executes the feedback plan for a single robot (belief). Also, in case the "replanning flag" is turned on by the user, then if it
             % deviates from the nominal path significantly, the function
             % returns "lost = 1".
             
@@ -124,11 +124,11 @@ classdef FIRM_edge_class
             % edge part
             draw_at_every_n_steps = user_data_class.par.sim.draw_at_every_n_steps;
             for k = 1 : obj.kf
-                % propagation of a single robot (or an Hstate)
+                % propagation of a single robot (or an belief)
                 k
                 noiseFlag =1;
                 
-                [nextBelief, reliable,sim] = obj.edge_controller.executeOneStep(init_belief,sim,noiseFlag);
+                [next_belief, reliable,sim] = obj.edge_controller.executeOneStep(init_belief,k,sim,noiseFlag);
                 
                 if user_data_class.par.replanning == 1
                     lost = ~reliable;
@@ -145,19 +145,18 @@ classdef FIRM_edge_class
                     sim = sim.recordVideo();
                 end
                 % collision check
-                YesNo_unsuccessful = current_Hstate.Xg.is_constraint_violated();
-                
+                sim =sim.checkCollision()                ;
                 if YesNo_unsuccessful || lost
                     landed_node_ind = 'No landed node! the execution was unsuccessful.';
                     return
                 end
-                % updating the Hstate
-                current_Hstate = next_Hstate;
+                % updating the belief
+                current_belief = next_belief;
             end
             convergence_time = 0; % This is zero because, we right now do not consider GHb convergence as a pre-condition for FIRM node reaching. Otherwise, the following line has to be uncommented.
             % convergence_time = obj.HBelief_convergence_time - obj.kf;
-            [next_Hstate, lost, YesNo_unsuccessful, landed_node_ind] = ...
-                obj.target_node_stabilizer.execute(current_Hstate,convergence_time);
+            [next_belief, lost, YesNo_unsuccessful, landed_node_ind] = ...
+                obj.target_node_stabilizer.execute(current_belief,convergence_time);
         end
     end
     

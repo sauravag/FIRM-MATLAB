@@ -79,24 +79,24 @@ classdef FIRM_graph_class < FIRM_graph_interface
                 obj.time_of_edge_construction(i) = toc;
             end
         end
-        function obj = Execute(obj,initial_Hstate, start_node_ind,goal_node_ind)
-            current_Hstate = initial_Hstate;
+        function obj = Execute(obj,initial_belief, start_node_ind,goal_node_ind,sim)
+            current_belief = initial_belief;
             current_node_ind = start_node_ind;
             while current_node_ind ~= goal_node_ind
                 next_edge_ind = obj.feedback_pi(current_node_ind); % compute the next edge (next optimal local controller) on the graph using high level feedback "pi" on the graph.
-                [next_Hstate, lost, YesNo_unsuccessful, landed_node_ind] = obj.Edges(next_edge_ind).execute(current_Hstate);
+                [next_belief, lost, YesNo_unsuccessful, landed_node_ind] = obj.Edges(next_edge_ind).execute(current_belief,sim);
                 if YesNo_unsuccessful
                     disp('Ali: Execution is failed, as the robot either collided with an obstacle or ran out of time.')
                     break
                 end
                 if user_data_class.par.replanning == 1 % see if the replanning is allowed
                     if lost
-                        next_Hstate.b.est_cov = next_Hstate.b.est_cov*2; % we increase the initial uncertainty as we assume that the estimation covariance is not realistic
-                        obj.replan(next_Hstate, goal_node_ind); % Note that this function should not output "obj". The reason is explained inside the function.
+                        next_belief.est_cov = next_belief.est_cov*2; % we increase the initial uncertainty as we assume that the estimation covariance is not realistic
+                        obj.replan(next_belief, goal_node_ind); % Note that this function should not output "obj". The reason is explained inside the function.
                         return; % after replanning, we do not continue the loop anymore, becuase the whole plan is changed.
                     end
                 end
-                current_Hstate = next_Hstate;
+                current_belief = next_belief;
                 current_node_ind = landed_node_ind;
             end
         end
@@ -160,15 +160,15 @@ classdef FIRM_graph_class < FIRM_graph_interface
             obj.Nodes(new_node_ind).outgoing_edges = temporary_FIRM_node.outgoing_edges;
 %             obj.Nodes(new_node_ind).stationary_GHb = obj.Nodes(new_node_ind).stationary_GHb.draw();
         end
-        function replan(obj, next_Hstate, goal_node_ind)
+        function replan(obj, next_belief, goal_node_ind)
             % Note that we must NOT output the "obj" in
             % this function, because we do not want the newly added node
             % gets added to the main graph. We want the other robot (the
             % next runs), use the same original graph. Thus, we want to treat the new nodes as the
             % temporary nodes.
             new_node_ind = obj.PRM.num_nodes + 1; % this is the number of first newly added node (which coincides the existing estimation right at this point).
-            obj.PRM = obj.PRM.add_node(next_Hstate.b.est_mean); drawnow; % add a node to PRM
-            obj = obj.add_a_node_and_its_sequel(next_Hstate.b); drawnow;% add a node to FIRM
+            obj.PRM = obj.PRM.add_node(next_belief.est_mean); drawnow; % add a node to PRM
+            obj = obj.add_a_node_and_its_sequel(next_belief); drawnow;% add a node to FIRM
             if user_data_class.par.goBack_to_nearest_node
                 nearest_node_ind = obj.PRM.compute_nearest_node_ind(new_node_ind);
                 obj.feedback_pi(new_node_ind) = nearest_node_ind;
@@ -176,7 +176,7 @@ classdef FIRM_graph_class < FIRM_graph_interface
                 % in FIRM, we need to update the "feedback pi" too. Note that we are doing this in a naive way by updating whole values. The computationally less expensive way is only to compute the newly added node. However, the benefit of the current method is if we want to add the node to the graph (i.e. the new nodes which comes later can get connected to it.) this is correct to update the whole values.
                 obj = obj.DP_compute_cost_to_go_values(goal_node_ind);
             end
-            obj.Execute(next_Hstate,new_node_ind,goal_node_ind);
+            obj.Execute(next_belief,new_node_ind,goal_node_ind);
         end
     end
     

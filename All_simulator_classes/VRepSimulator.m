@@ -301,8 +301,10 @@ classdef VRepSimulator < SimulatorInterface
         end
         
         %% Evolving the function
-        function obj = evolve(obj,control)
-            
+        function obj = evolve(obj,control,varargin)
+%             AMIR: I added varargin because in embedded simulator there is
+%             flag for adding noise. This flag whould probably removed
+%             later
             if(obj.planner==1)
                 % Getting control signals from FIRM
                 % Note: The units of the control signals must be the same

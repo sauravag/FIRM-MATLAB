@@ -40,9 +40,12 @@ classdef Planning_Problem
                 %                     load Data\FIRM_6July2011_OneParticle
                 %                     load Data\FIRM_7July2011_OneParticle
                 load(Constructed_FIRM_file); % Actually we are loading an object of "planning_problem" class, NOT only FIRM_graph. So, teh name of file, i.e., "Constructed_FIRM" can be a little misleading.
-                if exist(Constructed_FIRM_file,'file')
-                    copyfile(Constructed_FIRM_file,saving_folder_path)
-                end
+                % AMIR: I believe we no longer need this since we no longer
+                % have separate folder for each run. Therefore I am
+                % commenting this
+%                 if exist(Constructed_FIRM_file,'file')
+%                     copyfile(Constructed_FIRM_file,saving_folder_path)
+%                 end
                 obj.FIRM_graph = obj.FIRM_graph.draw_all_nodes(); drawnow
                 
 %                 myaa_Ali('FIRM_nodes_figure') % for producing the FIRM nodes figure for a paper
@@ -71,9 +74,11 @@ classdef Planning_Problem
                     %
                     ensemble_size = 1;  % The execution phase only works for a single robot. If you need multiple realization, you have to re-run it multiple times.
                     tmp_pHb = obj.FIRM_graph.Nodes(start_node_ind).sample(ensemble_size); % the "sample" function returns a particle-Hb, with a single particle (since "ensemble_size" is 1).
-                    initial_Hstate = tmp_pHb.Hparticles(1); % initialization % we retrive the single Hstate (or Hparticle) from the "tmp_pHb"
+                    initial_belief = tmp_pHb.Hparticles(1).b; % initialization % we retrive the single Hstate (or Hparticle) from the "tmp_pHb"
                     
-                    obj.FIRM_graph = obj.FIRM_graph.Execute(initial_Hstate,start_node_ind,goal_node_ind);
+                    initial_belief = obj.FIRM_graph.Nodes(start_node_ind).center_b;
+                    
+                    obj.FIRM_graph = obj.FIRM_graph.Execute(initial_belief,start_node_ind,goal_node_ind,obj.sim);
                     continue_sim = input('Enter 1 to continute, 0 to stop :  ');
                     if continue_sim
                         start_node_ind = goal_node_ind;

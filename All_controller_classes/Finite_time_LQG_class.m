@@ -100,7 +100,7 @@ classdef Finite_time_LQG_class < LQG_interface
             
             next_Hstate = Hstate(state(next_Xg_val),b_next);
         end
-        function [nextBelief, reliable,sim] = executeOneStep(obj,oldBelief,sim,k,noiseFlag)
+        function [nextBelief, reliable,sim] = executeOneStep(obj,oldBelief,k,sim,noiseFlag)
             % propagates the system and belief using Linearized/Extended Kalman Filter and
             % Finite-time LQR.
             % "noiseFlag" must be the last input argument.
