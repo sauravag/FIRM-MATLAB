@@ -86,30 +86,82 @@ classdef Quadrotor_MM < MotionModel_interface
         function nominal_traj = generate_VALID_open_loop_point2point_traj(X_initial,X_final) % generates open-loop trajectories between two start and goal states
             if isa(X_initial,'state'), X_initial=X_initial.val; end % retrieve the value of the state vector
             if isa(X_final,'state'), X_final=X_final.val; end % retrieve the value of the state vector
-
-            n_steps = 100;
-            p_init = X_initial(1:3);
-            att_init = X_initial(7:9);
-            p_final = X_final(1:3);
-            att_final = X_final(7:9);            
-            d_roll_seq = Quadrotor_MM.steerX(p_init(1),p_final(1),n_steps);
-            d_pitch_seq= Quadrotor_MM.steerY(p_init(2),p_final(2),n_steps);
-            d_yaw_seq = Quadrotor_MM.steerHeading(att_init(3),att_final(3),n_steps);
+            
+            params.g = obj.g;
+            params.m = obj.mass; % quadrotor mass kg
+            params.Ix = obj.EyeX; % Moment of Inertia kg*m2
+            params.Iy = obj.EyeY; % Moment of Inertia kg*m2
+            params.Iz = obj.EyeZ; % Moment of Inertia kg*m2
+            params.L = obj.len; % Arm Length m
+            params.dt = Quadrotor_MM.dt;
+            
+            %% Initial and Final States
+            
+            %%%%%%%%%%
+            % IN THIS FILE THE ORDER OF P,ATT,PDOT,ATTDOT has been changed
+            % to P, PDOT, ATT, ATTDOT (just locally in this function -- not in
+            % general) -- So, the X_initial and x_init are different.
+            
+            % Initial State 
+            p_init = X_initial(1:3,1);
+            att_init = X_initial(4:6,1);
+            pdot_init = X_initial(7:9,1);
+            attdot_init = X_initial(10:12,1);
+            
+            x_init = [p_init;pdot_init;att_init;attdot_init]; % NOT THE SAME AS X_initial
+            
+            % Final State
+            p_final = X_final(1:3,1);
+             att_final = X_final(4:6,1);
+            pdot_final = X_final(7:9,1);
+            attdot_final = X_final(10:12,1);
+            
+            x_final = [p_final;pdot_final;att_final;attdot_final]; % NOT THE SAME AS X_final
+            
+            n_steps = 35;
+            
+            % Reference States (X,Xdot and Y,Ydot)
+            
+            % Fit a second order polynomial path
+            
+            delta_x = p_final(1) -p_init(1);
+            
+            time = 0:dt:(n_steps-1)*dt;
+            
+            refs = zeros(8,n_steps);
+            
+            refs(1,:) = p_final(1); % px command
+            refs(5,:) = p_final(2); % py command
+            
+          
+            
+            %% Propogate with FL Control laws
+            
+            states = zeros(12,n_steps);
+            
+            states(:,1) = x_init;
             
             u = zeros(4,n_steps-1);
-            u(2,1:n_steps-1) = d_roll_seq;
-            u(3,1:n_steps-1) = d_pitch_seq;
-            u(4,1:n_steps-1) = d_yaw_seq;
-
             
-            xp = zeros(12,n_steps);
-            xp(:,1) = X_initial;
-            
-            for k = 1:n_steps-1
+            for time_index=2:n_steps
+                
+                % Control
+                
+                u(:,time_index-1) =  QuadFeedbackLinearization(states(:,time_index-1),...
+                    refs(:,time_index-1),params);
+                
+                
                 % Integration
-                xp(:,k+1) = Quadrotor_MM.f_discrete(xp(:,k),u(:,k),Quadrotor_MM.zeroNoise);
-                tmp = state(xp(:,k+1)); if tmp.is_constraint_violated, nominal_traj =[]; return; end
+                states(:,time_index) =...
+                    quadDyn(states(:,time_index-1),u(:,time_index-1),params)*params.dt +...
+                    states(:,time_index-1);
+                
             end
+            
+            xp(1:3,:) = states(1:3,:);
+            xp(4:6,:) = states(7:9,:);
+            xp(7:9,:) = states(4:6,:);
+            xp(10:12,:) = states(10:12,:);
             
             nominal_traj.x = xp;
             nominal_traj.u = u;
