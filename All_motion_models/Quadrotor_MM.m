@@ -50,49 +50,15 @@ classdef Quadrotor_MM < MotionModel_interface
             Q_process_noise = blkdiag(P_Un,Quadrotor_MM.P_Wg);
         end
         function nominal_traj = generate_open_loop_point2point_traj(X_initial,X_final) % generates open-loop trajectories between two start and goal states
-            error('not implemented yet')
-            if isa(X_initial,'state'), X_initial=X_initial.val; end % retrieve the value of the state vector
-            if isa(X_final,'state'), X_final=X_final.val; end % retrieve the value of the state vector
-            B = Quadrotor_MM.df_du_func(0,0,0); %% B matrix in the quadrotor model does not depend on current state or input
-            Quadrotor_MM.dt;
-            deltaX = X_final - X_initial;
-            
-            t_interval = 0.8*max(deltaX)/Quadrotor_MM.vMax; % we move by 80 percent of the maxmimum velocity
-            kf = t_interval/ Quadrotor_MM.dt; % number of steps needed to follow the trajectory 
-            uStar = (1/t_interval)*B'*inv(B*B')*deltaX;  %  
-            
-            %=====================Nominal control and state trajectory generation
-            x_p = zeros(Quadrotor_MM.stDim,kf+1);
-            u_p = zeros(Quadrotor_MM.ctDim,kf);
-            
-            x_p(:,1) = X_initial;
-           
-            for k = 1:kf
-                u_p(:,k) = uStar;  % "T_inv_k" maps the "velocities in body coordinate" to the control signal
-                x_p(:,k+1) = Quadrotor_MM.f_discrete(x_p(:,k),u_p(:,k) ,zeros(Quadrotor_MM.wDim,1)); % generaating the trajectory 
-            end
-            
-            % noiselss motion  % for debug: if you uncomment the following
-            % lines you have to get the same "x_p_copy" as the "x_p"
-            %             x_p_copy = zeros(stDim,kf+1);
-            %             x_p_copy(:,1) = X_initial;
-            %             for k = 1:kf
-            %                 x_p_copy(:,k+1) = Quadrotor_MM.f_discrete(x_p_copy(:,k),u_p(:,k),zeros(Quadrotor_MM.wDim,1));
-            %             end
-            
-            nominal_traj.x = x_p;
-            nominal_traj.u = u_p;
-        end
-        function nominal_traj = generate_VALID_open_loop_point2point_traj(X_initial,X_final) % generates open-loop trajectories between two start and goal states
             if isa(X_initial,'state'), X_initial=X_initial.val; end % retrieve the value of the state vector
             if isa(X_final,'state'), X_final=X_final.val; end % retrieve the value of the state vector
             
-            params.g = obj.g;
-            params.m = obj.mass; % quadrotor mass kg
-            params.Ix = obj.EyeX; % Moment of Inertia kg*m2
-            params.Iy = obj.EyeY; % Moment of Inertia kg*m2
-            params.Iz = obj.EyeZ; % Moment of Inertia kg*m2
-            params.L = obj.len; % Arm Length m
+            params.g = Quadrotor_MM.g;
+            params.m = Quadrotor_MM.mass; % quadrotor mass kg
+            params.Ix = Quadrotor_MM.EyeX; % Moment of Inertia kg*m2
+            params.Iy = Quadrotor_MM.EyeY; % Moment of Inertia kg*m2
+            params.Iz = Quadrotor_MM.EyeZ; % Moment of Inertia kg*m2
+            params.L = Quadrotor_MM.len; % Arm Length m
             params.dt = Quadrotor_MM.dt;
             
             %% Initial and Final States
@@ -126,13 +92,96 @@ classdef Quadrotor_MM < MotionModel_interface
             
             delta_x = p_final(1) -p_init(1);
             
-            time = 0:dt:(n_steps-1)*dt;
+            time = 0:params.dt:(n_steps-1)*params.dt;
             
             refs = zeros(8,n_steps);
             
             refs(1,:) = p_final(1); % px command
             refs(5,:) = p_final(2); % py command
             
+          
+            
+            %% Propogate with FL Control laws
+            
+            states = zeros(12,n_steps);
+            
+            states(:,1) = x_init;
+            
+            u = zeros(4,n_steps-1);
+            
+            for time_index=2:n_steps
+                
+                % Control
+                
+                u(:,time_index-1) =  QuadFeedbackLinearization(states(:,time_index-1),...
+                    refs(:,time_index-1),params);
+                
+                
+                % Integration
+                states(:,time_index) =...
+                    quadDyn(states(:,time_index-1),u(:,time_index-1),params)*params.dt +...
+                    states(:,time_index-1);
+                
+            end
+            
+            xp(1:3,:) = states(1:3,:);
+            xp(4:6,:) = states(7:9,:);
+            xp(7:9,:) = states(4:6,:);
+            xp(10:12,:) = states(10:12,:);
+            
+            nominal_traj.x = xp;
+            nominal_traj.u = u;
+        end
+        function nominal_traj = generate_VALID_open_loop_point2point_traj(X_initial,X_final) % generates open-loop trajectories between two start and goal states
+            if isa(X_initial,'state'), X_initial=X_initial.val; end % retrieve the value of the state vector
+            if isa(X_final,'state'), X_final=X_final.val; end % retrieve the value of the state vector
+            
+            params.g = Quadrotor_MM.g;
+            params.m = Quadrotor_MM.mass; % quadrotor mass kg
+            params.Ix = Quadrotor_MM.EyeX; % Moment of Inertia kg*m2
+            params.Iy = Quadrotor_MM.EyeY; % Moment of Inertia kg*m2
+            params.Iz = Quadrotor_MM.EyeZ; % Moment of Inertia kg*m2
+            params.L = Quadrotor_MM.len; % Arm Length m
+            params.dt = Quadrotor_MM.dt;
+            
+            %% Initial and Final States
+            
+            %%%%%%%%%%
+            % IN THIS FILE THE ORDER OF P,ATT,PDOT,ATTDOT has been changed
+            % to P, PDOT, ATT, ATTDOT (just locally in this function -- not in
+            % general) -- So, the X_initial and x_init are different.
+            
+            % Initial State 
+            p_init = X_initial(1:3,1);
+            att_init = X_initial(4:6,1);
+            pdot_init = X_initial(7:9,1);
+            attdot_init = X_initial(10:12,1);
+            
+            x_init = [p_init;pdot_init;att_init;attdot_init]; % NOT THE SAME AS X_initial
+            
+            % Final State
+            p_final = X_final(1:3,1);
+             att_final = X_final(4:6,1);
+            pdot_final = X_final(7:9,1);
+            attdot_final = X_final(10:12,1);
+            
+            x_final = [p_final;pdot_final;att_final;attdot_final]; % NOT THE SAME AS X_final
+            
+            n_steps = 35;
+            
+            % Reference States (X,Xdot and Y,Ydot)
+            
+            % Fit a second order polynomial path
+            
+            delta_x = p_final(1) -p_init(1);
+            
+            time = 0:params.dt:(n_steps-1)*params.dt;
+            
+            refs = zeros(10,n_steps);
+            
+            refs(1,:) = p_final(1); % px command
+            refs(5,:) = p_final(2); % py command
+            refs(9,:) = p_final(3); % pz command
           
             
             %% Propogate with FL Control laws

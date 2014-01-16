@@ -440,7 +440,11 @@ classdef VRepSimulator < SimulatorInterface
                         [res(14),rollingJoint_rr]  = obj.vrep.simxGetJointPosition(obj.clientID,obj.robot_joints.rollingJoint_rr,obj.vrep.simx_opmode_buffer);
                         currentPosition = [obj.getRobot().robot_position(1);obj.getRobot().robot_position(2);obj.getRobot().robot_orientation(2)];
                         newPosition = MotionModel_class.f_discrete(currentPosition,control,zeros(MotionModel_class.wDim,1));
-                        
+%                         AMIR: This is not quite right because we have to
+%                         update the robot ground truth from the simulator.
+%                         For kinematic case for now we are in control of
+%                         every thing and the simulator is just a nice
+%                         graphical front end.
                         
                         obj.robot_position(1) = newPosition(1);
                         obj.robot_position(2) = newPosition(2);
@@ -514,6 +518,18 @@ classdef VRepSimulator < SimulatorInterface
         function obj = simStop(obj)
             [res(19)] = obj.vrep.simxStopSimulation(obj.clientID, obj.vrep.simx_opmode_oneshot_wait);
             fprintf('Simulation Stopped\n');
+        end
+        function z = getObservation(obj,noiseMode)
+            % generating observation noise
+            robotState = [obj.robot_position(1); obj.robot_position(2);obj.robot_orientation(3)];
+              
+            if noiseMode
+                v = ObservationModel_class.generate_observation_noise(robotState);
+            else
+                v = ObservationModel_class.zeroNoise;
+            end
+            % constructing ground truth observation
+            z = ObservationModel_class.h_func(robotState);
         end
     end
 end
