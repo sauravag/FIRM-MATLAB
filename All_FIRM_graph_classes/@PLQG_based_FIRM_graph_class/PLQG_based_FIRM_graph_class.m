@@ -103,7 +103,7 @@ classdef PLQG_based_FIRM_graph_class < FIRM_graph_interface
             while ~any(current_node_ind == target_nodes)
                 next_edge_ind = obj.feedback_pi(current_node_ind); % compute the next edge (next optimal local controller) on the graph using high level feedback "pi" on the graph.
                 [next_Hstate, lost, YesNo_unsuccessful, landed_node_ind] = obj.Edges(next_edge_ind).execute(current_Hstate);
-                if YesNo_unsuccessful
+                if ~YesNo_unsuccessful
                     disp('Ali: Execution is failed, as the robot either collided with an obstacle or ran out of time.')
                     break
                 end

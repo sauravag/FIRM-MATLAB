@@ -85,7 +85,8 @@ classdef Simulator < SimulatorInterface
         
         function obj = recordVideo(obj)
         end
-        function obj = checkCollision(obj)
+        function YesNo_collision = checkCollision(obj)
+             YesNo_collision = 0;
         end
         %% Setting up the environment
         function obj = initialize(obj)
@@ -445,7 +446,6 @@ classdef Simulator < SimulatorInterface
 %                         For kinematic case for now we are in control of
 %                         every thing and the simulator is just a nice
 %                         graphical front end.
-                        obj.robot.val = newPosition;
                         
                         obj.robot_position(1) = newPosition(1);
                         obj.robot_position(2) = newPosition(2);
@@ -522,13 +522,15 @@ classdef Simulator < SimulatorInterface
         end
         function z = getObservation(obj,noiseMode)
             % generating observation noise
+            robotState = [obj.robot_position(1); obj.robot_position(2);obj.robot_orientation(3)];
+              
             if noiseMode
-                v = ObservationModel_class.generate_observation_noise(obj.robot.val);
+                v = ObservationModel_class.generate_observation_noise(robotState);
             else
                 v = ObservationModel_class.zeroNoise;
             end
             % constructing ground truth observation
-            z = ObservationModel_class.h_func(obj.robot.val,v);
+            z = ObservationModel_class.h_func(robotState,v);
         end
     end
 end

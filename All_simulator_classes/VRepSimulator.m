@@ -85,7 +85,8 @@ classdef VRepSimulator < SimulatorInterface
         
         function obj = recordVideo(obj)
         end
-        function obj = checkCollision(obj)
+        function YesNo_collision = checkCollision(obj)
+             YesNo_collision = 0;
         end
         %% Setting up the environment
         function obj = initialize(obj)
@@ -529,7 +530,7 @@ classdef VRepSimulator < SimulatorInterface
                 v = ObservationModel_class.zeroNoise;
             end
             % constructing ground truth observation
-            z = ObservationModel_class.h_func(robotState);
+            z = ObservationModel_class.h_func(robotState,v);
         end
     end
 end
