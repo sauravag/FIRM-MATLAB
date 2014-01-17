@@ -114,7 +114,7 @@ classdef FIRM_edge_class
                 disp('Here, we have to delete the data inside the "edge_controller" object to free the memory.')
             end
         end
-        function [next_belief, lost, YesNo_unsuccessful, landed_node_ind] = execute(obj,init_belief,sim)
+        function [next_belief, lost, YesNo_unsuccessful, landed_node_ind, sim] = execute(obj,init_belief,sim)
             % This function executes the feedback plan for a single robot (belief). Also, in case the "replanning flag" is turned on by the user, then if it
             % deviates from the nominal path significantly, the function
             % returns "lost = 1".
@@ -154,7 +154,7 @@ classdef FIRM_edge_class
             end
             convergence_time = 0; % This is zero because, we right now do not consider GHb convergence as a pre-condition for FIRM node reaching. Otherwise, the following line has to be uncommented.
             % convergence_time = obj.HBelief_convergence_time - obj.kf;
-            [next_belief, lost, YesNo_unsuccessful, landed_node_ind] = ...
+            [next_belief, lost, YesNo_unsuccessful, landed_node_ind, sim] = ...
                 obj.target_node_stabilizer.execute(current_belief,convergence_time, sim, 1);
         end
     end

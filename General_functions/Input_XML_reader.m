@@ -178,7 +178,7 @@ par_new.FIRM_node_parameters.GHb_conv_Pest_thresh = GHb_conv_reg_thresh*GHb_conv
 par_new.FIRM_node_parameters.GHb_conv_BigCov_thresh = BigX_thresh*BigX_thresh'; % defines the convergence threshold for BigCov
 
 %=========== Stabilizer Parameters
-par_new.stabilizer_parameters.max_stopping_time = 5000;
+par_new.stabilizer_parameters.max_stopping_time = 50;
 par_new.stabilizer_parameters.draw_cov_centered_on_nominal = 0;
 
 %=========== MonteCarlo Simulation
