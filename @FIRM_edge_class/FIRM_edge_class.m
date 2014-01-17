@@ -129,7 +129,6 @@ classdef FIRM_edge_class
                 noiseFlag =1;
                 
                 [next_belief, reliable,sim] = obj.edge_controller.executeOneStep(init_belief,k,sim,noiseFlag);
-                
                 if user_data_class.par.replanning == 1
                     lost = ~reliable;
                 else
@@ -145,7 +144,7 @@ classdef FIRM_edge_class
                     sim = sim.recordVideo();
                 end
                 % collision check
-                sim =sim.checkCollision()                ;
+                YesNo_unsuccessful =sim.checkCollision()                ;
                 if YesNo_unsuccessful || lost
                     landed_node_ind = 'No landed node! the execution was unsuccessful.';
                     return
@@ -156,7 +155,7 @@ classdef FIRM_edge_class
             convergence_time = 0; % This is zero because, we right now do not consider GHb convergence as a pre-condition for FIRM node reaching. Otherwise, the following line has to be uncommented.
             % convergence_time = obj.HBelief_convergence_time - obj.kf;
             [next_belief, lost, YesNo_unsuccessful, landed_node_ind] = ...
-                obj.target_node_stabilizer.execute(current_belief,convergence_time);
+                obj.target_node_stabilizer.execute(current_belief,convergence_time, sim, 1);
         end
     end
     

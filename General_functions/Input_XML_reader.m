@@ -125,8 +125,8 @@ randn('state',seed); %#ok<RAND>
 par_new.seed = seed;
 
 %=========== FIRM Node Parameters
-mean_neighb_magnifying_coeff = 10; % this coefficient enlarges the mean neighborhood in FIRM node definition, which leads to faster stop and convergence times, if it is greater than 1.
-cov_neighb_magnifying_coeff = 20; % this coefficient enlarges the covariance neighborhood in FIRM node definition, which leads to faster stop and convergence times, if it is greater than 1.
+mean_neighb_magnifying_coeff = 0; % this coefficient enlarges the mean neighborhood in FIRM node definition, which leads to faster stop and convergence times, if it is greater than 1.
+cov_neighb_magnifying_coeff = 0; % this coefficient enlarges the covariance neighborhood in FIRM node definition, which leads to faster stop and convergence times, if it is greater than 1.
 if strcmpi(par_new.selected_motion_model,'Multi RandomWalk robots')
     n = par_new.state_parameters.num_robots;
     tmp_vector = repmat( [0.08 ; 0.08 ] , n , 1);
@@ -178,7 +178,7 @@ par_new.FIRM_node_parameters.GHb_conv_Pest_thresh = GHb_conv_reg_thresh*GHb_conv
 par_new.FIRM_node_parameters.GHb_conv_BigCov_thresh = BigX_thresh*BigX_thresh'; % defines the convergence threshold for BigCov
 
 %=========== Stabilizer Parameters
-par_new.stabilizer_parameters.max_stopping_time = 250;
+par_new.stabilizer_parameters.max_stopping_time = 5000;
 par_new.stabilizer_parameters.draw_cov_centered_on_nominal = 0;
 
 %=========== MonteCarlo Simulation

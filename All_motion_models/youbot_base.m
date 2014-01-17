@@ -30,7 +30,7 @@ classdef youbot_base < MotionModel_interface
             x_next = x+youbot_base.f_contin(x,u,0)*youbot_base.dt+Wc*sqrt(youbot_base.dt);
         end
         function x_dot = f_contin(x,u,wg) % Do not call this function from outside of this class!! % The last input in this method should be w, instead of wg. But, since it is a only used in this class, it does not matter so much.
-            B = youbot_base.df_du_func(x,u,wg);
+            B = youbot_base.df_du_func(x,u,wg)/youbot_base.dt; % df_du_func is for the discrete model therefore it should be divided by dt to get the continuous B
             x_dot = B*u+wg;
         end
         function A = df_dx_func(x,u,w)

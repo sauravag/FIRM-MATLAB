@@ -73,7 +73,22 @@ classdef FIRM_node_class
             % desired regions or not.
             in_reg_X  = all(Xest_diff < X_reg_size);
             in_reg_P  = all(all(Pest_diff < Pest_reg_size));
-            YesNo = in_reg_P && in_reg_X;
+%             YesNo = in_reg_P && in_reg_X;
+            
+            % using hellinger distance
+            P = 0.5*(Pest + Pest_ss);
+            hellingerDistance = (1/8)*(node_PRM - Xest_mean.val)'*inv(P)*(node_PRM - Xest_mean.val)+...
+                0.5*log(det(P)/sqrt(det(Pest)*det(Pest_ss)));
+            disp('----------------')
+            disp([Pest(1,1),Pest(2,2),Pest(3,3)])
+            disp([Pest_ss(1,1),Pest_ss(2,2),Pest_ss(3,3)])
+            disp('********')
+            disp([node_PRM(1),node_PRM(2),node_PRM(3)])
+            disp([Xest_mean.val(1),Xest_mean.val(2),Xest_mean.val(3)])
+            disp(norm([Xest_mean.val(1),Xest_mean.val(2),Xest_mean.val(3)] - [node_PRM(1),node_PRM(2),node_PRM(3)]))
+            disp(norm([Pest(1,1),Pest(2,2),Pest(3,3)] - [Pest_ss(1,1),Pest_ss(2,2),Pest_ss(3,3)]))
+            disp(hellingerDistance)
+           YesNo = hellingerDistance <= 1.5; 
         end
         function YesNo = is_GHb_converged(obj,GHb)
             % In this function we check if the Gaussian Hyper-belief GHb
