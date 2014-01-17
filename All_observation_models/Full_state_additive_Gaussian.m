@@ -7,6 +7,9 @@ classdef Full_state_additive_Gaussian < ObservationModel_interface
         R = eye(state.dim)*0.0001; % observation noise covariance
         zeroNoise = zeros(state.dim,1);
     end
+    properties
+       plot_handle;
+    end
     
     methods (Static = true)
         function tmp_prop = costant_property_constructor()

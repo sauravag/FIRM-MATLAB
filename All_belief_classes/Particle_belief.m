@@ -21,7 +21,7 @@ classdef Particle_belief
         function obj = Particle_belief(num_particles_inp, particles_inp,weights_inp)
             obj.num_particles = num_particles_inp;
             obj.particles = particles_inp;
-            obj.weights = wights_inp;
+            obj.weights = weights_inp;
         end
         function obj = delete_plot(obj,varargin)
 %             try % Avoid errors if the graphic object has already been deleted

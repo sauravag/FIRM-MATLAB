@@ -1,6 +1,7 @@
 clear classes;clear variables;close all;clc;
 
 % Add FIRM toolbox and external toolboxes as needed to the Matlab path
+addpath(genpath(pwd))
 add_external_toolboxes()
 
 % Parameters

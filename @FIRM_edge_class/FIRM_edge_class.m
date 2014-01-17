@@ -206,7 +206,6 @@ classdef FIRM_edge_class
             failure_prob  = num_failed_prtcls/obj.PHb_seq(obj.kf).num_p;  % OR  failure_prob  = num_failed_prtcls/user_data_class.par.par_n;
         end
         function total_cost = Compute_totoal_FIRM_cost(obj)
-            disp('AliFW: in computing total cost, now, we are NOTTT using the stopping time along with the filtering cost.')
             total_cost = obj.filtering_cost;% + obj.FIRM_stopping_time;
         end
         function disturbed_Xg = apply_disturbance(obj,Xg) %#ok<MANU>
