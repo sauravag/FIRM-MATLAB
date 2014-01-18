@@ -9,7 +9,7 @@
 % Developed as a part of FIRM Toolbox for Matlab
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-classdef VRepSimulator < SimulatorInterface
+classdef VRepSimulator < SimulatorInterface & handle
     properties
         %connection Property
         vrep;

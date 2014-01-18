@@ -1,4 +1,4 @@
-classdef EmbeddedSimulator < SimulatorInterface
+classdef EmbeddedSimulator < SimulatorInterface & handle
     properties
         sceneHierarchy %% an structure containing Scene Hierarchy (objects in the scene like floor , walls) and their children and properties
         robot

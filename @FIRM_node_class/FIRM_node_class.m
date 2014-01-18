@@ -77,15 +77,17 @@ classdef FIRM_node_class
             
             % using hellinger distance
             P = 0.5*(Pest + Pest_ss);
-            hellingerDistance = (1/8)*(node_PRM - Xest_mean.val)'*inv(P)*(node_PRM - Xest_mean.val)+...
+            errorVector = node_PRM - Xest_mean.val;
+            errorVector(3) =  normAngle(errorVector(3));
+            hellingerDistance = (1/8)*(errorVector)'*inv(P)*(errorVector)+...
                 0.5*log(det(P)/sqrt(det(Pest)*det(Pest_ss)));
             disp('----------------')
             disp([Pest(1,1),Pest(2,2),Pest(3,3)])
             disp([Pest_ss(1,1),Pest_ss(2,2),Pest_ss(3,3)])
             disp('********')
             disp([node_PRM(1),node_PRM(2),node_PRM(3)])
-            disp([Xest_mean.val(1),Xest_mean.val(2),Xest_mean.val(3)])
-            disp(norm([Xest_mean.val(1),Xest_mean.val(2),Xest_mean.val(3)] - [node_PRM(1),node_PRM(2),node_PRM(3)]))
+            disp([Xest_mean.val(1),Xest_mean.val(2),normAngle(Xest_mean.val(3))])
+            disp(norm([Xest_mean.val(1)-node_PRM(1),Xest_mean.val(2)-node_PRM(2),normAngle(  Xest_mean.val(3)-node_PRM(1))  ] ))
             disp(norm([Pest(1,1),Pest(2,2),Pest(3,3)] - [Pest_ss(1,1),Pest_ss(2,2),Pest_ss(3,3)]))
             disp(hellingerDistance)
            YesNo = hellingerDistance <= 1.5; 

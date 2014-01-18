@@ -16,7 +16,7 @@ classdef Planning_Problem
             obj.sim = sim;
             obj.PRM = PRM_class;
         end
-        function obj = solve(obj)
+        function obj = solve(obj,sim)
             [loading_folder_path, ~, ~] = fileparts(user_data_class.par.LoadFileName); % This line returns the path of the folder from which we want to load the parameters.
             Constructed_FIRM_file = [loading_folder_path,filesep,'Constructed_FIRM.mat'];
             [saving_folder_path, ~, ~] = fileparts(user_data_class.par.SaveFileName); % This line returns the path of the folder into which we want to save the parameters.
@@ -78,7 +78,7 @@ classdef Planning_Problem
                     
                     initial_belief = obj.FIRM_graph.Nodes(start_node_ind).center_b;
                     
-                    obj.FIRM_graph = obj.FIRM_graph.Execute(initial_belief,start_node_ind,goal_node_ind,obj.sim);
+                    obj.FIRM_graph = obj.FIRM_graph.Execute(initial_belief,start_node_ind,goal_node_ind,sim);
                     continue_sim = input('Enter 1 to continute, 0 to stop :  ');
                     if continue_sim
                         start_node_ind = goal_node_ind;

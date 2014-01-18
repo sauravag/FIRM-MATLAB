@@ -1,4 +1,4 @@
-classdef SimulatorInterface
+classdef SimulatorInterface < handle
     % This class encapsulates the state of the system.
     properties (Abstract)
         simulatorName; % name of the simulator in use

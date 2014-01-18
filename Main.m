@@ -14,10 +14,12 @@ end
 % instantiate the simulator
 sim = Simulator();
 sim = sim.initialize();
+startNode = state([0,0,pi/4]);
+sim = sim.setRobot(startNode);
 
 % This is where you should write your specific planning problem
 prob_inst = Planning_Problem(sim);
-prob_inst = prob_inst.solve();
+prob_inst = prob_inst.solve(sim);
 
 % Close the simulator
 sim = sim.simDelete();

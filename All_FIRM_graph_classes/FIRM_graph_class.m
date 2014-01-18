@@ -84,7 +84,7 @@ classdef FIRM_graph_class < FIRM_graph_interface
             current_node_ind = start_node_ind;
             while current_node_ind ~= goal_node_ind
                 next_edge_ind = obj.feedback_pi(current_node_ind); % compute the next edge (next optimal local controller) on the graph using high level feedback "pi" on the graph.
-                [next_belief, lost, YesNo_unsuccessful, landed_node_ind] = obj.Edges(next_edge_ind).execute(current_belief,sim);
+                [next_belief, lost, YesNo_unsuccessful, landed_node_ind,sim] = obj.Edges(next_edge_ind).execute(current_belief,sim);
                 if YesNo_unsuccessful
                     disp('Ali: Execution is failed, as the robot either collided with an obstacle or ran out of time.')
                     break

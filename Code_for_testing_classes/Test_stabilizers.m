@@ -28,7 +28,7 @@ startNode = startNode.draw();
 
 % targetNode = state.sample_a_valid_state();
 % targetNode = targetNode.draw();
-targetNode = state([1 1 pi/2]);
+targetNode = state([-1 -1 pi/4]);
 targetNode = targetNode.draw();
 
 
