@@ -28,17 +28,14 @@ classdef youbot_base < MotionModel_interface
             Wg = w(youbot_base.ctDim+1 : youbot_base.wDim); % The size of Wg may be different from stDim in some other model.
             Wc = youbot_base.f_contin(x,Un,Wg);
             x_next = x+youbot_base.f_contin(x,u,0)*youbot_base.dt+Wc*sqrt(youbot_base.dt);
+%             x_next(3) = normAngle(x_next(3)); % Normalize angle to (-pi .. pi] values.
         end
         function x_dot = f_contin(x,u,wg) % Do not call this function from outside of this class!! % The last input in this method should be w, instead of wg. But, since it is a only used in this class, it does not matter so much.
             B = youbot_base.df_du_func(x,u,wg)/youbot_base.dt; % df_du_func is for the discrete model therefore it should be divided by dt to get the continuous B
             x_dot = B*u+wg;
         end
         function A = df_dx_func(x,u,w)
-            un = w(1:youbot_base.ctDim); % The size of Un may be different from ctDim in some other model.
-            wg = w(youbot_base.ctDim+1 : youbot_base.wDim); % The size of Wg may be different from stDim in some other model.
-            A = eye(youbot_base.stDim) ...
-                + youbot_base.df_contin_dx(x,u,zeros(youbot_base.stDim,1))*youbot_base.dt ...
-                + youbot_base.df_contin_dx(x,un,wg)*sqrt(youbot_base.dt);
+            A = eye(youbot_base.stDim);
         end
         function Acontin = df_contin_dx(x,u,w) %#ok<INUSD>
             Acontin = zeros(3,3);
@@ -51,7 +48,7 @@ classdef youbot_base < MotionModel_interface
             end
         function G = df_dw_func(x,u,w) %#ok<INUSD>
             B = youbot_base.df_du_func(x,u,w);
-            G = [B,eye(youbot_base.stDim)]*sqrt(youbot_base.dt); % this calculation is for the discrete system
+            G = [B/youbot_base.dt,eye(youbot_base.stDim)]*sqrt(youbot_base.dt); % this calculation is for the discrete system
         end
         function w = generate_process_noise(x,u) %#ok<INUSD>
             [Un,Wg] = generate_control_and_indep_process_noise(u);
@@ -70,7 +67,7 @@ classdef youbot_base < MotionModel_interface
             
             t_interval = 0.8*max(deltaX)/youbot_base.vMax; % we move by 80 percent of the maxmimum velocity
             kf = ceil(t_interval/ youbot_base.dt); % number of steps needed to follow the trajectory 
-            uStar = (1/t_interval)*B'*inv(B*B')*deltaX;  %  
+            uStar = (1/(kf*youbot_base.dt))*B'*inv(B*B')*deltaX;  %  
             
             %=====================Nominal control and state trajectory generation
             x_p = zeros(youbot_base.stDim,kf+1);
@@ -104,7 +101,7 @@ classdef youbot_base < MotionModel_interface
             
             t_interval = 0.8*max(deltaX)/youbot_base.vMax; % we move by 80 percent of the maxmimum velocity
             kf = ceil(t_interval/ youbot_base.dt); % number of steps needed to follow the trajectory 
-            uStar = (1/t_interval)*B'*inv(B*B')*deltaX;  %  
+            uStar = (1/(kf*youbot_base.dt))*B'*inv(B*B')*deltaX;  %  
             
             %=====================Nominal control and state trajectory generation
             x_p = zeros(youbot_base.stDim,kf+1);

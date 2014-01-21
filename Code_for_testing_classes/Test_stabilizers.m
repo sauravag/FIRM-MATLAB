@@ -19,7 +19,7 @@ sim = sim.initialize();
 % sample two states
 % startNode = state.sample_a_valid_state();
 % startNode = startNode.draw();
-startNode = state([0,0,pi/4]);
+startNode = state([0,0,-pi/2]);
 startNode = startNode.draw();
 
 
@@ -28,7 +28,7 @@ startNode = startNode.draw();
 
 % targetNode = state.sample_a_valid_state();
 % targetNode = targetNode.draw();
-targetNode = state([-1 -1 pi/4]);
+targetNode = state([-1 -1 (pi/2-0.1)]);
 targetNode = targetNode.draw();
 
 
@@ -36,7 +36,7 @@ targetNode = targetNode.draw();
 % start Belief
 startBelief = belief(startNode.val, 0.001*eye(state.dim));
 % design stabilizer for the target node
-controller = SLQG_class(targetNode);
+% controller = SLQG_class(targetNode.val);
 
 b_init=belief(startNode,eye(state.dim))
 

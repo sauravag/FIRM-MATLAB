@@ -128,7 +128,7 @@ classdef FIRM_edge_class
                 k
                 noiseFlag =1;
                 
-                [next_belief, reliable,sim] = obj.edge_controller.executeOneStep(init_belief,k,sim,noiseFlag);
+                [next_belief, reliable,sim] = obj.edge_controller.executeOneStep(current_belief,k,sim,noiseFlag);
                 if user_data_class.par.replanning == 1
                     lost = ~reliable;
                 else

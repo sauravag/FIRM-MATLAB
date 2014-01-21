@@ -25,7 +25,7 @@ par_new.sim.video_quality = 100;
 par_new.sim.interactive_disturbance_allowed = 0 ;
 par_new.sim.draw_at_every_n_steps = 4;
 par_new.sim.FrameRate = 5;
-par_new.sim.env_limits = [0 100 -5 100]; %[-3.75 , 100 , -23.75 , 80]; %[-3 155 -3 155]; %[-10 10 -10 10];%[-6 104 -28 85];%[-5 265 -5 225];%[-6 104 -28 85];
+par_new.sim.env_limits = [-5 5 -5 5]; %[-3.75 , 100 , -23.75 , 80]; %[-3 155 -3 155]; %[-10 10 -10 10];%[-6 104 -28 85];%[-5 265 -5 225];%[-6 104 -28 85];
 par_new.sim.env_z_limits = [5 20];
 par_new.sim.top_obstacle_height_3D = 25;
 par_new.sim.bottom_obstacle_height_3D = 0;
@@ -264,6 +264,7 @@ end
 function [motion_model_parameters , state_parameters] = gather_state_and_motion_model_parameters(old_par, selected_motion_model)
 % --- This function returns the parameters needed in the selected motion model.
 motion_model_parameters = old_par.motion_model_parameters;  % Here, we load the "old motion model parameters", so that the old information that we do not change, remains unaffected.
+motion_model_parameters.noiseFlag  = 0; % if this flag is set to zero, the noise will be zero in motion model  The default value is 1 (NOT IMPLMENTED IN ALL MOTION MODELS YET)
 if strcmpi(selected_motion_model,'Omni-directional three wheel robot')
     state_parameters.stateDim = 3;
     state_parameters.sup_norm_weights_nonNormalized = 1./[1 ; 1 ; inf]; % You can think of the right-most vector (in the denominator) as the ractangular neighborhood used in finding neighbor nodes in constructing PRM graph. Note that this must be a column vector.
@@ -341,7 +342,7 @@ elseif strcmpi(selected_motion_model,'Kuka YouBot Base')
     motion_model_parameters.dt = 0.1;
     motion_model_parameters.eta_u_KukaBase = [0; 0; 0; 0]; 
     motion_model_parameters.sigma_b_u_KukaBase = [0; 0; 0; 0];  
-    P_rootsqaure_Wg_diags=[0.2 ; 0.2 ; 4*pi/180]*2;
+    P_rootsqaure_Wg_diags=[0.2 ; 0.2 ; 4*pi/180];
     motion_model_parameters.P_Wg=diag(P_rootsqaure_Wg_diags.^2);
     motion_model_parameters.distBetweenFrontWheels = 0.158*2; % from YouBot datasheet
     motion_model_parameters.distBetweenFrontAndBackWheels = 0.228*2; % from YouBot datasheet
@@ -363,6 +364,7 @@ function observation_model_parameters_new = gather_observation_model_parameters(
 % --- This fucntion returns the parameters needed in the selected observation model.
 observation_model_parameters_old = old_par.observation_model_parameters;  % Here, we load the "old motion model parameters", so that the old information that we do not change, remains unaffected.
 observation_model_parameters_new = observation_model_parameters_old; % This line is written only to increase the readability of the code.
+observation_model_parameters_new.noiseFlag  = 0; % if this flag is set to zero, the noise will be zero in observation model  The default value is 1 (NOT IMPLMENTED IN ALL OBSERVATION MODELS YET)
 observation_model_parameters_new.interactive_OM = observation_model_parameters_from_GUI.interactive_OM; % This line is needed since the user may overwrite the "manual_landmark" property through GUI
 observation_model_parameters_new.eta=[0.2100 , 0.2100]/2;
 observation_model_parameters_new.sigma_b=[0.2 , 0*pi/180]/2;

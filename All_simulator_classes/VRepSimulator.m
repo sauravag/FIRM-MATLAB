@@ -236,7 +236,7 @@ classdef VRepSimulator < SimulatorInterface & handle
                     [res]  = obj.vrep.simxGetJointPosition(obj.clientID,obj.robot_joints.rollingJoint_rl,obj.vrep.simx_opmode_streaming);
                     [res]  = obj.vrep.simxGetJointPosition(obj.clientID,obj.robot_joints.rollingJoint_rr,obj.vrep.simx_opmode_streaming);
                     [res] = obj.vrep.simxGetObjectPosition(obj.clientID, obj.robot,-1, obj.vrep.simx_opmode_streaming);
-                    [res] = obj.vrep.simxGetObjectOrientation(obj.clientID, obj.robot, -1,obj.vrep.simx_opmode_streaming);
+                    [res] = obj.vrep.simxGetObjectOrientation(obj.clientID, obj.robot, -1,obj.vrep.simx_opmode_oneshot_wait);
                     
                 elseif(mode==2)
                     obj.controlType = 'dynamic';
@@ -292,7 +292,7 @@ classdef VRepSimulator < SimulatorInterface & handle
         %% Acquiring the Position of Data
         function obj = getRobot(obj)
             [res(11),obj.robot_position] = obj.vrep.simxGetObjectPosition(obj.clientID, obj.robot,-1, obj.vrep.simx_opmode_buffer);
-            [res(12),obj.robot_orientation] = obj.vrep.simxGetObjectOrientation(obj.clientID, obj.robot, -1,obj.vrep.simx_opmode_buffer);
+            [res(12),obj.robot_orientation] = obj.vrep.simxGetObjectOrientation(obj.clientID, obj.robot, -1,obj.vrep.simx_opmode_oneshot_wait);
             obj.robot_position = reshape(obj.robot_position,length(obj.robot_position),1); % making sure that the vector is in column format
             obj.robot_orientation = reshape(obj.robot_orientation,length(obj.robot_orientation),1); % making sure that the vector is in column format
         end

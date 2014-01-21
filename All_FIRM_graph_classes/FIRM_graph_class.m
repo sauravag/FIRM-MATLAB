@@ -80,6 +80,7 @@ classdef FIRM_graph_class < FIRM_graph_interface
             end
         end
         function obj = Execute(obj,initial_belief, start_node_ind,goal_node_ind,sim)
+            sim.setRobot(initial_belief.est_mean.val);
             current_belief = initial_belief;
             current_node_ind = start_node_ind;
             while current_node_ind ~= goal_node_ind
