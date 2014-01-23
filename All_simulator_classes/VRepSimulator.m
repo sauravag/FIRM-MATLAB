@@ -86,7 +86,7 @@ classdef VRepSimulator < SimulatorInterface & handle
         function obj = recordVideo(obj)
         end
         function YesNo_collision = checkCollision(obj)
-             YesNo_collision = 0;
+            YesNo_collision = 0;
         end
         %% Setting up the environment
         function obj = initialize(obj)
@@ -275,7 +275,7 @@ classdef VRepSimulator < SimulatorInterface & handle
             elseif (strcmp(obj.robotModel,'youbot'))
                 %                 [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[position(1),position(2), 0.0957],obj.vrep.simx_opmode_oneshot);
                 %                 [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,obj.floor,[0,0,position(3)],obj.vrep.simx_opmode_oneshot);
-%                 obj = obj.getRobot();
+                %                 obj = obj.getRobot();
                 %                 turn = (pi*position(3)/180) - obj.robot_orientation(3);
                 %                 orientation = obj.robot_orientation(3);
                 % making the object static
@@ -303,9 +303,9 @@ classdef VRepSimulator < SimulatorInterface & handle
         
         %% Evolving the function
         function obj = evolve(obj,control,varargin)
-%             AMIR: I added varargin because in embedded simulator there is
-%             flag for adding noise. This flag whould probably removed
-%             later
+            %             AMIR: I added varargin because in embedded simulator there is
+            %             flag for adding noise. This flag whould probably removed
+            %             later
             if(obj.planner==1)
                 % Getting control signals from FIRM
                 % Note: The units of the control signals must be the same
@@ -441,21 +441,21 @@ classdef VRepSimulator < SimulatorInterface & handle
                         [res(14),rollingJoint_rr]  = obj.vrep.simxGetJointPosition(obj.clientID,obj.robot_joints.rollingJoint_rr,obj.vrep.simx_opmode_buffer);
                         currentPosition = [obj.getRobot().robot_position(1);obj.getRobot().robot_position(2);obj.getRobot().robot_orientation(2)];
                         newPosition = MotionModel_class.f_discrete(currentPosition,control,zeros(MotionModel_class.wDim,1));
-%                         AMIR: This is not quite right because we have to
-%                         update the robot ground truth from the simulator.
-%                         For kinematic case for now we are in control of
-%                         every thing and the simulator is just a nice
-%                         graphical front end.
+                        %                         AMIR: This is not quite right because we have to
+                        %                         update the robot ground truth from the simulator.
+                        %                         For kinematic case for now we are in control of
+                        %                         every thing and the simulator is just a nice
+                        %                         graphical front end.
                         
                         obj.robot_position(1) = newPosition(1);
                         obj.robot_position(2) = newPosition(2);
                         obj.robot_orientation(3) = newPosition(3);
                         
                         
-                                               % Setting robot's position
+                        % Setting robot's position
                         [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[obj.robot_position(1),obj.robot_position(2),  0.0957],obj.vrep.simx_opmode_oneshot_wait);
                         [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,-1,[-pi/2,obj.robot_orientation(3),-pi/2],obj.vrep.simx_opmode_oneshot_wait);
-      
+                        
                         
                         
                         % Updating the joint position with time
@@ -464,10 +464,10 @@ classdef VRepSimulator < SimulatorInterface & handle
                         % simulataneous application of the following
                         % commands.
                         
-%                         % Setting robot's position
-%                         [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[obj.robot_position(1),obj.robot_position(2),  0.0957],obj.vrep.simx_opmode_oneshot);
-%                         [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,-1,[-pi/2,obj.robot_orientation(3),-pi/2],obj.vrep.simx_opmode_oneshot);
-%                         
+                        %                         % Setting robot's position
+                        %                         [res(9)] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[obj.robot_position(1),obj.robot_position(2),  0.0957],obj.vrep.simx_opmode_oneshot);
+                        %                         [res(10)] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,-1,[-pi/2,obj.robot_orientation(3),-pi/2],obj.vrep.simx_opmode_oneshot);
+                        %
                         
                         % Updating Joints' position
                         vel_w_fl = control(1);
@@ -523,7 +523,7 @@ classdef VRepSimulator < SimulatorInterface & handle
         function z = getObservation(obj,noiseMode)
             % generating observation noise
             robotState = [obj.robot_position(1); obj.robot_position(2);obj.robot_orientation(3)];
-              
+            
             if noiseMode
                 v = ObservationModel_class.generate_observation_noise(robotState);
             else
@@ -531,6 +531,23 @@ classdef VRepSimulator < SimulatorInterface & handle
             end
             % constructing ground truth observation
             z = ObservationModel_class.h_func(robotState,v);
+            thresholds=default_thresholds_func()
+            obj = obj.getSensorData();
+            
+            %     sim=sim.evolve([0.2 0]);
+            
+            laserdata = squeeze(obj.sensor.laserData);
+            if ~isempty(laserdata )
+                %     removing outlier point
+                idx = find(abs(laserdata(1,:))<10 & abs(laserdata(2,:))<10);
+                if rem(i,5)==0
+                    scan.x = -laserdata(2,idx).*100;
+                    scan.y = laserdata(1,idx).*100;
+                    new_features_set=hierarchical_feature_extracting(scan,thresholds,'new');
+                    axis equal
+                end
+                
+            end
         end
     end
 end

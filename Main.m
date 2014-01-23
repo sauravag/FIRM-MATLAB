@@ -1,5 +1,9 @@
 clear classes;clear variables;close all;clc;
 
+addpath(genpath('c:\users\amirhossein\desktop\mywork_tamu\firm_with_simulated_laser\ecmr paper all things\ecmr_paper_codes\completed_after_paper_trends\for ecmr\'))
+addpath('./external/rvctools/'); % we need rvctoolbox to run rrt
+
+
 % Add FIRM toolbox and external toolboxes as needed to the Matlab path
 addpath(genpath(pwd))
 add_external_toolboxes()
