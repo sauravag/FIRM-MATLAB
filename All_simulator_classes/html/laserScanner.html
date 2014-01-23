@@ -1,0 +1,324 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>laserScanner</title><meta name="generator" content="MATLAB 8.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2014-01-16"><meta name="DC.source" content="laserScanner.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Constructor</a></li><li><a href="#3">Intializing Communication</a></li><li><a href="#4">Checking for initial data reception</a></li><li><a href="#6">Setting Laser Signal</a></li><li><a href="#8">Receiving response from Laser</a></li><li><a href="#10">Acquiring Position</a></li><li><a href="#11">Setting Positions in Correct format</a></li><li><a href="#14">Data Conversion from string to Numbers</a></li></ul></div><pre class="codeinput"><span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%% Laser Scanner Class %%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+<span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+<span class="comment">%   Author  :   Ajinkya Jain</span>
+<span class="comment">%   email   :   jainajinkya92@gmail.com</span>
+<span class="comment">%   Date    :   July 2013</span>
+<span class="comment">%   Place   :   Dept. of Aerospace Engg., Texas A&amp;M University, College</span>
+<span class="comment">%               Station, TX, US</span>
+<span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+<span class="comment">% Developed as a part of FIRM Toolbox for Matlab</span>
+<span class="comment">% Useful Links:</span>
+<span class="comment">% Further details of the functions used in this class can be seen at:</span>
+<span class="comment">% http://www.v-rep.eu/helpFiles/en/remoteApiFunctionsMatlab.htm</span>
+<span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+
+
+<span class="keyword">classdef</span> laserScanner
+
+    <span class="keyword">properties</span>
+
+        <span class="comment">% response of the laser (for debugging only; if response in '-1'</span>
+        <span class="comment">% then there is some error in execution of the command, else the</span>
+        <span class="comment">% command was executed correctly)</span>
+        laserResponse;
+
+        <span class="comment">% Checking the working condition of laser.</span>
+        <span class="comment">% '1' = working; '0'= not working</span>
+        status = 0;
+
+        <span class="comment">% Raw Data from single scan</span>
+        oneScan;
+        rob_pos;
+        rob_ori;
+
+        <span class="comment">% Refined Data for single scan</span>
+        laserData;
+        robot_position;
+        robot_orientation;
+
+        <span class="comment">% Time settings for synchronization</span>
+        setTime;
+        getTime;
+        laserTimeStamp;
+
+    <span class="keyword">end</span>
+
+
+    <span class="keyword">methods</span>
+</pre><h2>Constructor<a name="2"></a></h2><pre class="codeinput">        <span class="keyword">function</span> obj = laserScanner(vrep,clientID,robot,mode)
+</pre><h2>Intializing Communication<a name="3"></a></h2><pre class="codeinput">            [obj.laserResponse(1)] = vrep.simxSetStringSignal(clientID,<span class="string">'request'</span>,mode,vrep.simx_opmode_oneshot);
+            [obj.laserResponse(2),obj.oneScan] = vrep.simxGetStringSignal(clientID,<span class="string">'reply'</span>,vrep.simx_opmode_streaming);
+            [obj.laserResponse(3),obj.rob_pos] = vrep.simxGetObjectPosition(clientID, robot,-1, vrep.simx_opmode_streaming);
+            [obj.laserResponse(4),obj.rob_ori] = vrep.simxGetObjectOrientation(clientID,robot,-1,vrep.simx_opmode_streaming);
+</pre><pre class="codeoutput">Error using laserScanner (line 51)
+Not enough input arguments.
+</pre><h2>Checking for initial data reception<a name="4"></a></h2><pre class="codeinput">            <span class="keyword">while</span>(obj.status ==0)
+                [obj.laserResponse(1)] = vrep.simxSetStringSignal(clientID,<span class="string">'request'</span>,mode,vrep.simx_opmode_oneshot);
+                <span class="keyword">if</span> (obj.laserResponse(1)==vrep.simx_error_noerror)
+                    [obj.laserResponse(2),obj.oneScan] = vrep.simxGetStringSignal(clientID,<span class="string">'reply'</span>,vrep.simx_opmode_buffer);
+                    <span class="keyword">if</span> (obj.laserResponse(2)==vrep.simx_error_noerror)
+                        obj.status = 1;
+                    <span class="keyword">end</span>
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+</pre><pre class="codeinput">        <span class="keyword">end</span>
+
+        <span class="keyword">function</span> obj = Scan(obj,vrep,clientID,robot,mode)
+</pre><h2>Setting Laser Signal<a name="6"></a></h2><pre class="codeinput">            [obj.laserResponse(1)] = vrep.simxSetStringSignal(clientID,<span class="string">'request'</span>,mode,vrep.simx_opmode_oneshot);
+
+            <span class="keyword">if</span> (obj.laserResponse(1)==vrep.simx_error_noerror)
+</pre><pre class="codeinput">                set_time = vrep.simxGetLastCmdTime(clientID);
+                <span class="comment">%                 fprintf('Signal is Set\n');</span>
+                settingtime = (set_time - obj.setTime)/1000;
+                pause(settingtime);
+                obj.setTime = set_time;
+</pre><h2>Receiving response from Laser<a name="8"></a></h2><pre class="codeinput">                [obj.laserResponse(2),obj.oneScan] = vrep.simxGetStringSignal(clientID,<span class="string">'reply'</span>,vrep.simx_opmode_buffer);
+
+                <span class="keyword">if</span> ((obj.laserResponse(2)==vrep.simx_error_noerror))
+</pre><pre class="codeinput">                    obj.laserTimeStamp = vrep.simxGetLastCmdTime(clientID); <span class="comment">%% Getting time Stamp for Communication Signal</span>
+                    <span class="comment">%                     fprintf('Reply received\n');</span>
+</pre><h2>Acquiring Position<a name="10"></a></h2><pre class="codeinput">                    [obj.laserResponse(3),obj.rob_pos] = vrep.simxGetObjectPosition(clientID, robot,-1, vrep.simx_opmode_buffer);
+                    [obj.laserResponse(4),obj.rob_ori] = vrep.simxGetObjectOrientation(clientID,robot,-1,vrep.simx_opmode_buffer);
+</pre><h2>Setting Positions in Correct format<a name="11"></a></h2><pre class="codeinput">                    obj.robot_position(1) = obj.rob_pos(1); <span class="comment">% Taking x out of {x,y,z}</span>
+                    obj.robot_position(2) = obj.rob_pos(2); <span class="comment">% Taking y out of {x,y,z}</span>
+                    obj.robot_orientation = obj.rob_ori(3); <span class="comment">% Taking gamma out of {alpha,beta,gamma}</span>
+</pre><pre class="codeinput">                <span class="keyword">else</span> fprintf(<span class="string">'Error in receiving Data\n'</span>);
+                <span class="keyword">end</span>
+</pre><pre class="codeinput">            <span class="keyword">else</span> fprintf(<span class="string">'Error in set signal\n'</span>);
+            <span class="keyword">end</span>
+</pre><h2>Data Conversion from string to Numbers<a name="14"></a></h2><pre class="codeinput">            <span class="keyword">if</span>(numel(obj.oneScan~=0))
+                count =1;
+                temp_count =1;
+                laser_Data = zeros(1);
+
+                <span class="keyword">for</span> j= 2:(length(obj.oneScan))
+                    <span class="keyword">if</span>((obj.oneScan(j)== <span class="string">','</span>)||(obj.oneScan(j)==<span class="string">'}'</span>))
+                        laser_Data(count) = str2double(temp_Data);
+                        count = count+1;
+                        temp_count = 1;
+                        <span class="keyword">continue</span>;
+                    <span class="keyword">end</span>
+
+                    temp_Data(temp_count) = obj.oneScan(j);
+                    temp_count = temp_count+1;
+                <span class="keyword">end</span>
+
+                <span class="keyword">if</span>(numel(laser_Data)&gt;1)
+                    reshapedData = reshape(laser_Data,3,(length(laser_Data)/3));
+
+                    <span class="keyword">for</span> k = 1:length(reshapedData)
+                        obj.laserData(:,k) = reshapedData(:,k);
+                    <span class="keyword">end</span>
+
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+</pre><pre class="codeinput">            pause(0.5); <span class="comment">%% Necessary for communication. You may decrease the pause based on your requirements and System Capabilities</span>
+</pre><pre class="codeinput">        <span class="keyword">end</span>
+</pre><pre class="codeinput">    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2013a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%%%%%%%%%%%%%%%%%%%%%%%%%% Laser Scanner Class %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%   Author  :   Ajinkya Jain
+%   email   :   jainajinkya92@gmail.com
+%   Date    :   July 2013
+%   Place   :   Dept. of Aerospace Engg., Texas A&M University, College
+%               Station, TX, US
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Developed as a part of FIRM Toolbox for Matlab
+% Useful Links:
+% Further details of the functions used in this class can be seen at:
+% http://www.v-rep.eu/helpFiles/en/remoteApiFunctionsMatlab.htm
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+classdef laserScanner
+    
+    properties
+        
+        % response of the laser (for debugging only; if response in '-1'
+        % then there is some error in execution of the command, else the
+        % command was executed correctly)
+        laserResponse;
+        
+        % Checking the working condition of laser.
+        % '1' = working; '0'= not working
+        status = 0;
+        
+        % Raw Data from single scan
+        oneScan;
+        rob_pos;
+        rob_ori;
+        
+        % Refined Data for single scan
+        laserData;
+        robot_position;
+        robot_orientation;
+        
+        % Time settings for synchronization
+        setTime;
+        getTime;
+        laserTimeStamp;
+        
+    end
+    
+    
+    methods
+        %% Constructor
+        function obj = laserScanner(vrep,clientID,robot,mode)
+            %% Intializing Communication
+            [obj.laserResponse(1)] = vrep.simxSetStringSignal(clientID,'request',mode,vrep.simx_opmode_oneshot);
+            [obj.laserResponse(2),obj.oneScan] = vrep.simxGetStringSignal(clientID,'reply',vrep.simx_opmode_streaming);
+            [obj.laserResponse(3),obj.rob_pos] = vrep.simxGetObjectPosition(clientID, robot,-1, vrep.simx_opmode_streaming);
+            [obj.laserResponse(4),obj.rob_ori] = vrep.simxGetObjectOrientation(clientID,robot,-1,vrep.simx_opmode_streaming);
+            
+            %% Checking for initial data reception
+            while(obj.status ==0)
+                [obj.laserResponse(1)] = vrep.simxSetStringSignal(clientID,'request',mode,vrep.simx_opmode_oneshot);
+                if (obj.laserResponse(1)==vrep.simx_error_noerror)
+                    [obj.laserResponse(2),obj.oneScan] = vrep.simxGetStringSignal(clientID,'reply',vrep.simx_opmode_buffer);
+                    if (obj.laserResponse(2)==vrep.simx_error_noerror)
+                        obj.status = 1;
+                    end
+                end
+            end
+        end
+        
+        function obj = Scan(obj,vrep,clientID,robot,mode)
+            %% Setting Laser Signal
+            [obj.laserResponse(1)] = vrep.simxSetStringSignal(clientID,'request',mode,vrep.simx_opmode_oneshot);
+            
+            if (obj.laserResponse(1)==vrep.simx_error_noerror)
+                set_time = vrep.simxGetLastCmdTime(clientID);
+                %                 fprintf('Signal is Set\n');
+                settingtime = (set_time - obj.setTime)/1000;
+                pause(settingtime);
+                obj.setTime = set_time;
+                
+                %% Receiving response from Laser
+                [obj.laserResponse(2),obj.oneScan] = vrep.simxGetStringSignal(clientID,'reply',vrep.simx_opmode_buffer);
+                
+                if ((obj.laserResponse(2)==vrep.simx_error_noerror))
+                    obj.laserTimeStamp = vrep.simxGetLastCmdTime(clientID); %% Getting time Stamp for Communication Signal
+                    %                     fprintf('Reply received\n');
+                    
+                    
+                    
+                    %% Acquiring Position
+                    [obj.laserResponse(3),obj.rob_pos] = vrep.simxGetObjectPosition(clientID, robot,-1, vrep.simx_opmode_buffer);
+                    [obj.laserResponse(4),obj.rob_ori] = vrep.simxGetObjectOrientation(clientID,robot,-1,vrep.simx_opmode_buffer);
+                    
+                    %% Setting Positions in Correct format
+                    obj.robot_position(1) = obj.rob_pos(1); % Taking x out of {x,y,z}
+                    obj.robot_position(2) = obj.rob_pos(2); % Taking y out of {x,y,z}
+                    obj.robot_orientation = obj.rob_ori(3); % Taking gamma out of {alpha,beta,gamma}
+                    
+                else fprintf('Error in receiving Data\n');
+                end
+                
+            else fprintf('Error in set signal\n');
+            end
+            
+            %% Data Conversion from string to Numbers
+            if(numel(obj.oneScan~=0))
+                count =1;
+                temp_count =1;
+                laser_Data = zeros(1);
+                
+                for j= 2:(length(obj.oneScan))
+                    if((obj.oneScan(j)== ',')||(obj.oneScan(j)=='}'))
+                        laser_Data(count) = str2double(temp_Data);
+                        count = count+1;
+                        temp_count = 1;
+                        continue;
+                    end
+                    
+                    temp_Data(temp_count) = obj.oneScan(j);
+                    temp_count = temp_count+1;
+                end
+                
+                if(numel(laser_Data)>1)
+                    reshapedData = reshape(laser_Data,3,(length(laser_Data)/3));
+                    
+                    for k = 1:length(reshapedData)
+                        obj.laserData(:,k) = reshapedData(:,k);
+                    end
+                    
+                end
+            end
+            %%
+            pause(0.5); %% Necessary for communication. You may decrease the pause based on your requirements and System Capabilities
+            
+        end
+    end
+end
+##### SOURCE END #####
+--></body></html>

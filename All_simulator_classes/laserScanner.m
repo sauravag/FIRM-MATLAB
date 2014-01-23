@@ -59,6 +59,7 @@ classdef laserScanner
                 if (obj.laserResponse(1)==vrep.simx_error_noerror)
                     [obj.laserResponse(2),obj.oneScan] = vrep.simxGetStringSignal(clientID,'reply',vrep.simx_opmode_buffer);
                     if (obj.laserResponse(2)==vrep.simx_error_noerror)
+                        obj.oneScan = [];
                         obj.status = 1;
                     end
                 end
@@ -128,7 +129,7 @@ classdef laserScanner
                 end
             end
             %%
-            pause(0.5); %% Necessary for communication. You may decrease the pause based on your requirements and System Capabilities
+            pause(0.3); %% Necessary for communication. You may decrease the pause based on your requirements and System Capabilities
             
         end
     end
