@@ -101,7 +101,7 @@ classdef laserScanner
             end
             
             %% Data Conversion from string to Numbers
-            if(numel(obj.oneScan~=0))
+            if(numel(obj.oneScan)~=0)
                 count =1;
                 temp_count =1;
                 laser_Data = zeros(1);

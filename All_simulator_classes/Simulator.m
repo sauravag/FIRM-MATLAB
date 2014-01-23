@@ -24,6 +24,9 @@ classdef Simulator < SimulatorInterface
         dt = 0.05;
         controlType;
         planner;
+        simTime;   % TO delete
+        matTime;    %To delete
+        timeDiff;   %To delete
         
         %Scene Properties
         scene;
@@ -268,6 +271,7 @@ classdef Simulator < SimulatorInterface
             % remember to convert position[1] to position.val[1] and do so
             % when trying to use the full closed loop problem
             
+            
             if(strcmp(obj.robotModel,'dr12'))
                 [res] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[position(1),position(2), 0.0787],obj.vrep.simx_opmode_oneshot);
                 [res] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,-1,[0,-(pi/2),position(3)],obj.vrep.simx_opmode_oneshot);
@@ -283,8 +287,19 @@ classdef Simulator < SimulatorInterface
                 % making the object static
                 %                 [ errorCode]=obj.vrep.simxSetModelProperty( obj.clientID, obj.robot, obj.vrep.sim_modelproperty_not_dynamic,obj.vrep.simx_opmode_oneshot_wait)
                 
-                [res] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[position(1),position(2), 0.0957],obj.vrep.simx_opmode_oneshot_wait);
-                [res] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,-1,[-pi/2,position(3),-pi/2],obj.vrep.simx_opmode_oneshot_wait);
+                obj.refresh();
+%                 tstart = tic ;
+%                 [t1] = obj.vrep.simxGetLastCmdTime(obj.clientID);
+                [res]= obj.vrep.simxPauseCommunication(obj.clientID,1);
+                [res] = obj.vrep.simxSetObjectPosition(obj.clientID,obj.robot,-1,[position(1),position(2), 0.0957],obj.vrep.simx_opmode_oneshot);
+                [res] = obj.vrep.simxSetObjectOrientation(obj.clientID,obj.robot,-1,[-pi/2,position(3),-pi/2],obj.vrep.simx_opmode_oneshot);
+                [res]= obj.vrep.simxPauseCommunication(obj.clientID,0);
+
+%                 [t2] = obj.vrep.simxGetLastCmdTime(obj.clientID);
+%                 [res,p1] = obj.vrep.simxGetPingTime(obj.clientID);
+%                 obj.simTime = (t2-t1)+p1;
+%                 obj.matTime = (toc(tstart))*1000;
+%                 obj.timeDiff = obj.matTime -(obj.simTime);
                 % returning to dynamic setting
                 %                 [ errorCode]=obj.vrep.simxSetModelProperty( obj.clientID, obj.robot, int32(0),obj.vrep.simx_opmode_oneshot_wait)
                 
@@ -299,17 +314,16 @@ classdef Simulator < SimulatorInterface
             obj.robot_orientation = reshape(obj.robot_orientation,length(obj.robot_orientation),1); % making sure that the vector is in column format
         end
         
-        %% Refreshing the Scene but we don't need to do this for V-Rep
+        %% Refreshing the Scene BY triggering in synchronous mode
         function obj = refresh(obj)
+            %Triggering Simulation
+            [res] = obj.vrep.simxSynchronousTrigger(obj.clientID);
         end
         
         %% Evolving the function
-        function obj = evolve(obj,control)
+        function obj = evolve(obj,control) 
             
-            %Triggering Simulation
-%             [res] = obj.vrep.simxSynchronousTrigger(obj.clientID);
-            
-            
+                       
             if(obj.planner==1)
                 % Getting control signals from FIRM
                 % Note: The units of the control signals must be the same
@@ -338,6 +352,7 @@ classdef Simulator < SimulatorInterface
                         % some finite time to reach the setted target
                         % velocity and jumps won't be discrete
                         
+                        obj.refresh();
                         [res] = obj.vrep.simxPauseCommunication(obj.clientID,1); % Pausing the communication
                         [res] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, obj.robot_joints(2), obj.leftJointVelocity,obj.vrep.simx_opmode_oneshot);
                         [res] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, obj.robot_joints(3), obj.rightJointVelocity,obj.vrep.simx_opmode_oneshot);
@@ -359,6 +374,7 @@ classdef Simulator < SimulatorInterface
                         obj.robot_orientation(3) = obj.robot_orientation(3) + rotMov;
                         
                         % Updating the joint position with time
+                        obj.refresh();
                         [res] = obj.vrep.simxPauseCommunication(obj.clientID,1);
                         % Pausing the communication will ensure
                         % simulataneous application of the following
@@ -381,6 +397,7 @@ classdef Simulator < SimulatorInterface
                     obj.rightJointVelocity = (linear_velocity + ((obj.interWheelDistance*ang_velocity)/2))*(2/wheelDiameter);
                     
                     if(strcmp(obj.controlType,'dynamic'))
+                        obj.refresh();
                         [res] = obj.vrep.simxPauseCommunication(obj.clientID,1);
                         [res] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, obj.robot_joints(2), obj.leftJointVelocity,obj.vrep.simx_opmode_oneshot);
                         [res] = obj.vrep.simxSetJointTargetVelocity(obj.clientID, obj.robot_joints(3), obj.rightJointVelocity,obj.vrep.simx_opmode_oneshot);
@@ -404,6 +421,7 @@ classdef Simulator < SimulatorInterface
                         obj.robot_orientation(3) = obj.robot_orientation(3) + rotMov;
                         
                         % Updating the joint position with time
+                        obj.refresh();
                         [res] = obj.vrep.simxPauseCommunication(obj.clientID,1);
                         % Pausing the communication will ensure
                         % simulataneous application of the following
@@ -431,6 +449,7 @@ classdef Simulator < SimulatorInterface
                         vel_w_fr = control(2);
                         vel_w_rl = control(3);
                         vel_w_rr = control(4);
+                        obj.refresh();
                         obj.vrep.simxPauseCommunication(obj.clientID,1); %% pause the communication temporariliy
                         [res_fl] = obj.vrep.simxSetJointTargetVelocity(obj.clientID,  obj.robot_joints.rollingJoint_fl,vel_w_fl,obj.vrep.simx_opmode_oneshot_wait);%1-->1
                         [res_fr] = obj.vrep.simxSetJointTargetVelocity(obj.clientID,  obj.robot_joints.rollingJoint_fr, vel_w_fr,obj.vrep.simx_opmode_oneshot_wait);%4-->2
@@ -462,6 +481,9 @@ classdef Simulator < SimulatorInterface
                         
                         
                         % Updating the joint position with time
+                        obj.refresh();
+%                         tstart = tic ;
+%                         [t1] = obj.vrep.simxGetLastCmdTime(obj.clientID);
                         [res] = obj.vrep.simxPauseCommunication(obj.clientID,1);
                         % Pausing the communication will ensure
                         % simulataneous application of the following
@@ -482,8 +504,14 @@ classdef Simulator < SimulatorInterface
                         [res] = obj.vrep.simxSetJointPosition(obj.clientID,obj.robot_joints.rollingJoint_rl,(rollingJoint_rl+((vel_w_rl*obj.dt*2)/wheelDiameter)),obj.vrep.simx_opmode_oneshot);
                         [res] = obj.vrep.simxSetJointPosition(obj.clientID,obj.robot_joints.rollingJoint_rr,(rollingJoint_rr+((vel_w_rr*obj.dt*2)/wheelDiameter)),obj.vrep.simx_opmode_oneshot);
                         
-                        
                         [res] = obj.vrep.simxPauseCommunication(obj.clientID,0);% Resuming communication between MATLAB and V-rep
+%                         [t2] = obj.vrep.simxGetLastCmdTime(obj.clientID);
+%                         [res,p1] = obj.vrep.simxGetPingTime(obj.clientID);
+%                         obj.simTime = (t2-t1)+p1;
+%                         obj.matTime = (toc(tstart))*1000;
+%                         obj.timeDiff = obj.matTime -(obj.simTime);
+%                         
+                        
                     end
                     
                     

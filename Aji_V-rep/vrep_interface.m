@@ -343,3 +343,4 @@ classdef vrep_interface %< SimulatorInterface
             
         end
     end
+end
