@@ -7,6 +7,8 @@ classdef EmbeddedSimulator < SimulatorInterface & handle
         simulatorName = 'Embedded';
         belief
         videoObj
+        RayCastObj = [];%opcodemesh(obstacles_class.vObj',obstacles_class.fObj');
+        
     end
     
     methods
@@ -16,6 +18,7 @@ classdef EmbeddedSimulator < SimulatorInterface & handle
             % problem entered by the user.
             obj.par = user_data_class.par.sim;
             %             obj.robot = Robot([0;0;0]);
+            obj.RayCastObj = opcodemesh(obstacles_class.vObj',obstacles_class.fObj');
         end
         % initialize : initializes the simulator
         function obj = initialize(obj)
@@ -137,6 +140,28 @@ classdef EmbeddedSimulator < SimulatorInterface & handle
                 v = ObservationModel_class.zeroNoise;
             end
             % constructing ground truth observation
+            intitialTheta = 0*pi/180; % radian. The angle of the first ray of the laser
+            endTheta = 180*pi/180; % radian. The angle of the last ray of the laser
+            raysPerDegree = 4; % resolution in terms of dnumber of rays per degree
+            laserZ = 0.0975; % height of the laser
+            resolution = (1/raysPerDegree)*pi/180; % resolution in radians
+            robotPose = obj.robot.val; % [x,y,theta]
+            from_laser = [robotPose(1),robotPose(2),laserZ];
+            theta  = intitialTheta:resolution:endTheta;
+            rangeLaser = 4; % meter. the range of the laser scanner
+            to_rays = [[rangeLaser.*cos(theta + from_laser(3))]',[rangeLaser.*sin(theta+ from_laser(3))]',repmat(laserZ,length(theta),1) ];
+            % from = [-Z(:) Y(:) X(:)]';
+            % to = [Z(:) Y(:) X(:)]';
+            
+            %[hit,d,trix,bary] = opcodemeshmex('intersect',t,from,to-from);
+            [hit,d,trix,bary] = obj.RayCastObj.intersect(repmat(from_laser',1,length(theta)),to_rays');
+            y= from_laser(2)+rangeLaser.*d'.*sin(theta+ from_laser(3));
+            x= from_laser(1)+rangeLaser.*d'.*cos(theta+ from_laser(3));
+            z = nan(1,length(theta));
+            z(~isnan(d))=laserZ;
+            % figure
+            % hold on ;
+            plot3(x,y,repmat(from_laser(3),1,length(x)),'.r','LineWidth',6)
             z = ObservationModel_class.h_func(obj.robot.val,v);
         end
         function isCollided = checkCollision(obj)

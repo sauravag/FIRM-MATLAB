@@ -20,8 +20,8 @@ sim = sim.setRobot(robot_init);
 MM = MotionModel_class;
 nominal_traj = MM.generate_open_loop_point2point_traj(robot_init,robot_final); % generates open-loop trajectories between two start and goal states
 for i = 1:size(nominal_traj.u,2)
-    sim = sim.setRobot(nominal_traj.x(:,i));
-    %     sim = sim.evolve(nominal_traj.u(:,i));
+%     sim = sim.setRobot(nominal_traj.x(:,i));
+        sim = sim.evolve(nominal_traj.u(:,i));
 %     sim = sim.draw()
     sim = sim.refresh()
     %     pause(.1)
