@@ -1,6 +1,6 @@
 classdef Point_PRM_class < PRM_interface
     %Point_PRM_class encapsulates the Probabilistic RoadMap class
-  
+    
     
     properties (Access = private)
         % following properties are defined as the abstract properties in the
@@ -10,7 +10,9 @@ classdef Point_PRM_class < PRM_interface
         edges_plot_handle = [];
         max_number_of_nodes = 30;
     end
-    
+    properties 
+        prmFigureHandle = -1; % we might not use this when we are not using matlab embedded simulator
+    end
     methods
         function obj = Point_PRM_class(~)
             % See the superclass; The constructor of the superclass, i.e., "PRM_interface" is
@@ -21,6 +23,7 @@ classdef Point_PRM_class < PRM_interface
             % are specified by the user, the default "PRM plot properties"
             % will be used.
             old_prop = obj.set_figure();
+            obj.prmFigureHandle = cell2mat(old_prop(5)); % saving the plot handle which will be used in simulator
             % The following initializations are necessary. Because the initialization in the "property definition" is not enough, when we loading an existing object of this class, that initialization does not happen.
             obj.edges_plot_handle = [];
             % retrieve PRM parameters provided by the user
@@ -53,8 +56,11 @@ classdef Point_PRM_class < PRM_interface
             % This function loads the existing PNPRM from the
             % "LoadFileName". If there is no PNPRM present in the
             % "LoadFileName", an error will occur.
-            LoadFileName = user_data_class.par.LoadFileName;
-            load(LoadFileName,'PRM')
+            %             LoadFileName = user_data_class.par.LoadFileName;
+            [loading_folder_path, ~, ~] = fileparts(user_data_class.par.LoadFileName); % This line returns the path of the folder from which we want to load the parameters.
+            Constructed_FIRM_file = [loading_folder_path,filesep,'Constructed_FIRM.mat'];
+            
+            load(Constructed_FIRM_file,'PRM')
             obj = PRM;
         end
         function obj = request_nodes(obj)
@@ -83,9 +89,12 @@ classdef Point_PRM_class < PRM_interface
         function obj = overwrite_nodes(obj)
         end
         function obj = save(obj)
-            SaveFileName = user_data_class.par.SaveFileName;
+            %             SaveFileName = user_data_class.par.SaveFileName;
+            [loading_folder_path, ~, ~] = fileparts(user_data_class.par.LoadFileName); % This line returns the path of the folder from which we want to load the parameters.
+            Constructed_FIRM_file = [loading_folder_path,filesep,'Constructed_FIRM.mat'];
+            
             PRM = obj; %#ok<NASGU>
-            save(SaveFileName,'PRM','-append')
+            save(Constructed_FIRM_file,'PRM','-append')
         end
         
         function obj = add_node(obj,new_node)
@@ -96,12 +105,12 @@ classdef Point_PRM_class < PRM_interface
             disp(['Adding PRM node ',num2str(new_node_ind), ' to the PRM']);
             % add it to the list of nodes
             obj.nodes(new_node_ind) = new_node;
-             % drawing the new node
+            % drawing the new node
             node_prop_varargin = obj.par.PRM_node_plot_properties;
             obj.nodes(new_node_ind) = obj.nodes(new_node_ind).draw(node_prop_varargin{:});
             % we compute the neighbors of the newly added node.
             neighbors_of_new = obj.find_neighbors(new_node_ind);
-            % we add the edges corresponding to this new node. 
+            % we add the edges corresponding to this new node.
             for j = neighbors_of_new % "neighbors_of_new" must be a row vector for this loop to work.
                 % We first consider the edges that goes out of this node
                 obj = add_edge(obj, new_node, obj.nodes(j), new_node_ind, j);
@@ -136,65 +145,65 @@ classdef Point_PRM_class < PRM_interface
         
         function feedback_plot_handle = draw_feedback_pi(obj, feedback_pi, selected_node_indices)
             feedback_plot_handle =[];
-% % %             error('This function is obsolete. But it can be updated beautifully with the new was of looking to feedback!')
-% % %             % This function has not been updated after the latest changes.
-% % %             
-% % %             % the selected nodes are a set of nodes that the feedback pi is
-% % %             % only drawn for them. This is for uncluttering the figure.
-% % %             if ~exist('selected_node_indices', 'var') % if there is no "selected nodes", we draw the "feedback pi" for all nodes.
-% % %                 selected_node_indices = 1:obj.num_nodes;
-% % %             elseif isvector(selected_node_indices) % the "selected_node_indices" has to be a row vector. So, here we make the code robust to column vector as well.
-% % %                 selected_node_indices = reshape(selected_node_indices,1,length(selected_node_indices));
-% % %             end
-% % %             feedback_plot_handle = [];
-% % %             num_edges = length(obj.edges_list);
-% % %             feedback_text_handle = zeros(1,num_edges);
-% % %             for i = selected_node_indices
-% % %                 start = obj.nodes(i).val(1:2); % from now on, in this function, we only consider 2D position of the nodes.
-% % %                 j = feedback_pi(i); % j is the next node for node i, based on "feedback pi".
-% % %                 if isnan(j) % the feedback_pi on the goal node return "nan"
-% % %                     continue
-% % %                 end
-% % %                 [~,edge_num] = intersect(obj.edges_list,[i,j],'rows'); % this function returns the number of PRM edge, whose start and end nodes are i and j, respectively.
-% % %                 edge_num =obj.corresponding_2D_edges(edge_num); % this line returns the number of corresponding 2D edge.
-% % %                 % in the following we draw a paraller line to the edge,
-% % %                 % through which we want to illustrate the feedback "pi".
-% % %                 final = obj.nodes(j).val(1:2);
-% % %                 parallel_vector_normalized = (final - start)/norm(final - start);
-% % %                 perpendicular_vector_normalized = [ parallel_vector_normalized(2); - parallel_vector_normalized(1)];
-% % %                 shiftet_dist = 1;
-% % %                 length_of_parallel =  norm(final - start)/3;    % length of the dotted parallel line
-% % %                 offset_from_start = (norm(final - start) - length_of_parallel)/2;
-% % %                 start_new = start + shiftet_dist * perpendicular_vector_normalized + offset_from_start  * parallel_vector_normalized;
-% % %                 final_new = final + shiftet_dist * perpendicular_vector_normalized - offset_from_start  * parallel_vector_normalized;
-% % %                 plot([start_new(1), final_new(1)],[start_new(2), final_new(2)], '--r');
-% % %                 
-% % %                 % in the following we plot the small triangle (called arrow
-% % %                 % here) on the dotted parallel line
-% % %                 middle = (start_new + final_new)/2;
-% % %                 arrow_size = length_of_parallel/5;
-% % %                 arrow_head = middle + parallel_vector_normalized*arrow_size/2;
-% % %                 bottom_mid = middle - parallel_vector_normalized*arrow_size/2;
-% % %                 bottom_vertices_outer = bottom_mid + perpendicular_vector_normalized*arrow_size/4;
-% % %                 bottom_vertices_inner = bottom_mid - perpendicular_vector_normalized*arrow_size/4;
-% % %                 verts = [arrow_head';bottom_vertices_outer';bottom_vertices_inner'];
-% % %                 faces = [1  2 3]; % this tells the number of vertices in the patch object. In our case, we have only three vertices and all of them are among the patch vertices.
-% % %                 patch_handle = patch('Faces',faces,'Vertices',verts,'FaceColor','g','EdgeColor','r');
-% % %                 feedback_plot_handle = [feedback_plot_handle, patch_handle]; %#ok<AGROW>
-% % %                 
-% % %                 % in the following, we write the number of the node on the
-% % %                 % corresponding parallel lines.
-% % %                 text_dist = shiftet_dist/2;
-% % %                 text_position = bottom_vertices_outer + text_dist*perpendicular_vector_normalized;
-% % %                 text_position(1) = text_position(1) - 0.45; % for some reason MATLAB shifts the starting point of the text a little bit to the right. So, here we return it back.
-% % %                 if feedback_text_handle (edge_num) ~= 0 % which means some text has already been written for this edge
-% % %                     current_text = get(feedback_text_handle (edge_num), 'String');
-% % %                     set(feedback_text_handle (edge_num), 'String', [current_text, ', ', num2str(i)])
-% % %                 else
-% % %                     feedback_text_handle (edge_num) = text(text_position(1), text_position(2), num2str(i), 'fontsize',10,'color','r','EdgeColor','g');
-% % %                     feedback_plot_handle = [feedback_plot_handle, feedback_text_handle (edge_num)]; %#ok<AGROW>
-% % %                 end
-% % %             end
+            % % %             error('This function is obsolete. But it can be updated beautifully with the new was of looking to feedback!')
+            % % %             % This function has not been updated after the latest changes.
+            % % %
+            % % %             % the selected nodes are a set of nodes that the feedback pi is
+            % % %             % only drawn for them. This is for uncluttering the figure.
+            % % %             if ~exist('selected_node_indices', 'var') % if there is no "selected nodes", we draw the "feedback pi" for all nodes.
+            % % %                 selected_node_indices = 1:obj.num_nodes;
+            % % %             elseif isvector(selected_node_indices) % the "selected_node_indices" has to be a row vector. So, here we make the code robust to column vector as well.
+            % % %                 selected_node_indices = reshape(selected_node_indices,1,length(selected_node_indices));
+            % % %             end
+            % % %             feedback_plot_handle = [];
+            % % %             num_edges = length(obj.edges_list);
+            % % %             feedback_text_handle = zeros(1,num_edges);
+            % % %             for i = selected_node_indices
+            % % %                 start = obj.nodes(i).val(1:2); % from now on, in this function, we only consider 2D position of the nodes.
+            % % %                 j = feedback_pi(i); % j is the next node for node i, based on "feedback pi".
+            % % %                 if isnan(j) % the feedback_pi on the goal node return "nan"
+            % % %                     continue
+            % % %                 end
+            % % %                 [~,edge_num] = intersect(obj.edges_list,[i,j],'rows'); % this function returns the number of PRM edge, whose start and end nodes are i and j, respectively.
+            % % %                 edge_num =obj.corresponding_2D_edges(edge_num); % this line returns the number of corresponding 2D edge.
+            % % %                 % in the following we draw a paraller line to the edge,
+            % % %                 % through which we want to illustrate the feedback "pi".
+            % % %                 final = obj.nodes(j).val(1:2);
+            % % %                 parallel_vector_normalized = (final - start)/norm(final - start);
+            % % %                 perpendicular_vector_normalized = [ parallel_vector_normalized(2); - parallel_vector_normalized(1)];
+            % % %                 shiftet_dist = 1;
+            % % %                 length_of_parallel =  norm(final - start)/3;    % length of the dotted parallel line
+            % % %                 offset_from_start = (norm(final - start) - length_of_parallel)/2;
+            % % %                 start_new = start + shiftet_dist * perpendicular_vector_normalized + offset_from_start  * parallel_vector_normalized;
+            % % %                 final_new = final + shiftet_dist * perpendicular_vector_normalized - offset_from_start  * parallel_vector_normalized;
+            % % %                 plot([start_new(1), final_new(1)],[start_new(2), final_new(2)], '--r');
+            % % %
+            % % %                 % in the following we plot the small triangle (called arrow
+            % % %                 % here) on the dotted parallel line
+            % % %                 middle = (start_new + final_new)/2;
+            % % %                 arrow_size = length_of_parallel/5;
+            % % %                 arrow_head = middle + parallel_vector_normalized*arrow_size/2;
+            % % %                 bottom_mid = middle - parallel_vector_normalized*arrow_size/2;
+            % % %                 bottom_vertices_outer = bottom_mid + perpendicular_vector_normalized*arrow_size/4;
+            % % %                 bottom_vertices_inner = bottom_mid - perpendicular_vector_normalized*arrow_size/4;
+            % % %                 verts = [arrow_head';bottom_vertices_outer';bottom_vertices_inner'];
+            % % %                 faces = [1  2 3]; % this tells the number of vertices in the patch object. In our case, we have only three vertices and all of them are among the patch vertices.
+            % % %                 patch_handle = patch('Faces',faces,'Vertices',verts,'FaceColor','g','EdgeColor','r');
+            % % %                 feedback_plot_handle = [feedback_plot_handle, patch_handle]; %#ok<AGROW>
+            % % %
+            % % %                 % in the following, we write the number of the node on the
+            % % %                 % corresponding parallel lines.
+            % % %                 text_dist = shiftet_dist/2;
+            % % %                 text_position = bottom_vertices_outer + text_dist*perpendicular_vector_normalized;
+            % % %                 text_position(1) = text_position(1) - 0.45; % for some reason MATLAB shifts the starting point of the text a little bit to the right. So, here we return it back.
+            % % %                 if feedback_text_handle (edge_num) ~= 0 % which means some text has already been written for this edge
+            % % %                     current_text = get(feedback_text_handle (edge_num), 'String');
+            % % %                     set(feedback_text_handle (edge_num), 'String', [current_text, ', ', num2str(i)])
+            % % %                 else
+            % % %                     feedback_text_handle (edge_num) = text(text_position(1), text_position(2), num2str(i), 'fontsize',10,'color','r','EdgeColor','g');
+            % % %                     feedback_plot_handle = [feedback_plot_handle, feedback_text_handle (edge_num)]; %#ok<AGROW>
+            % % %                 end
+            % % %             end
         end
         function nearest_node_ind = compute_nearest_node_ind(obj,current_node_ind)
             % This function computes the nearest node to the "current_node_ind"

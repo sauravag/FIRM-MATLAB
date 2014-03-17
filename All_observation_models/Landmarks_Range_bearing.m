@@ -26,15 +26,16 @@ classdef Landmarks_Range_bearing < ObservationModel_interface
                 temporary_props.obsDim = 2*size(Landmarks,2);
             else
                 temporary_props = Landmarks_Range_bearing.request_landmarks();
+                save(SaveFileName,'Landmarks','-append') % here, we save the landmarks for the future runs.
             end
             Landmarks = temporary_props.landmarks; %#ok<NASGU>
-            save(SaveFileName,'Landmarks','-append') % here, we save the landmarks for the future runs.
+%             Landmarks = obstacle_class.map ;
         end
         function temporary_props = request_landmarks()
             old_prop = Landmarks_Range_bearing.set_figure();
             i=0;
             title({'Please mark Landmarks'},'fontsize',14)
-button = 0;
+            button = 0;
             while button~=3
                 i=i+1;
                 [Lx_temp,Ly_temp,button]=ginput(1);

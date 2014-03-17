@@ -15,7 +15,8 @@ if exist(fullfile(ToolboxAddress,'output','current_parameters.mat'))
 else
     New_LoadFileName = fullfile(ToolboxAddress,'output','default_parameters.mat'); % The name of file, from which we want to load the parameters.
 end
-load(New_LoadFileName,'par')
+% load(New_LoadFileName,'par')
+load(New_LoadFileName)
 old_par = par;
 
 [gui_handle, OkCancel, par_new_from_GUI] = user_GUI(); %#ok<ASGLU> % This function uses the global variable "LoadFileName" internally
@@ -43,7 +44,8 @@ if ~strcmpi(OkCancel,'Cancel') % if the user press Ok button
 %         copyfile(old_parameters_file,saving_folder_path)
 %     end
     par = par_new; %#ok<NASGU>
-    save(par_new.SaveFileName ,'par','-append')
+%     save(par_new.SaveFileName ,'par','-append')
+    save(par_new.SaveFileName ,'par','PNPRM','Obst_vertices','PRM','Landmarks')
 else
     par_new.Cancel_Run = par_new_from_GUI.Cancel_Run;
 end

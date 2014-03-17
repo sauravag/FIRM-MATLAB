@@ -130,6 +130,48 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
 	//plhs[1] = convertPtr2Mat<IceMaths::IndexedTriangle>(fv->cIndices);
 	//plhs[2] = convertPtr2Mat<IceMaths::Point>(fv->cVertices);
   }
+  else if (strcmp(cmd, "mesh_intersect") == 0) {
+      int ix_t0 = 1; int ix_t1 = 2;int ix_hit = 0;
+//       if (nrhs < 3) mexErrMsgTxt("Req. two meshes expected as input.");	
+        Model *Model0 = convertMat2Ptr<Model>(prhs[ix_t0]);
+        Model *Model1 = convertMat2Ptr<Model>(prhs[ix_t1]);
+    mexPrintf("\nThere are %d right-hand-side argument(s).", prhs[ix_t0]);
+    mexPrintf("\nThere are %d right-hand-side argument(s).", prhs[ix_t1]);
+
+        AABBTreeCollider TC;
+        TC.SetFirstContact(true);
+        TC.SetFullBoxBoxTest(false);
+        TC.SetFullPrimBoxTest(false);
+        TC.SetTemporalCoherence(false);
+//         TC.SetPointers0(Model0->GetMeshInterface()->GetNbTriangles(), Model0->GetMeshInterface()->GetNbVertices());
+//         TC.SetPointers1(Model0->GetMeshInterface()->GetNbTriangles(), Model0->GetMeshInterface()->GetNbVertices());
+//         TC.SetPointers0(Model0->mImesh->GetNbTriangles(), Model0->mImesh->GetNbVertices());
+//         TC.SetPointers1(Model0->mImesh->GetNbTriangles(), Model0->mImesh->GetNbVertices());
+//         Mesh *Mesh0 ; Mesh *Mesh1 ;
+//         TC.SetCallback0(trivertsCallback, udword(Mesh0));
+//         TC.SetCallback1(trivertsCallback, udword(Mesh1));
+
+        
+        // Setup cache
+        static BVTCache ColCache;
+        ColCache.Model0 = Model0;
+        ColCache.Model1 = Model1;
+        // Collision query
+        bool IsOk = TC.Collide(ColCache, NULL, NULL);
+        
+        	// Create output index
+	unsigned char *hitptr = 0;
+	plhs[ix_hit] = mxCreateNumericMatrix(1,1,mxLOGICAL_CLASS,mxREAL);
+	hitptr = (unsigned char*) mxGetData(plhs[ix_hit]);
+
+        
+         if (nlhs > 1) {
+            mexErrMsgTxt("ERROR in mesh_intersect: Too many outputs");	
+            hitptr[0] = (unsigned char)(-1);
+            }  
+         else {  hitptr[0] = (unsigned char)IsOk; }    
+
+  }
   else if (strcmp(cmd, "intersect") == 0) {
 		
 	int ix_t = 1; int ix_c1 = 2; int ix_c2 = 3;

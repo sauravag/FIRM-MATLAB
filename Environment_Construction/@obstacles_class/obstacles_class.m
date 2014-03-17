@@ -4,8 +4,10 @@ classdef obstacles_class < handle
     
     properties (Constant = true) % Note that you cannot change the order of the definition of properties in this class due to its ugly structure!! (due to dependency between properties.)
         tmp_prop = obstacles_class.costant_property_constructor();  % I use this technique to initialize the costant properties in run-time. If I can find a better way to do it, I will update it, as it seems a little bit strange.
+        map = obstacles_class.tmp_prop.map
         obst = obstacles_class.tmp_prop.obst;
         plot_3D_flag = obstacles_class.tmp_prop.plot_3D_flag;
+        obstPlotHandle = obstacles_class.tmp_prop.obstPlotHandle;
         face_color = obstacles_class.tmp_prop.face_color
         face_light = obstacles_class.tmp_prop.face_light
         edge_color = obstacles_class.tmp_prop.edge_color
@@ -25,6 +27,8 @@ classdef obstacles_class < handle
         function temporary_props = costant_property_constructor()
             obstacleStructure = obstacles_class.get_obstacles;
             temporary_props.obst = obstacleStructure.obst;
+            temporary_props.obstPlotHandle = obstacleStructure.obstPlotHandle;
+            temporary_props.map = obstacleStructure.map;
             temporary_props.vObj = obstacleStructure.vObj;
             temporary_props.fObj = obstacleStructure.fObj;
             temporary_props.boundary_handle = obstacleStructure.boundary_handle;
@@ -59,62 +63,60 @@ classdef obstacles_class < handle
                 Obst_vertices = tmp_prop.obst; %#ok<NASGU>
             end
         end
-        function tmp_prop = load(LoadFileName)
+        function tmp_prop = load(LoadFileName,varargin)
             %                 load(LoadFileName,'Obst_vertices')
+            % Reading the obj file containing the map and obstacles
             objOutput=read_wobj(LoadFileName);
             ObstVertices = objOutput.vertices;
-            tmp_prop.obst = ObstVertices;
-            
-            figure(gcf);
+            if nargin==2
+                figureHandle = varargin{1};
+                figure(figureHandle );
+            else
+                figureHandle = gcf;
+                figure(figureHandle);
+            end
             axis(user_data_class.par.sim.env_limits)
             title({'Please mark the vertices of polygonal obstacles'},'fontsize',14)
             ib=0;
             tmp_prop.boundary_handle = [];
             tmp_prop.fill_handle = [];
             
-            %             if user_data_class.par_new.sim.verboseFlag
-            vObj = objOutput.vertices; % variable containing all the vertices in the obj file;
-            tmp_prop.vObj = vObj;
+            
+            tmp_prop.vObj = ObstVertices; % variable containing all the vertices in the obj file;
             fObj = []; % variable containing all faces of the objects in the obj file
             cprintf('Blue','Reading objects from %s \n',LoadFileName)
-            %             end
+            tmp_prop.map = [];
             for idx_obj =1:numel(objOutput.objects)
-                if (strcmp(objOutput.objects(idx_obj).type,'g'))
+                if (strcmp(objOutput.objects(idx_obj).type,'g')) % this shows that the structure contains the name of an object
                     if user_data_class.par.sim.verboseFlag
                         cprintf('Red','object name : %s \n',objOutput.objects(idx_obj).data)
                     end
-                elseif strcmp(objOutput.objects(idx_obj).type,'f')
-                    currentObjectVertIndices =unique(objOutput.objects(idx_obj).data.vertices(:));
+                elseif strcmp(objOutput.objects(idx_obj).type,'f') % this is an actual face structure
+%                     currentObjectVertIndices =unique(objOutput.objects(idx_obj).data.vertices(:));
                     currentObjectFaces =(objOutput.objects(idx_obj).data.vertices);
                     
                     fObj= [fObj;currentObjectFaces];
                     laserPlane = createPlane([0 0 0.0975], [0 0 1]);
-                    polys = intersectPlaneMesh(laserPlane, vObj, currentObjectFaces);
+                    % the intersection of the plane with the mesh sometimes
+                    % gives more than 2 points on a line segemtn
+                    polys = intersectPlaneMesh(laserPlane, ObstVertices, currentObjectFaces);
+                    
+                    % those points are discarded here if a point is not a corner then it is discarded  
+                    B = isParallel3d( circshift(polys{1},[1 0]) - polys{1}, ...
+                         polys{1} - circshift(polys{1},[-1 0]),0.001 ); % this line discards non corner points
+                    
+                    corners = polys{1}(~B,:);
+                    tmp_prop.map = [tmp_prop.map,corners(:,1:2)'];
                     
                     
-                    
-                    
-                    
-                    vertPosX = [ObstVertices(currentObjectVertIndices,1);ObstVertices(currentObjectVertIndices(1),1)];
-                    vertPosY = [ObstVertices(currentObjectVertIndices,2);ObstVertices(currentObjectVertIndices(1),2)];
-                    % making it clockwise
-                    cx = mean(vertPosX);
-                    cy = mean(vertPosY);
-                    % Step 2: Find the angles:
-                    
-                    a = atan2(vertPosY- cy, vertPosX- cx);
-                    % Step 3: Find the correct sorted order:
-                    
-                    [~, order] = sort(a);
-                    % Step 4: Reorder the coordinates:
-                    vertPosX = vertPosX(order);
-                    vertPosY = vertPosY(order);
+%                     vertPosX = [ObstVertices(currentObjectVertIndices,1);ObstVertices(currentObjectVertIndices(1),1)];
+%                     vertPosY = [ObstVertices(currentObjectVertIndices,2);ObstVertices(currentObjectVertIndices(1),2)];
                     axis(user_data_class.par.sim.env_limits)
-                    h_obs_patch = patch_display(struct('vertices',vObj,'faces',currentObjectFaces));
-                    h_obs=impoly(gca,polys{1}(:,1:2));
+                    h_obs = patch_display(struct('vertices',ObstVertices,'faces',currentObjectFaces));
+%                     h_obs=impoly(gca,polys{1}(:,1:2));
                     
                     %                     h_obs=impoly(gca,[vertPosX,vertPosY]);
-                    tmp_prop.boundary_handle = [tmp_prop.boundary_handle, h_obs];
+%                     tmp_prop.boundary_handle = [tmp_prop.boundary_handle, h_obs];
                     if isempty(h_obs) && ib==0
                         tmp_prop.obst=[];
                         break
@@ -123,24 +125,21 @@ classdef obstacles_class < handle
                         % % %                         break
                     else
                         ib=ib+1;
-                        inputed_obstacles{ib} = h_obs.getPosition; %#ok<AGROW>
-                        %         [inputed_obstacles{ib}(:,1),inputed_obstacles{ib}(:,2)] = poly2cw(inputed_obstacles{ib}(:,1),inputed_obstacles{ib}(:,2));  % ordering the polygon vertices in a clockwise order, if they are not already. % This is gonna be important in drawing 3D version of obstacles, or in projecting light on scene.
-                        fill_color_handle = fill(inputed_obstacles{ib}(:,1),inputed_obstacles{ib}(:,2),'r');
-                        tmp_prop.fill_handle = [tmp_prop.fill_handle, fill_color_handle];
+%                         inputed_obstacles{ib} = h_obs.getPosition; %#ok<AGROW>
+                          inputed_obstacles(ib).corners = corners ; %#ok<AGROW>
+                          inputed_obstacles(ib).objectFaces = currentObjectFaces ; %#ok<AGROW>
+%                         %         [inputed_obstacles{ib}(:,1),inputed_obstacles{ib}(:,2)] = poly2cw(inputed_obstacles{ib}(:,1),inputed_obstacles{ib}(:,2));  % ordering the polygon vertices in a clockwise order, if they are not already. % This is gonna be important in drawing 3D version of obstacles, or in projecting light on scene.
+%                         fill_color_handle = fill(inputed_obstacles{ib}(:,1),inputed_obstacles{ib}(:,2),'r');
+%                         tmp_prop.fill_handle = [tmp_prop.fill_handle, fill_color_handle];
                     end
                     %                     bb= obstacles_class.compute_boundary(objOutput.objects(idx_obj).data.vertices )
                 end
             end
             tmp_prop.fObj = fObj;
-            
+            tmp_prop.obstPlotHandle = figureHandle;
             tmp_prop.obst = inputed_obstacles;
-            
-            
-            
-            
-            
-            
             tmp_prop.boundary_handle = [];
+            
         end
         function tmp_prop = request(name)
             %             Obstacles = obstacles_class; %#ok<NASGU> % The object "Obstacles" is never used. This line only cause the "Constant" properties of the "obstacles_class" class to be initialized.
@@ -190,34 +189,14 @@ classdef obstacles_class < handle
         end
         function plot_handle = draw()
             plot_handle = [];
-            top_h = obstacles_class.top_height_3D;
-            bottom_h = obstacles_class.bottom_height_3D;
-            for ob_ctr = 1:length(obstacles_class.obst)
-                if 1%obstacles_class.plot_3D_flag== 1
-                    % note that the vertices of obstacles are already
-                    % ordered in the clockwise direction. So, the following
-                    % algorithm to make 3D obstacles, makes sense.
-                    x = obstacles_class.obst{ob_ctr}(:,1); % x coordinate of the obst. vertices
-                    y = obstacles_class.obst{ob_ctr}(:,2); % y coordinate of the obst. vertices
-                    num_ver = size(obstacles_class.obst{ob_ctr},1); % number of vertices of the obstacle "ob_ctr"
-                    for i = 1:num_ver
-                        j = i+1;
-                        if j > num_ver, j =1; end % this is to connect the last vertice to the first one
-                        side_face_ver_x = [x(i),x(j),x(j),x(i)]; % the x coordinates of the i-th side face
-                        side_face_ver_y = [y(i),y(j),y(j),y(i)]; % the x coordinates of the i-th side face
-                        side_face_ver_z = [top_h,top_h,bottom_h,bottom_h]; % the x coordinates of the i-th side face
-                        tmp_handle = patch(side_face_ver_x,side_face_ver_y,side_face_ver_z,obstacles_class.face_color,'facelight',obstacles_class.face_light,'EdgeColor',obstacles_class.edge_color,'LineWidth',obstacles_class.edge_width,...
-                            'EdgeLighting',obstacles_class.edge_light,'FaceLighting',obstacles_class.face_light,'Facecolor',obstacles_class.face_color); % plot the i-th side face of the obstacle cylinder
-                        plot_handle = [plot_handle,tmp_handle]; %#ok<AGROW>
-                    end
-                    tmp_handle = patch(x,y,top_h*ones(num_ver,1),obstacles_class.face_color,'facelight',obstacles_class.face_light ,'EdgeColor',obstacles_class.edge_color,'LineWidth',obstacles_class.edge_width,...
-                        'EdgeLighting',obstacles_class.edge_light,'FaceLighting',obstacles_class.face_light,'Facecolor',obstacles_class.face_color); % plot the upper lid of the obstacle cylinder
-                    plot_handle = [plot_handle,tmp_handle];     %#ok<AGROW>
-                    tmp_handle = patch(x,y,bottom_h*ones(num_ver,1),obstacles_class.face_color,'facelight',obstacles_class.face_light,'EdgeColor',obstacles_class.edge_color,'LineWidth',obstacles_class.edge_width,...
-                        'EdgeLighting',obstacles_class.edge_light,'FaceLighting',obstacles_class.face_light,'Facecolor',obstacles_class.face_color); % plot the bottom lid of the obstacle cylinder
+            for ob_ctr = 1:numel(obstacles_class.obst)
+                if 1% obstacles_class.plot_3D_flag== 1
+                tmp_handle = patch_display(struct('vertices',obstacles_class.vObj,'faces',obstacles_class.obst(ob_ctr).objectFaces));
+
                     plot_handle = [plot_handle,tmp_handle]; %#ok<AGROW>
+                    
                 else
-                    fill_color_handle = fill(obst{ob_ctr}(:,1),obst{ob_ctr}(:,2),obstacles_class.obst_2D_color);
+                    fill_color_handle = fill(obstacles_class.obst(ob_ctr).corners(1,:),obstacles_class.obst(ob_ctr).corners(2,:),obstacles_class.obst_2D_color);
                     set(fill_color_handle,'LineWidth',obstacles_class.edge_width,'EdgeColor',obstacles_class.edge_color,'Facecolor',obstacles_class.face_color);
                     %                 set(fill_color_handle,'LineWidth',2,'EdgeColor',0.1*ones(1,3),'EdgeLighting','flat','FaceLighting','phong','Facecolor',0.5*ones(1,3),'BackFaceLighting','reverselit');
                     plot_handle = [plot_handle, fill_color_handle]; %#ok<AGROW>

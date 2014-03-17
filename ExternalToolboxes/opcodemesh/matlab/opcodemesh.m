@@ -1,5 +1,5 @@
 classdef opcodemesh < handle
-    properties (SetAccess = private, Hidden = true)
+    properties %%(SetAccess = private, Hidden = true)
         objectHandle; % Handle to the underlying C++ class instance
     end
     methods
@@ -15,6 +15,9 @@ classdef opcodemesh < handle
 
         function varargout = intersect(this, varargin)
             [varargout{1:nargout}] = opcodemeshmex('intersect', this.objectHandle, varargin{:});
+        end
+        function varargout = mesh_intersect(this, varargin)
+            [varargout{1:nargout}] = opcodemeshmex('mesh_intersect', this.objectHandle, varargin{:});
         end
         
         function update(this, varargin)

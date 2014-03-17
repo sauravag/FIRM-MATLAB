@@ -2,6 +2,38 @@ classdef planar_robot_XYTheta_state < state_interface
     % This class encapsulates the state of a planar robot, described by its 2D location and heading angle.
     properties (Constant)
         dim = 3; % state dimension
+        tmp_prop = planar_robot_XYTheta_state.costant_property_constructor();  % I use this technique to initialize the costant properties in run-time. If I can find a better way to do it, I will update it, as it seems a little bit strange.
+        fRobot =planar_robot_XYTheta_state.tmp_prop.fRobot;
+        vRobot =planar_robot_XYTheta_state.tmp_prop.vRobot;
+        
+    end
+    
+    
+    
+    methods (Static = true)
+        function temporary_props = costant_property_constructor()
+            
+            robotObj = read_wobj('youbot_simple5.obj');
+            
+            
+            fRobot = [];
+            vRobot = robotObj.vertices;
+            
+            for idx_obj =1:numel(robotObj.objects)
+                if (strcmp(robotObj.objects(idx_obj).type,'g'))
+                    cprintf('Red','object name : %s \n',robotObj.objects(idx_obj).data)
+                elseif strcmp(robotObj.objects(idx_obj).type,'f')
+                    currentObjectFaces =(robotObj.objects(idx_obj).data.vertices);
+                    fRobot= [fRobot;currentObjectFaces];
+                end
+            end
+            
+            
+            temporary_props.fRobot = fRobot;
+            temporary_props.vRobot = vRobot;
+            
+            
+        end
     end
     properties
         val; % value of the state
@@ -16,9 +48,9 @@ classdef planar_robot_XYTheta_state < state_interface
             obj = obj@state_interface(varargin{:});
         end
         function signed_dist_vector = signed_element_wise_dist(obj,x2) % this function returns the "Signed element-wise distnace" between two states x1 and x2
-             x1 = obj.val; % retrieve the value of the state vector
-             if isa(x2,'state'), x2=x2.val; end % retrieve the value of the state vector
-             signed_dist_vector = x1 - x2;
+            x1 = obj.val; % retrieve the value of the state vector
+            if isa(x2,'state'), x2=x2.val; end % retrieve the value of the state vector
+            signed_dist_vector = x1 - x2;
             % Following part takes care of periodicity in heading angle representation.
             th_dist = signed_dist_vector(3);
             if th_dist >= 0
@@ -34,17 +66,23 @@ classdef planar_robot_XYTheta_state < state_interface
             % The full list of properties for this function is:
             % 'RobotShape', 'RobotSize', 'TriaColor', 'color', 'HeadShape',
             % 'HeadSize'.
+            TRANS = RT2TR(rotz(obj.val(3)), [obj.val(1);obj.val(2);0]);
+            vRobotCurrent = transformPoint3d(planar_robot_XYTheta_state.vRobot(:,1),...
+                planar_robot_XYTheta_state.vRobot(:,2),...
+                planar_robot_XYTheta_state.vRobot(:,3), TRANS);
+            
             
             % default values
             robot_shape = 'point';
-            robot_size = 0.5;
+            robot_size = 0.05;
             tria_color = 'b';
             head_color = 'b';
             head_shape = '*';
-            head_size = 6;
+            head_size = 0.6;
             robot_text = [];
             font_size = 15;
             text_color  = 'b';
+            RobotColor = [0.1 0.3 0.5];
             for i = 1 : 2 : length(varargin)
                 switch lower(varargin{i})
                     case lower('RobotShape')
@@ -59,6 +97,8 @@ classdef planar_robot_XYTheta_state < state_interface
                         head_shape = varargin{i+1};
                     case lower('HeadSize')
                         head_size = varargin{i+1};
+                    case lower('RobotColor')
+                        RobotColor = varargin{i+1};
                     case lower('text')
                         robot_text = varargin{i+1};
                     case lower('fontsize')
@@ -69,6 +109,8 @@ classdef planar_robot_XYTheta_state < state_interface
                         error('This property does not exist.')
                 end
             end
+            tria_handle_ = patch_display(struct('vertices',vRobotCurrent,'faces',planar_robot_XYTheta_state.fRobot),0,0,RobotColor,'drawInMap');
+
             x=obj.val;
             obj.head_handle = plot(x(1),x(2),'Marker',head_shape,'MarkerSize',head_size,'MarkerEdgeColor',head_color,'MarkerFaceColor',head_color);
             th=x(3);
@@ -96,7 +138,8 @@ classdef planar_robot_XYTheta_state < state_interface
                 obj.text_handle = text(text_pos(1),text_pos(2),robot_text,'fontsize',font_size,'color',text_color);
             end
             
-            obj.tria_handle = [obj.tria_handle,plot_3D_cone_in_2D(x(1),x(2),th,tria_color)];
+            %             obj.tria_handle = [obj.tria_handle,plot_3D_cone_in_2D(x(1),x(2),th,tria_color)];
+            obj.tria_handle = [obj.tria_handle,tria_handle_];
             
         end
         function obj = delete_plot(obj,varargin)
@@ -146,15 +189,37 @@ classdef planar_robot_XYTheta_state < state_interface
             neighb_plot_handle = plot(scale*cos(tmp_th) + x , scale*sin(tmp_th) + y);
         end
         function YesNo = is_constraint_violated(obj)
-            x = obj.val;
+            %             x = obj.val;
             YesNo = 0; % initialization
-            obst = obstacles_class.obst; % for abbreviation
-            for i_ob = 1:length(obst)
-                if any(inpolygon(x(1,:),x(2,:),obst{i_ob}(:,1),obst{i_ob}(:,2)))
-                    YesNo =1;
-                    return
-                end
-            end
+            
+            TRANS = RT2TR(rotz(obj.val(3)), [obj.val(1);obj.val(2);0]);
+            vRobotCurrent = transformPoint3d(planar_robot_XYTheta_state.vRobot(:,1),...
+                planar_robot_XYTheta_state.vRobot(:,2),...
+                planar_robot_XYTheta_state.vRobot(:,3), TRANS);
+            
+            TRI1 = [obstacles_class.vObj(obstacles_class.fObj(:,1),:),...
+                obstacles_class.vObj(obstacles_class.fObj(:,2),:),...
+                obstacles_class.vObj(obstacles_class.fObj(:,3),:)];
+            TRI2 = [vRobotCurrent(planar_robot_XYTheta_state.fRobot(:,1),:),...
+                vRobotCurrent(planar_robot_XYTheta_state.fRobot(:,2),:),...
+                vRobotCurrent(planar_robot_XYTheta_state.fRobot(:,3),:)];
+            TRANS1 = [0 0 0  1 0 0 0 1 0 0 0 1];
+            %   [ e4  e5  e6 e1]
+            % [ e7  e8  e9 e2]
+            % [e10 e11 e12 e3]
+            % [  0   0   0  1]
+            TRANS2 = [0 0 0 1 0 0 0 1 0 0 0 1];
+            YesNo = COLDETECT(TRI1, TRI2, TRANS1, TRANS2);
+            
+            
+            
+            %             obst = obstacles_class.obst; % for abbreviation
+            %             for i_ob = 1:length(obst)
+            %                 if any(inpolygon(x(1,:),x(2,:),obst(i_ob).corners(:,1),obst(i_ob).corners(:,2)))
+            %                     YesNo =1;
+            %                     return
+            %                 end
+            
         end
         function old_limits = zoom_in(obj,zoom_ratio)
             old_xlim = xlim;
@@ -172,6 +237,8 @@ classdef planar_robot_XYTheta_state < state_interface
     methods (Static)
         function sampled_state = sample_a_valid_state()
             user_or_random = 'user';
+            valid_state = 0;
+            while ~valid_state
             if strcmp(user_or_random , 'user')
                 [x,y]=ginput(1);
                 if isempty(x)
@@ -182,12 +249,19 @@ classdef planar_robot_XYTheta_state < state_interface
                     sampled_state = state([x ; y ; random_theta]);
                 end
                 if sampled_state.is_constraint_violated()
-                    sampled_state = user_samples_a_state();
+%                     sampled_state = user_samples_a_state();
+                    disp('Constaint violated. Collision possibility. Please choose a node somewhere else or such that constrian is not violated')
+                    
+                    
+                else
+                                        valid_state = 1;
+
                 end
             elseif strcmp(user_or_random , 'random')
                 error('not yet implemented')
             else
                 error('not correct!');
+            end
             end
         end
     end

@@ -63,9 +63,9 @@ classdef youbot_base < MotionModel_interface
             if isa(X_final,'state'), X_final=X_final.val; end % retrieve the value of the state vector
             B = youbot_base.df_du_func(0,0,0)/youbot_base.dt;; %% B matrix in the youbot robot does not depend on current state or input
             
-            deltaX = abs(X_final - X_initial);
+            deltaX = (X_final - X_initial);
             
-            t_interval = 0.8*max(deltaX)/youbot_base.vMax; % we move by 80 percent of the maxmimum velocity
+            t_interval = (1/0.8)*max(abs(B'*inv(B*B')*deltaX))/youbot_base.vMax; % we move by 80 percent of the maxmimum velocity
             kf = ceil(t_interval/ youbot_base.dt); % number of steps needed to follow the trajectory 
             uStar = (1/(kf*youbot_base.dt))*B'*inv(B*B')*deltaX;  %  
             
@@ -97,9 +97,9 @@ classdef youbot_base < MotionModel_interface
             if isa(X_final,'state'), X_final=X_final.val; end % retrieve the value of the state vector
             B = youbot_base.df_du_func(0,0,0)/ youbot_base.dt;; %% B matrix in the youbot robot does not depend on current state or input
            
-            deltaX = abs(X_final - X_initial);
+            deltaX = X_final - X_initial;
             
-            t_interval = 0.8*max(deltaX)/youbot_base.vMax; % we move by 80 percent of the maxmimum velocity
+            t_interval = (1/0.8)*max(abs(B'*inv(B*B')*deltaX))/youbot_base.vMax; % we move by 80 percent of the maxmimum velocity
             kf = ceil(t_interval/ youbot_base.dt); % number of steps needed to follow the trajectory 
             uStar = (1/(kf*youbot_base.dt))*B'*inv(B*B')*deltaX;  %  
             
@@ -112,7 +112,7 @@ classdef youbot_base < MotionModel_interface
             for k = 1:kf
                 u_p(:,k) = uStar;  % "T_inv_k" maps the "velocities in body coordinate" to the control signal
                 x_p(:,k+1) = youbot_base.f_discrete(x_p(:,k),u_p(:,k) ,zeros(youbot_base.wDim,1)); % generaating the trajectory 
-%                 tmp = state(x_p(:,k+1)); if tmp.is_constraint_violated(), nominal_traj =[]; return; end
+                tmp = state(x_p(:,k+1)); if tmp.is_constraint_violated(), nominal_traj =[]; return; end
             end
             
             % noiselss motion  % for debug: if you uncomment the following

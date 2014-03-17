@@ -25,7 +25,7 @@ par_new.sim.video_quality = 100;
 par_new.sim.interactive_disturbance_allowed = 0 ;
 par_new.sim.draw_at_every_n_steps = 4;
 par_new.sim.FrameRate = 5;
-par_new.sim.env_limits = [-5 5 -5 5]; %[-3.75 , 100 , -23.75 , 80]; %[-3 155 -3 155]; %[-10 10 -10 10];%[-6 104 -28 85];%[-5 265 -5 225];%[-6 104 -28 85];
+par_new.sim.env_limits = [-6 6 -6 6]; %[-3.75 , 100 , -23.75 , 80]; %[-3 155 -3 155]; %[-10 10 -10 10];%[-6 104 -28 85];%[-5 265 -5 225];%[-6 104 -28 85];
 par_new.sim.env_z_limits = [5 20];
 par_new.sim.top_obstacle_height_3D = 1;
 par_new.sim.bottom_obstacle_height_3D = 0;
@@ -80,6 +80,10 @@ end
 %=========== Observation Model Parameters
 if strcmpi(par_new.selected_observation_model,'Three robot good-poor GPS no comm')
         typeDef('Three_robot_good_poor_GPS_no_comm','ObservationModel_class')
+elseif strcmpi(par_new.selected_observation_model,'Laser Scanner (range bearing)')
+        typeDef('Landmarks_Range_bearing_laser','ObservationModel_class')
+    
+
 elseif strcmpi(par_new.selected_observation_model,'Three robot good-poor GPS with comm')
         typeDef('Three_robot_good_poor_GPS_with_comm','ObservationModel_class')
 elseif strcmpi(par_new.selected_observation_model,'Landmark (range and bearing) sensing')
@@ -223,7 +227,7 @@ par_new.No_plot = 1; % this is for plots in construction phase. The execution ph
 
 par_new.PRM_parameters.neighboring_distance_threshold = 30; %* 1.25 * 1000;% * 0.3;
 par_new.PRM_parameters.PRM_node_text = 1; % if this is one, the number of nodes will be written on the figure.
-par_new.PRM_parameters.PRM_node_plot_properties =  {'RobotShape','triangle','robotSize',0.8};% {'RobotShape','triangle','robotSize',2};
+par_new.PRM_parameters.PRM_node_plot_properties =  {'RobotShape','triangle','robotSize',0.08};% {'RobotShape','triangle','robotSize',2};
 par_new.PRM_parameters.draw_edges_flag = 1;
 
 % =========== Orbit parameters

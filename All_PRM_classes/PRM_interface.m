@@ -44,11 +44,12 @@ classdef PRM_interface
     
     methods %(Access = private)  % These have to be private! But the private methods are not inherited. So, they are set to be public.
         function old_prop = set_figure(obj) % This function sets the figure (size and other properties) to values that are needed for landmark selection or drawing.
-            figure(gcf);
+            prmFihureHandle = figure(gcf);
             old_prop{1}=get(gca,'NextPlot');hold on; % saves the old "NextPlot" property and set it to "hold on" % Note that this procedure cannot be moved into the "set_figure" function.
             old_prop{2}=get(gca,'XGrid'); % saves the old "XGrid" property.
             old_prop{3}=get(gca,'YGrid'); % saves the old "YGrid" property.
             old_prop{4}=get(gca,'view'); % saves the oldl "camera angle" property.
+            old_prop{5}=prmFihureHandle; % saves the plot handle 
             grid on; % set the XGrid and YGrid to "on".
             if ~isempty(user_data_class.par.sim.figure_position)
                 set(gcf,'Position',user_data_class.par.sim.figure_position)

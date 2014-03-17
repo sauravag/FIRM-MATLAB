@@ -8,17 +8,28 @@ classdef EmbeddedSimulator < SimulatorInterface & handle
         belief
         videoObj
         RayCastObj = [];%opcodemesh(obstacles_class.vObj',obstacles_class.fObj');
-        
+        simpar % (Amir) I am trying to replace the par with sim par. par contains configurations for everything but simpar should contain parameters realted to each specific simulator
+        % this is important because each simulator can have its own config
+        % file different from the other oen,
+        obsModel
+        laserPlotHndl
+        thresholds % thresholds for laser feature extraction
+        plotHandles % this is to save plot handles. User might generate other figures and change the focus to them using gcf is not safe in such situations
+        % any plot inside the code should refer to one of these handles    end
     end
-    
     methods
         % constructor
         function obj = EmbeddedSimulator()
             % in constructor we retrive the paraemters of the planning
             % problem entered by the user.
             obj.par = user_data_class.par.sim;
+            obj.simpar = ReadYaml('embedded_sim_config');
             %             obj.robot = Robot([0;0;0]);
+            obj.plotHandles = struct('obstPlotHandel',0); % it is better to initialze the structure here in order to make it clear how many fields it has
             obj.RayCastObj = opcodemesh(obstacles_class.vObj',obstacles_class.fObj');
+            obj.plotHandles.obstPlotHandel = obstacles_class.obstPlotHandle;
+            obj.obsModel = ObservationModel_class;
+            obj.thresholds=default_thresholds_func();
         end
         % initialize : initializes the simulator
         function obj = initialize(obj)
@@ -88,10 +99,12 @@ classdef EmbeddedSimulator < SimulatorInterface & handle
         end
         % Refresh :
         function obj = refresh(obj)
+            figure(obj.plotHandles.prmFigureHandle)
             obj.robot = obj.robot.delete_plot();
-            obj.robot = obj.robot.draw();
+            obj.robot = obj.robot.draw('RobotColor',[1 0 0]);
             %             obj.belief = obj.belief.delete_plot();
             %             obj.belief = obj.belief.draw();
+            obj.robot.val
         end
         function obj = recordVideo(obj)
             if user_data_class.par.sim.video == 1
@@ -131,7 +144,16 @@ classdef EmbeddedSimulator < SimulatorInterface & handle
             end
             obj.robot.val = MotionModel_class.f_discrete(obj.robot.val,u,w);
         end
-        
+        function obj = getSensorData(obj,sensorName)
+            
+            
+            % Getting laser data
+            obj.sensor = obj.sensor.getData();
+            
+            % Add more cases for other sensors
+            
+            
+        end
         function z = getObservation(obj, noiseMode)
             % generating observation noise
             if noiseMode
@@ -140,14 +162,14 @@ classdef EmbeddedSimulator < SimulatorInterface & handle
                 v = ObservationModel_class.zeroNoise;
             end
             % constructing ground truth observation
-            intitialTheta = 0*pi/180; % radian. The angle of the first ray of the laser
-            endTheta = 180*pi/180; % radian. The angle of the last ray of the laser
-            raysPerDegree = 4; % resolution in terms of dnumber of rays per degree
-            laserZ = 0.0975; % height of the laser
-            resolution = (1/raysPerDegree)*pi/180; % resolution in radians
-            robotPose = obj.robot.val; % [x,y,theta]
+            intitialTheta = obj.simpar.sim.sensor.laser.intitialTheta;  % 0*pi/180; % radian. The angle of the first ray of the laser
+            endTheta = obj.simpar.sim.sensor.laser.endTheta;%180*pi/180; % radian. The angle of the last ray of the laser
+            raysPerDegree = obj.simpar.sim.sensor.laser.raysPerDegree;  %4; % resolution in terms of dnumber of rays per degree
+            laserZ = obj.simpar.sim.sensor.laser.laserZ;  %0.0975; % height of the laser
+            resolution = obj.simpar.sim.sensor.laser.resolution;  % resolution in radians
+            robotPose = obj.robot.val;  % [x,y,theta]
             from_laser = [robotPose(1),robotPose(2),laserZ];
-            theta  = intitialTheta:resolution:endTheta;
+            theta  = robotPose(3)+intitialTheta:resolution:robotPose(3)+endTheta;
             rangeLaser = 4; % meter. the range of the laser scanner
             to_rays = [[rangeLaser.*cos(theta + from_laser(3))]',[rangeLaser.*sin(theta+ from_laser(3))]',repmat(laserZ,length(theta),1) ];
             % from = [-Z(:) Y(:) X(:)]';
@@ -157,15 +179,36 @@ classdef EmbeddedSimulator < SimulatorInterface & handle
             [hit,d,trix,bary] = obj.RayCastObj.intersect(repmat(from_laser',1,length(theta)),to_rays');
             y= from_laser(2)+rangeLaser.*d'.*sin(theta+ from_laser(3));
             x= from_laser(1)+rangeLaser.*d'.*cos(theta+ from_laser(3));
+            scan.x = x.*100;
+            scan.y = y.*100;
+            new_features_set=hierarchical_feature_extracting(scan,obj.thresholds,'new');
             z = nan(1,length(theta));
             z(~isnan(d))=laserZ;
             % figure
             % hold on ;
-            plot3(x,y,repmat(from_laser(3),1,length(x)),'.r','LineWidth',6)
-            z = ObservationModel_class.h_func(obj.robot.val,v);
+            %             if ~isempty(obj.laserPlotHndl)
+            %                 delete(obj.laserPlotHndl);
+            %
+            %             end
+            figure(obj.plotHandles.prmFigureHandle)
+            if isempty(obj.laserPlotHndl)
+            obj.laserPlotHndl = plot3(x,y,repmat(from_laser(3),1,length(x)),'.r','LineWidth',6);
+            else
+                delete( obj.laserPlotHndl); % clear the previous scan
+                obj.laserPlotHndl = plot3(x,y,repmat(from_laser(3),1,length(x)),'.r','LineWidth',6);
+            end
+            %             z = obj.obsModel.h_func(obj.obsModel,obj.robot.val,v);
+            z = obj.obsModel.h_func(obj.robot.val,v);
+            obj.thresholds
+            
         end
-        function isCollided = checkCollision(obj)
-            isCollided = 0;
+        function isCollided = checkCollision(obj,varargin)
+            if nargin==2
+                whithobj = varargin{2};
+                
+            else
+                isCollided = 0;
+            end
         end
         
     end

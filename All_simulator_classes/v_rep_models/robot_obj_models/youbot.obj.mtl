@@ -1,0 +1,115 @@
+# File produced by Open Asset Import Library (http://www.assimp.sf.net)
+# (assimp v3.0.1270)
+
+newmtl Material_005_001-mate-material
+kd 0 0 0
+ka 0.43854 0.43854 0.43854
+ks 0.03125 0.03125 0.03125
+d 1
+Ns 10
+illum 2
+
+newmtl JoinedMaterial_#7
+kd 0 0 0
+ka 0.00392 0.00392 0.00392
+ks 0.0625 0.0625 0.0625
+d 1
+Ns 10
+illum 2
+
+newmtl black-material-ma_000-material
+kd 0 0 0
+ka 0.00392 0.00392 0.00392
+ks 0.03125 0.03125 0.03125
+d 1
+Ns 10
+illum 2
+
+newmtl JoinedMaterial_#4
+kd 0 0 0
+ka 0 0 0
+ks 0.125 0.125 0.125
+d 1
+Ns 10
+illum 2
+
+newmtl black_002-materia_001-material
+kd 0 0 0
+ka 0.28819 0.28819 0.28819
+ks 0.0078125 0.0078125 0.0078125
+d 1
+Ns 3
+illum 2
+
+newmtl JoinedMaterial_#11
+kd 0 0 0
+ka 0 0 0
+ks 0.25 0.25 0.25
+d 1
+Ns 10
+illum 2
+
+newmtl orange-material-m_001-material
+kd 0.290955 0.0350693 0.00318545
+ka 1 0.41 0.14
+ks 0.0078125 0.0078125 0.0078125
+d 1
+Ns 3
+illum 2
+
+newmtl orange-material-mater-material
+kd 0.454617 0.0547958 0.00497726
+ka 1 0.40784 0.13725
+ks 0.015625 0.015625 0.015625
+d 1
+Ns 10
+illum 2
+
+newmtl JoinedMaterial_#16
+kd 0.454617 0.0547958 0.00497726
+ka 1 0.40724 0.13843
+ks 0.0625 0.0625 0.0625
+d 1
+Ns 10
+illum 2
+
+newmtl orange_003-materi_000-material
+kd 0.454617 0.0547958 0.00497726
+ka 1 0.40784 0.13725
+ks 0.03125 0.03125 0.03125
+d 1
+Ns 10
+illum 2
+
+newmtl white-material-ma_001-material
+kd 0.298644 0.298644 0.298644
+ka 0.91139 0.91139 0.91139
+ks 0.0078125 0.0078125 0.0078125
+d 1
+Ns 3
+illum 2
+
+newmtl JoinedMaterial_#19
+kd 0.4096 0.4096 0.4096
+ka 0 0 0
+ks 0.125 0.125 0.125
+d 1
+Ns 10
+illum 2
+
+newmtl white_002-material-material
+kd 0.58329 0.58329 0.58329
+ka 0.91139 0.91139 0.91139
+ks 0.0625 0.0625 0.0625
+d 1
+Ns 10
+illum 2
+
+newmtl JoinedMaterial_#24
+kd 0.582275 0.281098 0.0200784
+ka 0 0 0
+ks 0.25 0.25 0.25
+d 1
+Ns 10
+illum 2
+

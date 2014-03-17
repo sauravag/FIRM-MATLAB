@@ -1,0 +1,199 @@
+selected_motion_model: Kuka YouBot Base
+selected_observation_model: Landmark (range and bearing) sensing
+observation_model_parameters:
+  manual_landmarks: 0.0
+  eta: [0.105, 0.105]
+  sigma_b: [0.1, 0.0]
+  interactive_OM: 0.0
+  noiseFlag: 0.0
+planning_problem_param: {solver: Stationary LQG-based FIRM, Offline_construction_phase: 0.0,
+  Online_phase: 1.0}
+selected_simulator: Embedded Simulator
+sim:
+  sensor:
+    laser:
+      intitialTheta: 0    # radian. The angle of the first ray of the laser
+      endTheta: 3.1416    # radian. The angle of the last ray of the laser
+      raysPerDegree: 4    # resolution in terms of dnumber of rays per degree
+      resolution: 0.0044  #(1/raysPerDegree)*pi/180 resolution in radians
+      rangeLaser: 4       # meter. the range of the laser scanner
+      laserZ: 0.0975     # meter. height of the laser scanner
+  intractive_obst: 0.0
+  interactive_PRM: 0.0
+  figure_position: [36.0, 56.0, 1536.0, 864.0]
+  video: 0.0
+  video_quality: 100.0
+  interactive_disturbance_allowed: 0.0
+  draw_at_every_n_steps: 4.0
+  FrameRate: 5.0
+  env_limits: [-6.0, 6.0, -6.0, 6.0]
+  env_z_limits: [5.0, 20.0]
+  top_obstacle_height_3D: 1.0
+  bottom_obstacle_height_3D: 0.0
+  env_background_image_address: none
+  Lighting_and_3D_plots: 1.0
+  imageResizeRatio: 0.25
+  viewAngle: [30.0, 40.0]
+  initialZoomRatio: 1.2
+  verboseFlag: 1.0
+Cancel_Run: false
+motion_model_parameters:
+  robot_link_length: 0.2
+  base_length: 13.0
+  dt: 0.1
+  V_const_path: 5.0
+  w_const_path: 0.4363323129985824
+  sigma_b_u:
+  - [0.0]
+  - [0.0]
+  - [0.0]
+  P_Wg:
+  - [0.04000000000000001, 0.0, 0.0]
+  - [0.0, 0.04000000000000001, 0.0]
+  - [0.0, 0.0, 0.004873878716587337]
+  eta_u_unicycle:
+  - [0.0]
+  - [0.0]
+  eta_u_omni:
+  - [0.0]
+  - [0.0]
+  - [0.0]
+  omega_const_path: 1.5707963267948966
+  sigma_b_u_unicycle:
+  - [0.0]
+  - [0.0]
+  controlDim: 4.0
+  sigma_b_u_omni:
+  - [0.0]
+  - [0.0]
+  - [0.0]
+  V_const_path_team:
+  - [20.0]
+  - [20.0]
+  - [20.0]
+  - [20.0]
+  - [20.0]
+  - [20.0]
+  P_Wg_team:
+  - [0.16000000000000003, 0.0, 0.0, 0.0, 0.0, 0.0]
+  - [0.0, 0.16000000000000003, 0.0, 0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.16000000000000003, 0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0, 0.16000000000000003, 0.0, 0.0]
+  - [0.0, 0.0, 0.0, 0.0, 0.16000000000000003, 0.0]
+  - [0.0, 0.0, 0.0, 0.0, 0.0, 0.16000000000000003]
+  eta_u_KukaBase:
+  - [0.0]
+  - [0.0]
+  - [0.0]
+  - [0.0]
+  sigma_b_u_KukaBase:
+  - [0.0]
+  - [0.0]
+  - [0.0]
+  - [0.0]
+  distBetweenFrontWheels: 0.316
+  distBetweenFrontAndBackWheels: 0.456
+  eta_u_aircraft:
+  - [2.0E-4]
+  - [1.0E-4]
+  - [1.0E-4]
+  - [1.0E-4]
+  sigma_b_u_aircraft:
+  - [2.0E-4]
+  - [1.0E-4]
+  - [1.0E-4]
+  - [1.0E-4]
+  eta_u_quadrotor:
+  - [0.0]
+  - [0.0]
+  - [0.0]
+  - [0.0]
+  sigma_b_u_quadrotor:
+  - [0.0]
+  - [0.0]
+  - [0.0]
+  - [0.0]
+  noiseFlag: 0.0
+state_parameters:
+  stateDim: 3.0
+  sup_norm_weights_nonNormalized:
+  - [1.0]
+  - [1.0]
+  - [0.0]
+seed: 502.0
+FIRM_node_parameters:
+  mean_neighborhood_size:
+  - [0.0]
+  - [0.0]
+  - [0.0]
+  cov_neighborhood_size:
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  GHb_conv_BigX_thresh:
+  - [2.8000000000000003]
+  - [2.8000000000000003]
+  - [0.916297857297023]
+  - [2.8000000000000003]
+  - [2.8000000000000003]
+  - [0.916297857297023]
+  GHb_conv_Pest_thresh:
+  - [7.840000000000002, 7.840000000000002, 2.5656340004316647]
+  - [7.840000000000002, 7.840000000000002, 2.5656340004316647]
+  - [2.5656340004316647, 2.5656340004316647, 0.8396017632871154]
+  GHb_conv_BigCov_thresh:
+  - [7.840000000000002, 7.840000000000002, 2.5656340004316647, 7.840000000000002,
+    7.840000000000002, 2.5656340004316647]
+  - [7.840000000000002, 7.840000000000002, 2.5656340004316647, 7.840000000000002,
+    7.840000000000002, 2.5656340004316647]
+  - [2.5656340004316647, 2.5656340004316647, 0.8396017632871154, 2.5656340004316647,
+    2.5656340004316647, 0.8396017632871154]
+  - [7.840000000000002, 7.840000000000002, 2.5656340004316647, 7.840000000000002,
+    7.840000000000002, 2.5656340004316647]
+  - [7.840000000000002, 7.840000000000002, 2.5656340004316647, 7.840000000000002,
+    7.840000000000002, 2.5656340004316647]
+  - [2.5656340004316647, 2.5656340004316647, 0.8396017632871154, 2.5656340004316647,
+    2.5656340004316647, 0.8396017632871154]
+stabilizer_parameters: {max_stopping_time: 50.0, draw_cov_centered_on_nominal: 0.0}
+par_n: 2.0
+cost_gain: 10.0
+Final_state_cost:
+- [0.0030, 0.0, 0.0]
+- [0.0, 0.0030, 0.0]
+- [0.0, 0.0, 0.0030]
+state_cost:
+- [0.0030, 0.0, 0.0]
+- [0.0, 0.0030, 0.0]
+- [0.0, 0.0, 0.0030]
+control_cost:
+- [0.1, 0.0, 0.0, 0.0]
+- [0.0, 0.1, 0.0, 0.0]
+- [0.0, 0.0, 0.1, 0.0]
+- [0.0, 0.0, 0.0, 0.1]
+valid_linearization_domain:
+- [9.0]
+- [9.0]
+- [3.9269908169872414]
+state_cost_ratio_for_stationary_case: 5.0
+control_cost_ratio_for_stationary_case: 0.2
+alpha_for_HBRM_cost: [0.01, 0.1, 1.0]
+RoadMap: FIRM
+No_history: 1.0
+No_plot: 1.0
+PRM_parameters:
+  neighboring_distance_threshold: 30.0
+  PRM_node_text: 1.0
+  PRM_node_plot_properties: [RobotShape, triangle, robotSize, 0.8]
+  draw_edges_flag: 1.0
+  node_to_orbit_trajectories_flag: 1.0
+  num_nodes_on_orbits: 3.0
+initial_values: 100.0
+initial_value_goal: 500.0
+failure_cost_to_go: 15.0
+selected_nodes_for_plotting_feedback_pi: []
+DP_convergence_threshold: 0.01
+replanning: 0.0
+goBack_to_nearest_node: 0.0
+LoadFileName: C:\Users\Amirhossein\Documents\GitHub\FIRM-MATLAB\output\default_parameters.mat
+environmentFile: C:\Users\Amirhossein\Documents\GitHub\FIRM-MATLAB\output\obstacle_map.obj
+SaveFileName: C:\Users\Amirhossein\Documents\GitHub\FIRM-MATLAB\output\default_parameters.mat

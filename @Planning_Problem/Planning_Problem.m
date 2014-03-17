@@ -15,6 +15,10 @@ classdef Planning_Problem
             obj.par = user_data_class.par.planning_problem_param;
             obj.sim = sim;
             obj.PRM = PRM_class;
+            if strcmp(sim.simulatorName, 'Embedded')
+            sim.plotHandles.prmFigureHandle = obj.PRM.prmFigureHandle;
+            end
+
         end
         function obj = solve(obj,sim)
             [loading_folder_path, ~, ~] = fileparts(user_data_class.par.LoadFileName); % This line returns the path of the folder from which we want to load the parameters.
@@ -31,7 +35,7 @@ classdef Planning_Problem
                 obj.FIRM_graph = obj.FIRM_graph.construct_all_stabilizers_and_FIRM_nodes(); % Here, we construct the set of stabilizers used in FIRM and then we construct the reachable nodes under those stabilizers.
                 obj.FIRM_graph = obj.FIRM_graph.draw_all_nodes(); drawnow; % Draw the FIRM nodes
                 obj.FIRM_graph = obj.FIRM_graph.construct_all_FIRM_edges(); % Construct all the FIRM edges and associated transition costs and probabilities.
-                save([saving_folder_path, filesep,'Constructed_FIRM.mat'] , 'obj')  % Actually we are saving an object of "planning_problem" class, NOT only FIRM_graph. So, teh name of file, i.e., "Constructed_FIRM" can be a little misleading.
+                save([saving_folder_path, filesep,'Constructed_FIRM.mat'] , 'obj','-append')  % Actually we are saving an object of "planning_problem" class, NOT only FIRM_graph. So, teh name of file, i.e., "Constructed_FIRM" can be a little misleading.
                 
                 % --------------------------------------- Online execution code
             elseif obj.par.Online_phase == 1  % Online execution code
