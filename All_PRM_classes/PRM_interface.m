@@ -32,7 +32,9 @@ classdef PRM_interface
                 obj = obj.overwrite_nodes();
                 obj.par = user_data_class.par.PRM_parameters;  % IMPORTANT: note that you cannot put this command before the "load" command. Because, in that case the parameters of the loaded PRM will be considered, not the new parameters entered by the user.
                 obj = obj.draw();
-                obj = obj.save(); % In this case, the function "save" actually copies the previous PRM into the new output folder.
+%                 obj = obj.save(); % In this case, the function "save" actually copies the previous PRM into the new output folder.
+% AMIR: I think we no longer need this becasue we always load and save to
+% the same folder 
             else
                 obj.par = user_data_class.par.PRM_parameters;
                 obj = obj.request_nodes();

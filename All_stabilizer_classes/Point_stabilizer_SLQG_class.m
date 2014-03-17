@@ -135,8 +135,9 @@ classdef Point_stabilizer_SLQG_class < Stabilizer_interface
                     next_belief = next_belief.draw_CovOnNominal(nominal_x);
                     current_belief = current_belief.delete_plot(); %#ok<NASGU>
                 else  % This is the normal case, where we draw the estimation covariance centered at estimation mean.
-                    next_belief = next_belief.draw();
-                    current_belief = current_belief.delete_plot(); %#ok<NASGU>
+%                     next_belief = next_belief.draw(); We no longer need
+%                     this because it will be taken care of in sim.refresh
+%                     current_belief = current_belief.delete_plot(); %#ok<NASGU>
                 end
                 if user_data_class.par.replanning == 1
                     % Here, we check if we lie in the valid linearization
@@ -161,6 +162,8 @@ classdef Point_stabilizer_SLQG_class < Stabilizer_interface
                     show_just_once = 0;
                 end
                 drawnow
+                % refreshing the simulator
+                sim = sim.refresh();
                 % making a video of runtime
                 sim = sim.recordVideo();
                 % update the ensemble and GHb
