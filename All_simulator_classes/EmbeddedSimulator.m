@@ -104,7 +104,7 @@ classdef EmbeddedSimulator < SimulatorInterface & handle
             obj.robot = obj.robot.draw('RobotColor',[1 0 0]);
             %             obj.belief = obj.belief.delete_plot();
             %             obj.belief = obj.belief.draw();
-            obj.robot.val
+%             obj.robot.val
         end
         function obj = recordVideo(obj)
             if user_data_class.par.sim.video == 1
@@ -169,20 +169,26 @@ classdef EmbeddedSimulator < SimulatorInterface & handle
             resolution = obj.simpar.sim.sensor.laser.resolution;  % resolution in radians
             robotPose = obj.robot.val;  % [x,y,theta]
             from_laser = [robotPose(1),robotPose(2),laserZ];
-            theta  = robotPose(3)+intitialTheta:resolution:robotPose(3)+endTheta;
+            thetaLocal = intitialTheta:resolution:endTheta; % theta array for laser scanner local coordinate. This is used to visualize the data observed from laser scanner in local coordinate
+            thetaGlobal  = robotPose(3)+intitialTheta:resolution:robotPose(3)+endTheta; % theta array in global coordinate. This is used for projecting the laser scan to the global coordinate
             rangeLaser = 4; % meter. the range of the laser scanner
-            to_rays = [[rangeLaser.*cos(theta + from_laser(3))]',[rangeLaser.*sin(theta+ from_laser(3))]',repmat(laserZ,length(theta),1) ];
+            to_rays = [[rangeLaser.*cos(thetaGlobal)]',[rangeLaser.*sin(thetaGlobal)]',repmat(laserZ,length(thetaGlobal),1) ];
             % from = [-Z(:) Y(:) X(:)]';
             % to = [Z(:) Y(:) X(:)]';
             
             %[hit,d,trix,bary] = opcodemeshmex('intersect',t,from,to-from);
-            [hit,d,trix,bary] = obj.RayCastObj.intersect(repmat(from_laser',1,length(theta)),to_rays');
-            y= from_laser(2)+rangeLaser.*d'.*sin(theta+ from_laser(3));
-            x= from_laser(1)+rangeLaser.*d'.*cos(theta+ from_laser(3));
-            scan.x = x.*100;
-            scan.y = y.*100;
+            [hit,d,trix,bary] = obj.RayCastObj.intersect(repmat(from_laser',1,length(thetaGlobal)),to_rays');
+            yLocal= rangeLaser.*d'.*sin(thetaLocal);
+            xLocal= rangeLaser.*d'.*cos(thetaLocal);
+            
+            yGlobal= from_laser(2)+rangeLaser.*d'.*sin(thetaGlobal);
+            xGlobal= from_laser(1)+rangeLaser.*d'.*cos(thetaGlobal);
+
+            
+            scan.x = xLocal.*100;
+            scan.y = yLocal.*100;
             new_features_set=hierarchical_feature_extracting(scan,obj.thresholds,'new');
-            z = nan(1,length(theta));
+            z = nan(1,length(thetaLocal));
             z(~isnan(d))=laserZ;
             % figure
             % hold on ;
@@ -192,10 +198,10 @@ classdef EmbeddedSimulator < SimulatorInterface & handle
             %             end
             figure(obj.plotHandles.prmFigureHandle)
             if isempty(obj.laserPlotHndl)
-            obj.laserPlotHndl = plot3(x,y,repmat(from_laser(3),1,length(x)),'.r','LineWidth',6);
+            obj.laserPlotHndl = plot3(xGlobal,yGlobal,repmat(from_laser(3),1,length(xGlobal)),'.r','LineWidth',6);
             else
                 delete( obj.laserPlotHndl); % clear the previous scan
-                obj.laserPlotHndl = plot3(x,y,repmat(from_laser(3),1,length(x)),'.r','LineWidth',6);
+                obj.laserPlotHndl = plot3(xGlobal,yGlobal,repmat(from_laser(3),1,length(xGlobal)),'.r','LineWidth',6);
             end
             %             z = obj.obsModel.h_func(obj.obsModel,obj.robot.val,v);
             z = obj.obsModel.h_func(obj.robot.val,v);
