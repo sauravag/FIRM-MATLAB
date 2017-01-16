@@ -1,4 +1,4 @@
-FIRM-MATLAB
+FIRM-MATLAB (currently in broken state)
 ===========
 
 Feedback Information Road Maps (FIRM) Toolbox for MATLAB
